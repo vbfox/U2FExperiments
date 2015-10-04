@@ -45,8 +45,7 @@ namespace U2FExperiments.Win32.SetupApi
             uint index = 0;
             while (true)
             {
-                var data = new DeviceInterfaceData();
-                data.Size = Marshal.SizeOf(data);
+                var data = DeviceInterfaceData.Create();
 
                 if (!EnumDeviceInterfaces(lpDeviceInfoSet, nDeviceInfoData, gClass, index, ref data))
                 {
@@ -64,15 +63,63 @@ namespace U2FExperiments.Win32.SetupApi
             }
         }
 
+        static readonly Lazy<int> deviceInterfaceDetailDataSize = new Lazy<int>(() =>
+        {
+            // The structure size take into account an Int32 and a character
+            switch (IntPtr.Size)
+            {
+                case 4: // 32-bits
+                    // The character can be 1 or 2 octets depending on ANSI / Unicode
+                    return 4 + Marshal.SystemDefaultCharSize;
+                case 8: // 64-bits
+                    // Due to alignment, the size is always the same
+                    return 8;
+                default:
+                    throw new NotSupportedException("Non 32 or 64-bits windows aren't supported");
+            }
+        });
+
+        private const int ERROR_INSUFFICIENT_BUFFER = 122;
+
         /* The SetupDiGetDeviceInterfaceDetail function returns details about 
          * a device interface.*/
-        [SuppressUnmanagedCodeSecurity]
-        [DllImport("setupapi.dll", SetLastError = true, EntryPoint = "SetupDiGetDeviceInterfaceDetail")]
-        public static extern bool GetDeviceInterfaceDetail(
-            DeviceInfoListSafeHandle lpDeviceInfoSet, ref DeviceInterfaceData oInterfaceData,
-            ref DeviceInterfaceDetailData oDetailData,
-            uint nDeviceInterfaceDetailDataSize, ref uint nRequiredSize,
-            IntPtr lpDeviceInfoData);
+        public static string GetDeviceInterfaceDetail(
+            DeviceInfoListSafeHandle lpDeviceInfoSet, DeviceInterfaceData oInterfaceData,
+            IntPtr lpDeviceInfoData)
+        {
+            using (var requiredSize = new NullableStructPtr<uint>(0))
+            {
+                NativeMethods.GetDeviceInterfaceDetail(lpDeviceInfoSet, ref oInterfaceData, IntPtr.Zero,
+                    0, requiredSize.Handle, IntPtr.Zero);
+
+                var lastError = Marshal.GetLastWin32Error();
+
+                if (lastError != ERROR_INSUFFICIENT_BUFFER)
+                {
+                    throw new Win32Exception(lastError);
+                }
+
+                var buffer = Marshal.AllocHGlobal((int)requiredSize.Value);
+                
+                try
+                {
+                    Marshal.WriteInt32(buffer, deviceInterfaceDetailDataSize.Value);
+                    var success = NativeMethods.GetDeviceInterfaceDetail(lpDeviceInfoSet, ref oInterfaceData, buffer,
+                        requiredSize.Value, IntPtr.Zero, IntPtr.Zero);
+                    if (!success)
+                    {
+                        throw new Win32Exception();
+                    }
+
+                    var strPtr = new IntPtr(buffer.ToInt64() + 4);
+                    return Marshal.PtrToStringAuto(strPtr);
+                }
+                finally
+                {
+                    Marshal.FreeHGlobal(buffer);
+                }
+            }
+        }
 
         /* destroys device list */
         [SuppressUnmanagedCodeSecurity]

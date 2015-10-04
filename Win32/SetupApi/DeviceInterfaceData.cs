@@ -16,5 +16,12 @@ namespace U2FExperiments.Win32.SetupApi
         public int Flags;
         /* do not use */
         public IntPtr Reserved;
+
+        public static DeviceInterfaceData Create()
+        {
+            var result = new DeviceInterfaceData();
+            result.Size = Marshal.SizeOf(result);
+            return result;
+        }
     }
 }

@@ -65,17 +65,14 @@ namespace U2FExperiments
                     {
                         if (!handle.IsInvalid)
                         {
-                            /* get device manufacturer string */
-                            var man = GetManufacturer(handle.DangerousGetHandle());
-                            /* get product string */
-                            var prod = GetProduct(handle.DangerousGetHandle());
-                            /* get serial number */
-                            var serial = GetSerialNumber(handle.DangerousGetHandle());
-                            /* get vid and pid */
-                            GetVidPid(handle.DangerousGetHandle(), out vid, out pid);
+                            var attributes = HidDll.GetAttributes(handle);
 
                             /* build up a new element */
-                            var i = new HIDInfo(prod, serial, man, path, vid, pid);
+                            var i = new HIDInfo(
+                                HidDll.GetProductString(handle),
+                                "",
+                                HidDll.GetManufacturerString(handle),
+                                path, attributes.VendorID, attributes.ProductID);
                             /* add to list */
                             info.Add(i);
                         }
@@ -91,7 +88,7 @@ namespace U2FExperiments
         private static SafeFileHandle Open(string path)
         {
             /* opens hid device file */
-            return Kernel32Dll.CreateFileExtern(path,
+            return Kernel32Dll.NativeMethods.CreateFile(path,
                 Native.GENERIC_READ | Native.GENERIC_WRITE,
                 Native.FILE_SHARE_READ | Native.FILE_SHARE_WRITE,
                 IntPtr.Zero, Native.OPEN_EXISTING, Native.FILE_FLAG_OVERLAPPED,
@@ -102,34 +99,11 @@ namespace U2FExperiments
         private static string GetPath(DeviceInfoListSafeHandle hInfoSet,
             DeviceInterfaceData iface)
         {
-            /* detailed interface information */
-            var detIface = new DeviceInterfaceDetailData();
-            /* required size */
-            uint reqSize = (uint)Marshal.SizeOf(detIface);
-
-            /* set size. The cbSize member always contains the size of the 
-             * fixed part of the data structure, not a size reflecting the 
-             * variable-length string at the end. */
-            /* now stay with me and look at that x64/x86 maddness! */
-            detIface.Size = Marshal.SizeOf(typeof(IntPtr)) == 8 ? 8 : 5;
-
-            /* get device path */
-            bool status = SetupApiDll.GetDeviceInterfaceDetail(hInfoSet,
-                ref iface, ref detIface, reqSize, ref reqSize, IntPtr.Zero);
-
-            /* whops */
-            if (!status)
-            {
-                /* fail! */
-                throw new Win32Exception();
-            }
-
-            /* return device path */
-            return detIface.DevicePath;
+            return SetupApiDll.GetDeviceInterfaceDetail(hInfoSet, iface, IntPtr.Zero);
         }
 
         /* get device manufacturer string */
-        private static string GetManufacturer(IntPtr handle)
+        private static string GetManufacturer(SafeFileHandle handle)
         {
             /* buffer */
             var s = new StringBuilder(256);
@@ -137,7 +111,7 @@ namespace U2FExperiments
             string rc = String.Empty;
 
             /* get string */
-            if (HidDll.GetManufacturerString(handle, s, s.Capacity))
+            if (HidDll.NativeMethods.HidD_GetManufacturerString(handle, s, s.Capacity))
             {
                 rc = s.ToString();
             }
@@ -147,7 +121,7 @@ namespace U2FExperiments
         }
 
         /* get device product string */
-        private static string GetProduct(IntPtr handle)
+        private static string GetProduct(SafeFileHandle handle)
         {
             /* buffer */
             var s = new StringBuilder(256);
@@ -155,7 +129,7 @@ namespace U2FExperiments
             string rc = String.Empty;
 
             /* get string */
-            if (HidDll.GetProductString(handle, s, s.Capacity))
+            if (HidDll.NativeMethods.HidD_GetProductString(handle, s, s.Capacity))
             {
                 rc = s.ToString();
             }
@@ -165,7 +139,7 @@ namespace U2FExperiments
         }
 
         /* get device product string */
-        private static string GetSerialNumber(IntPtr handle)
+        private static string GetSerialNumber(SafeFileHandle handle)
         {
             /* buffer */
             var s = new StringBuilder(256);
@@ -173,7 +147,7 @@ namespace U2FExperiments
             string rc = String.Empty;
 
             /* get string */
-            if (HidDll.GetSerialNumberString(handle, s, s.Capacity))
+            if (HidDll.NativeMethods.HidD_GetSerialNumberString(handle, s, s.Capacity))
             {
                 rc = s.ToString();
             }
@@ -183,20 +157,9 @@ namespace U2FExperiments
         }
 
         /* get vid and pid */
-        private static void GetVidPid(IntPtr handle, out short Vid, out short Pid)
+        private static void GetVidPid(SafeFileHandle handle, out short Vid, out short Pid)
         {
-            /* attributes structure */
-            var attr = new HiddAttributes();
-            /* set size */
-            attr.Size = Marshal.SizeOf(attr);
-
-            /* get attributes */
-            if (HidDll.GetAttributes(handle, ref attr) == false)
-            {
-                /* fail! */
-                throw new Win32Exception();
-            }
-
+            var attr = HidDll.GetAttributes(handle);
             /* update vid and pid */
             Vid = attr.VendorID; Pid = attr.ProductID;
         }
@@ -211,10 +174,11 @@ namespace U2FExperiments
             {
                 Console.WriteLine("--------------------------");
                 Console.WriteLine(b.Path);
+                Console.WriteLine(b.SerialNumber);
                 Console.WriteLine(b.Manufacturer);
                 Console.WriteLine(b.Product);
-                Console.WriteLine(b.Vid);
-                Console.WriteLine(b.Pid);
+                Console.WriteLine("VID = 0x{0:X4}", b.Vid);
+                Console.WriteLine("PID = 0x{0:X4}", b.Pid);
             }
             Console.ReadLine();
         }

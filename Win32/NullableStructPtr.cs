@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 
 namespace U2FExperiments.Win32
 {
@@ -21,9 +22,24 @@ namespace U2FExperiments.Win32
             }
         }
 
+        bool HasValue => Handle != IntPtr.Zero;
+
+        public T Value
+        {
+            get
+            {
+                if (!HasValue)
+                {
+                    throw new InvalidOperationException("No value");
+                }
+
+                return (T)Marshal.PtrToStructure(Handle, typeof(T));
+            }
+        }
+
         public void Dispose()
         {
-            if (Handle != IntPtr.Zero)
+            if (HasValue)
             {
                 Marshal.FreeHGlobal(Handle);
             }

@@ -24,6 +24,13 @@ namespace U2FExperiments.Win32.SetupApi
                 ref Guid gClass,
                 uint nIndex,
                 ref DeviceInterfaceData oInterfaceData);
+
+            [DllImport("setupapi.dll", SetLastError = true, EntryPoint = "SetupDiGetDeviceInterfaceDetail", CharSet = CharSet.Auto)]
+            public static extern bool GetDeviceInterfaceDetail(
+                DeviceInfoListSafeHandle lpDeviceInfoSet, ref DeviceInterfaceData oInterfaceData,
+                IntPtr oDetailData,
+                uint nDeviceInterfaceDetailDataSize, IntPtr nRequiredSize,
+                IntPtr lpDeviceInfoData);
         }
     }
 }

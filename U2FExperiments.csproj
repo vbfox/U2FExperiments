@@ -21,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -52,7 +53,6 @@
     <Compile Include="Win32\NullableStructPtr.cs" />
     <Compile Include="Win32\SetupApi\DeviceInfoListSafeHandle.cs" />
     <Compile Include="Win32\SetupApi\DeviceInterfaceData.cs" />
-    <Compile Include="Win32\SetupApi\DeviceInterfaceDetailData.cs" />
     <Compile Include="Win32\SetupApi\GetClassDevsFlags.cs" />
     <Compile Include="Win32\SetupApi\SetupApiDll.cs" />
     <Compile Include="Win32\SetupApi\SetupApiDll.NativeMethods.cs" />

@@ -16,5 +16,12 @@ namespace U2FExperiments.Win32.Hid
         public short ProductID;
         /* hid vesion number */
         public short VersionNumber;
+
+        public static HiddAttributes Create()
+        {
+            var result = new HiddAttributes();
+            result.Size = Marshal.SizeOf(result);
+            return result;
+        }
     }
 }
