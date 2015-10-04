@@ -101,68 +101,6 @@ namespace U2FExperiments
         {
             return SetupApiDll.GetDeviceInterfaceDetail(hInfoSet, iface, IntPtr.Zero);
         }
-
-        /* get device manufacturer string */
-        private static string GetManufacturer(SafeFileHandle handle)
-        {
-            /* buffer */
-            var s = new StringBuilder(256);
-            /* returned string */
-            string rc = String.Empty;
-
-            /* get string */
-            if (HidDll.NativeMethods.HidD_GetManufacturerString(handle, s, s.Capacity))
-            {
-                rc = s.ToString();
-            }
-
-            /* report string */
-            return rc;
-        }
-
-        /* get device product string */
-        private static string GetProduct(SafeFileHandle handle)
-        {
-            /* buffer */
-            var s = new StringBuilder(256);
-            /* returned string */
-            string rc = String.Empty;
-
-            /* get string */
-            if (HidDll.NativeMethods.HidD_GetProductString(handle, s, s.Capacity))
-            {
-                rc = s.ToString();
-            }
-
-            /* report string */
-            return rc;
-        }
-
-        /* get device product string */
-        private static string GetSerialNumber(SafeFileHandle handle)
-        {
-            /* buffer */
-            var s = new StringBuilder(256);
-            /* returned string */
-            string rc = String.Empty;
-
-            /* get string */
-            if (HidDll.NativeMethods.HidD_GetSerialNumberString(handle, s, s.Capacity))
-            {
-                rc = s.ToString();
-            }
-
-            /* report string */
-            return rc;
-        }
-
-        /* get vid and pid */
-        private static void GetVidPid(SafeFileHandle handle, out short Vid, out short Pid)
-        {
-            var attr = HidDll.GetAttributes(handle);
-            /* update vid and pid */
-            Vid = attr.VendorID; Pid = attr.ProductID;
-        }
     }
 
     class Program
