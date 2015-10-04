@@ -1,6 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.Win32.SafeHandles;
 using U2FExperiments.MiniUsbHid;
+using U2FExperiments.Win32;
+using U2FExperiments.Win32.Hid;
+using U2FExperiments.Win32.Kernel32;
 
 namespace U2FExperiments
 {
@@ -24,16 +29,31 @@ namespace U2FExperiments
     {
         static void Main(string[] args)
         {
-            foreach (var b in DeviceList.Get())
+            var yubiInfo = DeviceList.Get().Single(i => i.VendorId == 0x1050);
+
+            Console.WriteLine(yubiInfo.Path);
+            Console.WriteLine(yubiInfo.Manufacturer);
+            Console.WriteLine(yubiInfo.Product);
+            Console.WriteLine("VID = 0x{0:X4}", yubiInfo.VendorId);
+            Console.WriteLine("PID = 0x{0:X4}", yubiInfo.ProductId);
+
+            using (var device = yubiInfo.OpenDevice())
             {
-                Console.WriteLine("--------------------------");
-                Console.WriteLine(b.Path);
-                Console.WriteLine(b.Manufacturer);
-                Console.WriteLine(b.Product);
-                Console.WriteLine("VID = 0x{0:X4}", b.Vid);
-                Console.WriteLine("PID = 0x{0:X4}", b.Pid);
+                device.SetNumInputBuffers(64);
+                var caps = device.GetCaps();
+                Console.WriteLine(caps.NumberFeatureButtonCaps);
             }
+
             Console.ReadLine();
+        }
+
+        private static SafeFileHandle Open(string path)
+        {
+            return Kernel32Dll.CreateFile(path,
+                Native.GENERIC_READ | Native.GENERIC_WRITE,
+                Native.FILE_SHARE_READ | Native.FILE_SHARE_WRITE,
+                IntPtr.Zero, Native.OPEN_EXISTING, Native.FILE_FLAG_OVERLAPPED,
+                IntPtr.Zero);
         }
     }
 }

@@ -22,6 +22,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>true</Prefer32Bit>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -43,9 +45,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MiniUsbHid\Device.cs" />
     <Compile Include="MiniUsbHid\DeviceList.cs" />
     <Compile Include="MiniUsbHid\DeviceInfo.cs" />
     <Compile Include="ResharperAnnotations.cs" />
+    <Compile Include="Win32\Hid\HidpCaps.cs" />
+    <Compile Include="Win32\Hid\SafePreparsedDataHandle.cs" />
     <Compile Include="Win32\Kernel32\Kernel32Dll.cs" />
     <Compile Include="Win32\Native.cs" />
     <Compile Include="Program.cs" />

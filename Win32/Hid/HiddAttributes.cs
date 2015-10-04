@@ -11,9 +11,9 @@ namespace U2FExperiments.Win32.Hid
         /* size in bytes */
         public int Size;
         /* vendor id */
-        public short VendorID;
+        public short VendorId;
         /* product id */
-        public short ProductID;
+        public short ProductId;
         /* hid vesion number */
         public short VersionNumber;
 

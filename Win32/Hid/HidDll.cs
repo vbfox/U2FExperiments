@@ -30,9 +30,26 @@ namespace U2FExperiments.Win32.Hid
             [DllImport("hid.dll", CharSet = CharSet.Auto, SetLastError = true, EntryPoint = "HidD_GetSerialNumberString")]
             public static extern bool HidD_GetSerialNumberString(SafeFileHandle hDevice,
                 StringBuilder buffer, int bufferLength);
+
+            [DllImport("hid.dll", SetLastError = true)]
+            public static extern bool HidD_SetNumInputBuffers(
+                  SafeFileHandle hidDeviceObject,
+                  uint numberBuffers);
+
+            [DllImport("hid.dll", SetLastError = true)]
+            public static extern bool HidD_GetPreparsedData(SafeFileHandle hDevice, out SafePreparsedDataHandle preparsedDataHandle);
+
+            [DllImport("hid.dll", SetLastError = true)]
+            public static extern bool HidD_FreePreparsedData(IntPtr preparsedDataHandle);
+
+            [DllImport("hid.dll", SetLastError = true)]
+            public static extern int HidP_GetCaps(SafePreparsedDataHandle preparsedData, ref HidpCaps capabilities);
         }
 
         const int ERROR_INVALID_USER_BUFFER = 0x6F8;
+
+        const int HIDP_STATUS_SUCCESS = 0x00110000;
+        const int HIDP_STATUS_INVALID_PREPARSED_DATA = unchecked ((int)0xC0110001);
 
         public static Guid HidGuid
         {
@@ -87,6 +104,42 @@ namespace U2FExperiments.Win32.Hid
         public static string GetSerialNumberString(SafeFileHandle hDevice)
         {
             return GrowBuffer(sb => NativeMethods.HidD_GetSerialNumberString(hDevice, sb, sb.Capacity));
+        }
+
+        public static void SetNumInputBuffers(SafeFileHandle hidDeviceObject, uint numberBuffers)
+        {
+            if (!NativeMethods.HidD_SetNumInputBuffers(hidDeviceObject, numberBuffers))
+            {
+                throw new Win32Exception();
+            }
+        }
+
+        public static SafePreparsedDataHandle GetPreparsedData(SafeFileHandle hDevice)
+        {
+            SafePreparsedDataHandle preparsedDataHandle;
+            if (!NativeMethods.HidD_GetPreparsedData(hDevice, out preparsedDataHandle))
+            {
+                throw new Win32Exception();
+            }
+
+            return preparsedDataHandle;
+        }
+
+        public static HidpCaps GetCaps(SafePreparsedDataHandle preparsedData)
+        {
+            var hidCaps = new HidpCaps();
+            var result = NativeMethods.HidP_GetCaps(preparsedData, ref hidCaps);
+            switch (result)
+            {
+                case HIDP_STATUS_SUCCESS:
+                    return hidCaps;
+
+                case HIDP_STATUS_INVALID_PREPARSED_DATA:
+                    throw new Win32Exception(result, "Invalid Preparsed Data");
+
+                default:
+                    throw new Win32Exception(result);
+            }
         }
     }
 }
