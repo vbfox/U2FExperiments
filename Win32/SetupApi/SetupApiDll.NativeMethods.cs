@@ -12,14 +12,14 @@ namespace U2FExperiments.Win32.SetupApi
         public static class NativeMethods
         {
             [DllImport("setupapi.dll", SetLastError = true)]
-            public static extern DeviceInfoListSafeHandle SetupDiGetClassDevs(IntPtr gClass,
+            public static extern SafeDeviceInfoListHandle SetupDiGetClassDevs(IntPtr gClass,
                 [MarshalAs(UnmanagedType.LPStr)] string strEnumerator,
                 IntPtr hParent,
                 GetClassDevsFlags nFlags);
 
             [DllImport("setupapi.dll", SetLastError = true)]
             public static extern bool SetupDiEnumDeviceInterfaces(
-                DeviceInfoListSafeHandle lpDeviceInfoSet,
+                SafeDeviceInfoListHandle lpDeviceInfoSet,
                 uint nDeviceInfoData,
                 ref Guid gClass,
                 uint nIndex,
@@ -27,7 +27,7 @@ namespace U2FExperiments.Win32.SetupApi
 
             [DllImport("setupapi.dll", SetLastError = true, EntryPoint = "SetupDiGetDeviceInterfaceDetail", CharSet = CharSet.Auto)]
             public static extern bool GetDeviceInterfaceDetail(
-                DeviceInfoListSafeHandle lpDeviceInfoSet, ref DeviceInterfaceData oInterfaceData,
+                SafeDeviceInfoListHandle lpDeviceInfoSet, ref DeviceInterfaceData oInterfaceData,
                 IntPtr oDetailData,
                 uint nDeviceInterfaceDetailDataSize, IntPtr nRequiredSize,
                 IntPtr lpDeviceInfoData);

@@ -4,15 +4,15 @@ using Microsoft.Win32.SafeHandles;
 
 namespace U2FExperiments.Win32.SetupApi
 {
-    class DeviceInfoListSafeHandle : SafeHandleMinusOneIsInvalid
+    class SafeDeviceInfoListHandle : SafeHandleMinusOneIsInvalid
     {
         [UsedImplicitly]
-        DeviceInfoListSafeHandle()
+        SafeDeviceInfoListHandle()
             : base(true)
         {
         }
 
-        public DeviceInfoListSafeHandle(IntPtr preexistingHandle, bool ownsHandle)
+        public SafeDeviceInfoListHandle(IntPtr preexistingHandle, bool ownsHandle)
             : base(ownsHandle)
         {
             handle = preexistingHandle;

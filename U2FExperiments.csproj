@@ -43,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="MiniUsbHid\DeviceList.cs" />
+    <Compile Include="MiniUsbHid\DeviceInfo.cs" />
     <Compile Include="ResharperAnnotations.cs" />
     <Compile Include="Win32\Kernel32\Kernel32Dll.cs" />
     <Compile Include="Win32\Native.cs" />
@@ -51,7 +53,7 @@
     <Compile Include="Win32\Hid\HiddAttributes.cs" />
     <Compile Include="Win32\Hid\HidDll.cs" />
     <Compile Include="Win32\NullableStructPtr.cs" />
-    <Compile Include="Win32\SetupApi\DeviceInfoListSafeHandle.cs" />
+    <Compile Include="Win32\SetupApi\SafeDeviceInfoListHandle.cs" />
     <Compile Include="Win32\SetupApi\DeviceInterfaceData.cs" />
     <Compile Include="Win32\SetupApi\GetClassDevsFlags.cs" />
     <Compile Include="Win32\SetupApi\SetupApiDll.cs" />

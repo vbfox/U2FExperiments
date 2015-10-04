@@ -11,7 +11,7 @@ namespace U2FExperiments.Win32.SetupApi
     {
         /* function returns a handle to a device information set that contains
          * requested device information elements for a local computer */
-        public static DeviceInfoListSafeHandle GetClassDevs(Guid? gClass,
+        public static SafeDeviceInfoListHandle GetClassDevs(Guid? gClass,
             [MarshalAs(UnmanagedType.LPStr)] string strEnumerator,
             IntPtr hParent, GetClassDevsFlags nFlags)
         {
@@ -25,7 +25,7 @@ namespace U2FExperiments.Win32.SetupApi
          * a device information set.*/
 
         public static bool EnumDeviceInterfaces(
-            DeviceInfoListSafeHandle lpDeviceInfoSet,
+            SafeDeviceInfoListHandle lpDeviceInfoSet,
             uint nDeviceInfoData,
             Guid gClass,
             uint nIndex,
@@ -38,7 +38,7 @@ namespace U2FExperiments.Win32.SetupApi
         const int ERROR_NO_MORE_ITEMS = 259;
 
         public static IEnumerable<DeviceInterfaceData> EnumDeviceInterfaces(
-            DeviceInfoListSafeHandle lpDeviceInfoSet,
+            SafeDeviceInfoListHandle lpDeviceInfoSet,
             uint nDeviceInfoData,
             Guid gClass)
         {
@@ -84,7 +84,7 @@ namespace U2FExperiments.Win32.SetupApi
         /* The SetupDiGetDeviceInterfaceDetail function returns details about 
          * a device interface.*/
         public static string GetDeviceInterfaceDetail(
-            DeviceInfoListSafeHandle lpDeviceInfoSet, DeviceInterfaceData oInterfaceData,
+            SafeDeviceInfoListHandle lpDeviceInfoSet, DeviceInterfaceData oInterfaceData,
             IntPtr lpDeviceInfoData)
         {
             using (var requiredSize = new NullableStructPtr<uint>(0))
