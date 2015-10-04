@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
+using System.Security;
 using Microsoft.Win32.SafeHandles;
 
 namespace U2FExperiments.Win32.Kernel32
@@ -16,6 +17,7 @@ namespace U2FExperiments.Win32.Kernel32
         /// handle that can be used to access the file or device for various types of I/O depending on the file or
         /// device and the flags and attributes specified.</para>
         /// </summary>
+        [SuppressUnmanagedCodeSecurity]
         [DllImport("kernel32.dll", SetLastError = true, EntryPoint = "CreateFile")]
         public static extern SafeFileHandle CreateFileExtern(
             [MarshalAs(UnmanagedType.LPStr)] string lpFileName,
@@ -51,25 +53,6 @@ namespace U2FExperiments.Win32.Kernel32
             }
 
             return result;
-        }
-
-        /// <summary>
-        /// Closes an open object handle.
-        /// </summary>
-        /// <param name="hObject">A valid handle to an open object.</param>
-        [DllImport("kernel32.dll", SetLastError = true, EntryPoint = "CloseHandle")]
-        public static extern bool CloseHandleExtern(IntPtr hObject);
-
-        /// <summary>
-        /// Closes an open object handle.
-        /// </summary>
-        /// <param name="hObject">A valid handle to an open object.</param>
-        public static void CloseHandle(IntPtr hObject)
-        {
-            if (!CloseHandleExtern(hObject))
-            {
-                throw new Win32Exception();
-            }
         }
     }
 }

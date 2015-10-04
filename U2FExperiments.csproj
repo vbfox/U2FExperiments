@@ -49,10 +49,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Win32\Hid\HiddAttributes.cs" />
     <Compile Include="Win32\Hid\HidDll.cs" />
+    <Compile Include="Win32\NullableStructPtr.cs" />
     <Compile Include="Win32\SetupApi\DeviceInfoListSafeHandle.cs" />
     <Compile Include="Win32\SetupApi\DeviceInterfaceData.cs" />
     <Compile Include="Win32\SetupApi\DeviceInterfaceDetailData.cs" />
+    <Compile Include="Win32\SetupApi\GetClassDevsFlags.cs" />
     <Compile Include="Win32\SetupApi\SetupApiDll.cs" />
+    <Compile Include="Win32\SetupApi\SetupApiDll.NativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

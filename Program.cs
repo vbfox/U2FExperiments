@@ -45,35 +45,20 @@ namespace U2FExperiments
         /* browse all HID class devices */
         public static List<HIDInfo> Browse()
         {
-            /* hid device class guid */
-            Guid gHid;
             /* list of device information */
             List<HIDInfo> info = new List<HIDInfo>();
 
-            /* obtain hid guid */
-            HidDll.GetHidGuid(out gHid);
             /* get list of present hid devices */
-            using (var hInfoSet = SetupApiDll.GetClassDevs(ref gHid, null, IntPtr.Zero,
-                Native.DIGCF_DEVICEINTERFACE | Native.DIGCF_PRESENT))
+            using (var hInfoSet = SetupApiDll.GetClassDevs(HidDll.HidGuid, null, IntPtr.Zero,
+                GetClassDevsFlags.DeviceInterface | GetClassDevsFlags.Present))
             {
-
-                /* allocate mem for interface descriptor */
-                var iface = new DeviceInterfaceData();
-                /* set size field */
-                iface.Size = Marshal.SizeOf(iface);
-                /* interface index */
-                uint index = 0;
-
-                /* iterate through all interfaces */
-                while (SetupApiDll.EnumDeviceInterfaces(hInfoSet, 0, ref gHid,
-                    index, ref iface))
+                foreach (var iface in SetupApiDll.EnumDeviceInterfaces(hInfoSet, 0, HidDll.HidGuid))
                 {
-
                     /* vid and pid */
                     short vid, pid;
 
                     /* get device path */
-                    var path = GetPath(hInfoSet, ref iface);
+                    var path = GetPath(hInfoSet, iface);
 
                     /* open device */
                     using (var handle = Open(path))
@@ -95,9 +80,6 @@ namespace U2FExperiments
                             info.Add(i);
                         }
                     }
-
-                    /* next, please */
-                    index++;
                 }
             }
 
@@ -118,7 +100,7 @@ namespace U2FExperiments
 
         /* get device path */
         private static string GetPath(DeviceInfoListSafeHandle hInfoSet,
-            ref DeviceInterfaceData iface)
+            DeviceInterfaceData iface)
         {
             /* detailed interface information */
             var detIface = new DeviceInterfaceDetailData();
