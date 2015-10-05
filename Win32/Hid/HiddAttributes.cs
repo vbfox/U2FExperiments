@@ -11,11 +11,11 @@ namespace U2FExperiments.Win32.Hid
         /* size in bytes */
         public int Size;
         /* vendor id */
-        public short VendorId;
+        public ushort VendorId;
         /* product id */
-        public short ProductId;
+        public ushort ProductId;
         /* hid vesion number */
-        public short VersionNumber;
+        public ushort VersionNumber;
 
         public static HiddAttributes Create()
         {

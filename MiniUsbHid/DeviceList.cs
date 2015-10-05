@@ -33,7 +33,7 @@ namespace U2FExperiments.MiniUsbHid
                     return new DeviceInfo(path, false, null, null, -1, -1, -1);
                 }
 
-                var device = new Device(handle, false);
+                var device = new HidDevice(handle, false);
 
                 var attributes = device.GetAttributes();
 

@@ -24,9 +24,9 @@ namespace U2FExperiments.MiniUsbHid
             VersionNumber = versionNumber;
         }
 
-        public Device OpenDevice()
+        public HidDevice OpenDevice()
         {
-            return Device.Open(Path);
+            return HidDevice.Open(Path);
         }
     }
 }

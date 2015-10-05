@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Win32.SafeHandles;
 using U2FExperiments.Win32;
@@ -7,23 +8,48 @@ using U2FExperiments.Win32.Kernel32;
 
 namespace U2FExperiments.MiniUsbHid
 {
-    public class Device : IDisposable
+    public class HidDevice : IDisposable
     {
         readonly bool ownHandle;
         public SafeFileHandle Handle { get; set; }
 
-        public Device([NotNull] SafeFileHandle handle, bool ownHandle)
+        public HidDevice([NotNull] SafeFileHandle handle, bool ownHandle)
         {
             this.ownHandle = ownHandle;
             if (handle == null) throw new ArgumentNullException(nameof(handle));
 
             Handle = handle;
+
+            attributes = new Lazy<HiddAttributes>(() => HidDll.GetAttributes(Handle));
         }
+
+        readonly Lazy<HiddAttributes> attributes;
+
+        public ushort ProductId => attributes.Value.ProductId;
+        public ushort VendorId => attributes.Value.VendorId;
+        public ushort Version => attributes.Value.VersionNumber;
 
         public string GetManufacturer() => HidDll.GetManufacturerString(Handle);
         public string GetProduct() => HidDll.GetProductString(Handle);
         public string GetSerialNumber() => HidDll.GetSerialNumberString(Handle);
-        public HiddAttributes GetAttributes() => HidDll.GetAttributes(Handle);
+
+        public HidOutputReport CreateOutputReport()
+        {
+            var buffer = new byte[GetCaps().OutputReportByteLength];
+            return new HidOutputReport(0, new ArraySegment<byte>(buffer));
+        }
+
+        public Task<int> SendOutputReportAsync([NotNull] HidOutputReport report)
+        {
+            if (report == null) throw new ArgumentNullException(nameof(report));
+            return Kernel32Dll.WriteFileAsync(Handle, report.GetOutputBuffer());
+        }
+
+        public Task<HidInputReport> GetInputReportAsync()
+        {
+            return Kernel32Dll.ReadFileAsync<byte>(Handle, GetCaps().InputReportByteLength)
+                .ContinueWith(task => new HidInputReport(task.Result), TaskContinuationOptions.OnlyOnRanToCompletion);
+        }
 
         public HidpCaps GetCaps()
         {
@@ -47,9 +73,9 @@ namespace U2FExperiments.MiniUsbHid
                 IntPtr.Zero);
         }
 
-        public static Device OpenRead(string path)
+        public static HidDevice OpenRead(string path)
         {
-            return new Device(OpenReadHandle(path), true);
+            return new HidDevice(OpenReadHandle(path), true);
         }
 
         private static SafeFileHandle OpenHandle(string path)
@@ -61,12 +87,17 @@ namespace U2FExperiments.MiniUsbHid
                 IntPtr.Zero);
         }
 
-        public static Device Open(string path)
+        public static HidDevice Open(string path)
         {
-            return new Device(OpenHandle(path), true);
+            return new HidDevice(OpenHandle(path), true);
         }
 
-        public void Dispose()
+        public void Close()
+        {
+            ((IDisposable)this).Dispose();
+        }
+
+        void IDisposable.Dispose()
         {
             if (ownHandle)
             {

@@ -46,9 +46,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MiniUsbHid\Device.cs" />
+    <Compile Include="MiniUsbHid\HidDevice.cs" />
     <Compile Include="MiniUsbHid\DeviceList.cs" />
     <Compile Include="MiniUsbHid\DeviceInfo.cs" />
+    <Compile Include="MiniUsbHid\HidInputReport.cs" />
+    <Compile Include="MiniUsbHid\HidOutputReport.cs" />
     <Compile Include="ResharperAnnotations.cs" />
     <Compile Include="Win32\FixedArraySegment.cs" />
     <Compile Include="Win32\Hid\HidpCaps.cs" />
