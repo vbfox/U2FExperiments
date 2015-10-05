@@ -3,6 +3,8 @@ using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 
 namespace U2FExperiments.Win32.Kernel32
@@ -13,7 +15,7 @@ namespace U2FExperiments.Win32.Kernel32
 
         [SuppressUnmanagedCodeSecurity]
         [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
-        public static class NativeMethods 
+        public static class NativeMethods
         {
             [DllImport("kernel32.dll", SetLastError = true, EntryPoint = "CreateFile")]
             public static extern SafeFileHandle CreateFile(
@@ -24,10 +26,41 @@ namespace U2FExperiments.Win32.Kernel32
                 uint dwCreationDisposition,
                 uint dwFlagsAndAttributes,
                 IntPtr hTemplateFile);
+
+            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern bool DeviceIoControl(
+                SafeFileHandle hDevice,
+                uint dwIoControlCode,
+                IntPtr inBuffer,
+                int nInBufferSize,
+                IntPtr outBuffer,
+                int nOutBufferSize,
+                out int pBytesReturned,
+                IntPtr lpOverlapped);
+
+            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern bool GetOverlappedResult(
+                SafeFileHandle hDevice,
+                IntPtr lpOverlapped,
+                out int lpNumberOfBytesTransferred,
+                bool wait);
+
+            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern bool WriteFile(
+                SafeFileHandle hFile,
+                IntPtr lpBuffer,
+                int nNumberOfBytesToWrite,
+                out int lpNumberOfBytesWritten,
+                IntPtr lpOverlapped);
+
+            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern bool ReadFile(
+                SafeFileHandle hFile,
+                IntPtr lpBuffer,
+                int nNumberOfBytesToRead,
+                out int lpNumberOfBytesRead,
+                IntPtr lpOverlapped);
         }
-
-        
-
 
         /// <summary>
         /// <para>Creates or opens a file or I/O device.</para>
@@ -54,6 +87,170 @@ namespace U2FExperiments.Win32.Kernel32
             }
 
             return result;
+        }
+
+        static bool DeviceIoControlCore(
+            SafeFileHandle hDevice,
+            uint dwIoControlCode,
+            IntPtr inBuffer,
+            int nInBufferSize,
+            IntPtr outBuffer,
+            int nOutBufferSize,
+            out int pBytesReturned,
+            NativeOverlapped? lpOverlapped)
+        {
+            using (var overlapped = new NullableStructPtr<NativeOverlapped>(lpOverlapped))
+            {
+                return NativeMethods.DeviceIoControl(hDevice, dwIoControlCode, inBuffer, nInBufferSize,
+                    outBuffer, nOutBufferSize, out pBytesReturned, overlapped.Pointer);
+            }
+        }
+
+        public static bool DeviceIoControl(
+            SafeFileHandle hDevice,
+            uint dwIoControlCode,
+            IntPtr inBuffer,
+            int nInBufferSize,
+            IntPtr outBuffer,
+            int nOutBufferSize,
+            NativeOverlapped lpOverlapped)
+        {
+            int pBytesReturned;
+            return DeviceIoControlCore(hDevice, dwIoControlCode, inBuffer, nInBufferSize, outBuffer, nOutBufferSize,
+                out pBytesReturned, lpOverlapped);
+        }
+
+        public static bool DeviceIoControl(
+            SafeFileHandle hDevice,
+            uint dwIoControlCode,
+            IntPtr inBuffer,
+            int nInBufferSize,
+            IntPtr outBuffer,
+            int nOutBufferSize,
+            out int pBytesReturned)
+        {
+            return DeviceIoControlCore(hDevice, dwIoControlCode, inBuffer, nInBufferSize, outBuffer, nOutBufferSize,
+                out pBytesReturned, null);
+        }
+
+        const int ERROR_IO_PENDING = 997;
+
+        static void ThrowLastWin32Exception()
+        {
+            throw new Win32Exception();
+        }
+
+        static void SetFromLastWin32Exception<T>(TaskCompletionSource<T> tcs)
+        {
+            try
+            {
+                ThrowLastWin32Exception();
+            }
+            catch (Win32Exception exception)
+            {
+                tcs.SetException(exception);
+            }
+        }
+
+        static Task<int> OverlappedAsync(SafeFileHandle handle, Func< IntPtr, bool> nativeMethod)
+        {
+            var evt = new ManualResetEvent(false);
+            var overlapped = new NativeOverlapped
+            {
+                EventHandle = evt.SafeWaitHandle.DangerousGetHandle()
+            }.ToPtr();
+
+            
+            var result = nativeMethod(overlapped.Pointer);
+
+            var completionSource = new TaskCompletionSource<int>();
+
+            if (result)
+            {
+                int pBytesReturned;
+                NativeMethods.GetOverlappedResult(handle, overlapped.Pointer, out pBytesReturned, false);
+                completionSource.SetResult(pBytesReturned);
+                overlapped.Dispose();
+                evt.Dispose();
+            }
+            else
+            {
+                var error = Marshal.GetLastWin32Error();
+                if (error != ERROR_IO_PENDING)
+                {
+                    SetFromLastWin32Exception(completionSource);
+                    overlapped.Dispose();
+                    evt.Dispose();
+                }
+                else
+                {
+                    WaitOrTimerCallback callback = (state, timedOut) =>
+                    {
+                        int pBytesReturned;
+                        var overlappedResult = NativeMethods.GetOverlappedResult(handle, overlapped.Pointer,
+                            out pBytesReturned, false);
+
+                        overlapped.Dispose();
+                        evt.Dispose();
+
+                        if (overlappedResult)
+                        {
+                            completionSource.SetResult(pBytesReturned);
+                            
+                        }
+                        else
+                        {
+                            SetFromLastWin32Exception(completionSource);
+                        }
+                    };
+
+                    ThreadPool.RegisterWaitForSingleObject(evt, callback, null, -1, true);
+                }
+            }
+
+            return completionSource.Task;
+        }
+
+        public static Task<int> DeviceIoControlAsync(
+            SafeFileHandle hDevice,
+            uint dwIoControlCode,
+            IntPtr inBuffer,
+            int nInBufferSize,
+            IntPtr outBuffer,
+            int nOutBufferSize)
+        {
+            return OverlappedAsync(hDevice, lpOverlapped =>
+            {
+                int pBytesReturned;
+                return NativeMethods.DeviceIoControl(hDevice, dwIoControlCode, inBuffer, nInBufferSize, outBuffer,
+                    nOutBufferSize, out pBytesReturned, lpOverlapped);
+            });
+        }
+
+        public static Task<int> WriteFileAsync(
+            SafeFileHandle handle,
+            IntPtr buffer,
+            int numberOfBytesToWrite)
+        {
+            return OverlappedAsync(handle, lpOverlapped =>
+            {
+                int numberOfBytesWritten;
+                return NativeMethods.WriteFile(handle, buffer, numberOfBytesToWrite, out numberOfBytesWritten,
+                    lpOverlapped);
+            });
+        }
+
+        public static Task<int> ReadFileAsync(
+            SafeFileHandle handle,
+            IntPtr buffer,
+            int numberOfBytesToRead)
+        {
+            return OverlappedAsync(handle, lpOverlapped =>
+            {
+                int numberOfBytesRead;
+                return NativeMethods.ReadFile(handle, buffer, numberOfBytesToRead, out numberOfBytesRead,
+                    lpOverlapped);
+            });
         }
     }
 }

@@ -11,7 +11,7 @@ namespace U2FExperiments.MiniUsbHid
 {
     public static class DeviceList
     {
-        public static IReadOnlyCollection<DeviceInfo> Get()
+        public static ICollection<DeviceInfo> Get()
         {
             using (var infoList = SetupApiDll.GetClassDevs(HidDll.HidGuid, null, IntPtr.Zero,
                 GetClassDevsFlags.DeviceInterface | GetClassDevsFlags.Present))

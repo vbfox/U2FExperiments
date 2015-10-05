@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>U2FExperiments</RootNamespace>
     <AssemblyName>U2FExperiments</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -49,6 +50,7 @@
     <Compile Include="MiniUsbHid\DeviceList.cs" />
     <Compile Include="MiniUsbHid\DeviceInfo.cs" />
     <Compile Include="ResharperAnnotations.cs" />
+    <Compile Include="Win32\FixedArraySegment.cs" />
     <Compile Include="Win32\Hid\HidpCaps.cs" />
     <Compile Include="Win32\Hid\SafePreparsedDataHandle.cs" />
     <Compile Include="Win32\Kernel32\Kernel32Dll.cs" />

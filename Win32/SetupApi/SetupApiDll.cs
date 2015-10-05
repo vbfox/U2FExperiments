@@ -17,7 +17,7 @@ namespace U2FExperiments.Win32.SetupApi
         {
             using (var guidPtr = new NullableStructPtr<Guid>(gClass))
             {
-                return NativeMethods.SetupDiGetClassDevs(guidPtr.Handle, strEnumerator, hParent, nFlags);
+                return NativeMethods.SetupDiGetClassDevs(guidPtr.Pointer, strEnumerator, hParent, nFlags);
             }
         }
 
@@ -90,7 +90,7 @@ namespace U2FExperiments.Win32.SetupApi
             using (var requiredSize = new NullableStructPtr<uint>(0))
             {
                 NativeMethods.GetDeviceInterfaceDetail(lpDeviceInfoSet, ref oInterfaceData, IntPtr.Zero,
-                    0, requiredSize.Handle, IntPtr.Zero);
+                    0, requiredSize.Pointer, IntPtr.Zero);
 
                 var lastError = Marshal.GetLastWin32Error();
 

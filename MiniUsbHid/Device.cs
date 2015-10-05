@@ -43,7 +43,7 @@ namespace U2FExperiments.MiniUsbHid
             return Kernel32Dll.NativeMethods.CreateFile(path,
                 Native.GENERIC_READ,
                 Native.FILE_SHARE_READ,
-                IntPtr.Zero, Native.OPEN_EXISTING, 0,
+                IntPtr.Zero, Native.OPEN_EXISTING, Native.FILE_FLAG_OVERLAPPED,
                 IntPtr.Zero);
         }
 
