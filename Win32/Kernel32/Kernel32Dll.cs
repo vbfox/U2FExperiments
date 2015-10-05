@@ -240,10 +240,17 @@ namespace U2FExperiments.Win32.Kernel32
             });
         }
 
-        public static Task<int> ReadFileAsync(
-            SafeFileHandle handle,
-            IntPtr buffer,
-            int numberOfBytesToRead)
+        public static Task<int> WriteFileAsync<T>(SafeFileHandle handle, ArraySegment<T> arraySegment)
+            where T : struct
+        {
+            var asFixed = new FixedArraySegment<T>(arraySegment);
+
+            var write = WriteFileAsync(handle, asFixed.Pointer, asFixed.SizeInBytes);
+            write.ContinueWith(task => asFixed.Dispose());
+            return write;
+        }
+
+        public static Task<int> ReadFileAsync(SafeFileHandle handle, IntPtr buffer, int numberOfBytesToRead)
         {
             return OverlappedAsync(handle, lpOverlapped =>
             {
@@ -251,6 +258,24 @@ namespace U2FExperiments.Win32.Kernel32
                 return NativeMethods.ReadFile(handle, buffer, numberOfBytesToRead, out numberOfBytesRead,
                     lpOverlapped);
             });
+        }
+
+        public static Task<ArraySegment<T>> ReadFileAsync<T>(SafeFileHandle handle, int numberOfElementsToRead)
+            where T : struct
+        {
+            var buffer = new T[numberOfElementsToRead];
+            var segment = new ArraySegment<T>(buffer);
+            var asFixed = new FixedArraySegment<T>(segment);
+
+            var read = ReadFileAsync(handle, asFixed.Pointer, asFixed.SizeInBytes);
+            read.ContinueWith(task => asFixed.Dispose());
+
+            return read.ContinueWith(readTask =>
+            {
+                var elementsRead = readTask.Result / asFixed.ElementSize;
+
+                return new ArraySegment<T>(buffer, 0, elementsRead);
+            }, TaskContinuationOptions.OnlyOnRanToCompletion);
         }
     }
 }

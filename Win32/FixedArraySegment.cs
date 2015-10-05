@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace U2FExperiments.Win32
 {
@@ -13,22 +9,37 @@ namespace U2FExperiments.Win32
         GCHandle? handle;
 
         public IntPtr Pointer { get; }
-        public int Size { get; }
+        public long LongSizeInBytes { get; }
+        public int ElementSize { get; }
 
-        public FixedArraySegment(ArraySegment<T>? segment)
+        public int SizeInBytes
         {
-            if (segment == null)
+            get {
+                if (LongSizeInBytes > int.MaxValue || LongSizeInBytes < int.MinValue)
+                {
+                    throw new InvalidOperationException("Segment is too big for it's size to be represented by an Int32");
+                }
+
+                return unchecked ((int)LongSizeInBytes);
+            }
+        }
+
+        public FixedArraySegment(ArraySegment<T>? maybeSegment)
+        {
+            if (maybeSegment == null)
             {
                 Pointer = IntPtr.Zero;
-                Size = 0;
+                LongSizeInBytes = 0;
+                ElementSize = 0;
                 return;
             }
 
-            handle = GCHandle.Alloc(segment.Value.Array, GCHandleType.Pinned);
+            var segment = maybeSegment.Value;
+            handle = GCHandle.Alloc(segment.Array, GCHandleType.Pinned);
             var arrayPtr = handle.Value.AddrOfPinnedObject();
-            var elementSize = Marshal.SizeOf(typeof(T));
-            Pointer = new IntPtr(arrayPtr.ToInt64() + elementSize * segment.Value.Offset);
-            Size = elementSize*segment.Value.Count;
+            ElementSize = Marshal.SizeOf(typeof(T));
+            Pointer = new IntPtr(arrayPtr.ToInt64() + ElementSize * segment.Offset);
+            LongSizeInBytes = ElementSize * segment.Count;
         }
 
         public void Dispose()
