@@ -6,14 +6,14 @@ namespace U2FExperiments.MiniUsbHid
     {
         public string Path { get; }
         public bool CanBeOpened { get; }
-        public short VendorId { get; }
-        public short ProductId { get; }
-        public short VersionNumber { get; }
+        public ushort VendorId { get; }
+        public ushort ProductId { get; }
+        public ushort VersionNumber { get; }
         public string Product { get; }
         public string Manufacturer { get; }
 
         public DeviceInfo(string path, bool canBeOpened, string product, string manufacturer,
-            short vendorId, short productId, short versionNumber)
+            ushort vendorId, ushort productId, ushort versionNumber)
         {
             Path = path;
             CanBeOpened = canBeOpened;

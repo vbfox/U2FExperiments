@@ -260,12 +260,18 @@ namespace U2FExperiments
 
         static unsafe void Wink(HidDevice device, byte b1, byte b2, byte b3, byte b4)
         {
+            var msg = new FidoU2FHidMessage((uint)(unchecked (b1 << 24 | b2 << 16 | b3 << 8 | b4)), U2FHID_WINK,
+                new ArraySegment<byte>(new byte[0]));
+            device.WriteFidoU2FHidMessageAsync(msg);
+
+            var caps = device.GetCaps();
+            /*
             var init = new U2FInitializationPacket();
             init.CommandIdentifier = U2FHID_WINK;
             init.ChannelIdentifier = U2FHID_BROADCAST_CID;
             init.PayloadLengthLo = 0;
             init.PayloadLengthHi = 0;
-            var caps = device.GetCaps();
+            
 
             var buffer = new byte[caps.InputReportByteLength];
 
@@ -281,7 +287,7 @@ namespace U2FExperiments
                 var task = Kernel32Dll.WriteFileAsync(device.Handle, new IntPtr(pBuffer), buffer.Length);
                 var writen = task.Result;
                 Console.WriteLine("Writen {0} bytes", writen);
-            }
+            }*/
 
             var bufferOut = new byte[caps.OutputReportByteLength];
             fixed (byte* pBuffer = bufferOut)

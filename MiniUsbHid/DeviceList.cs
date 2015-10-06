@@ -30,21 +30,19 @@ namespace U2FExperiments.MiniUsbHid
             {
                 if (handle.IsInvalid)
                 {
-                    return new DeviceInfo(path, false, null, null, -1, -1, -1);
+                    return new DeviceInfo(path, false, null, null, 0, 0, 0);
                 }
 
                 var device = new HidDevice(handle, false);
-
-                var attributes = device.GetAttributes();
 
                 return new DeviceInfo(
                         path,
                         true,
                         device.GetProduct(),
                         device.GetManufacturer(),
-                        attributes.VendorId,
-                        attributes.ProductId,
-                        attributes.VersionNumber);
+                        device.VendorId,
+                        device.ProductId,
+                        device.Version);
             }
         }
 
