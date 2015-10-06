@@ -16,10 +16,10 @@ namespace U2FExperiments
     public class FidoU2FHidMessage
     {
         public uint ChannelIdentifier { get; }
-        public byte CommandIdentifier { get; }
+        public U2FHidCommand CommandIdentifier { get; }
         public ArraySegment<byte> Data { get; }
 
-        public FidoU2FHidMessage(uint channelIdentifier, byte commandIdentifier, ArraySegment<byte> data)
+        public FidoU2FHidMessage(uint channelIdentifier, U2FHidCommand commandIdentifier, ArraySegment<byte> data)
         {
             ChannelIdentifier = channelIdentifier;
             CommandIdentifier = commandIdentifier;
@@ -102,7 +102,7 @@ namespace U2FExperiments
             var init = new U2FInitializationPacket
             {
                 ChannelIdentifier = message.ChannelIdentifier,
-                CommandIdentifier = message.CommandIdentifier,
+                CommandIdentifier = (byte)message.CommandIdentifier,
                 PayloadLength = (ushort)data.Count,
                 Data = new ArraySegment<byte>(data.Array, data.Offset,
                     Math.Min(data.Count, availableInInit))
@@ -148,11 +148,97 @@ namespace U2FExperiments
         }
     }
 
+    internal static class FidoU2FHidPaketReader
+    {
+        static U2FInitializationPacket ReadInitialization(ArraySegment<byte> data)
+        {
+            var result = new U2FInitializationPacket();
+
+            using (var stream = new MemoryStream(data.Array, data.Offset, data.Count))
+            {
+                var reader = new BinaryReader(stream);
+                result.ChannelIdentifier = reader.ReadUInt32();
+                result.CommandIdentifier = reader.ReadByte();
+
+                var payloadLengthHi = reader.ReadByte();
+                var payloadLengthLo = reader.ReadByte();
+                result.PayloadLength = (ushort) (payloadLengthHi << 8 | payloadLengthLo);
+            }
+
+            var remainingBytes = Math.Min(data.Count - U2FInitializationPacket.NoDataSize, result.PayloadLength);
+            result.Data = new ArraySegment<byte>(data.Array, data.Offset + U2FInitializationPacket.NoDataSize,
+                remainingBytes);
+
+            return result;
+        }
+
+        static FidoU2FHidMessage BuildMessage(U2FInitializationPacket init, List<U2FContinuationPacket> continuations)
+        {
+            return new FidoU2FHidMessage(init.ChannelIdentifier, (U2FHidCommand)init.CommandIdentifier, init.Data);
+        }
+
+        public static Task<FidoU2FHidMessage> ReadFidoU2FHidMessageAsync(this HidDevice device)
+        {
+            return device.GetInputReportAsync()
+                .ContinueWith(task =>
+                {
+                    var init = ReadInitialization(task.Result.Data);
+                    return BuildMessage(init, null);
+                });
+        }
+    }
+
+    public enum U2FHidCommand : byte
+    {
+        /// <summary>
+        /// Echo data through local processor only
+        /// </summary>
+        Ping = 0x80 | 0x01,
+
+        /// <summary>
+        /// Send U2F message frame
+        /// </summary>
+        Message = 0x80 | 0x03,
+
+        /// <summary>
+        /// Send lock channel command
+        /// </summary>
+        Lock = 0x80 | 0x04,
+
+        /// <summary>
+        /// Channel initialization
+        /// </summary>
+        Init = 0x80 | 0x06,
+
+        /// <summary>
+        /// Send device identification wink
+        /// </summary>
+        Wink = 0x80 | 0x08,
+
+        /// <summary>
+        /// Protocol resync command
+        /// </summary>
+        Sync = 0x80 | 0x3c,
+
+        /// <summary>
+        /// Error response
+        /// </summary>
+        Error = 0x80 | 0x3f,
+
+        /// <summary>
+        /// First vendor defined command
+        /// </summary>
+        VendorFirst = 0x80 | 0x40,
+
+        /// <summary>
+        /// Last vendor defined command
+        /// </summary>
+        VendorLast = 0x80 | 0x7f
+    }
+
     class Program
     {
         const byte TYPE_INIT = 0x80;
-        const byte U2FHID_INIT = TYPE_INIT | 0x06;
-        const byte U2FHID_WINK = TYPE_INIT | 0x08;
 
         const ushort FIDO_USAGE_PAGE = 0xf1d0; // FIDO alliance HID usage page
         const ushort FIDO_USAGE_U2FHID = 0x01; // U2FHID usage for top-level collection
@@ -205,7 +291,7 @@ namespace U2FExperiments
         static unsafe void Test(HidDevice device)
         {
             var init = new U2FInitializationPacket();
-            init.CommandIdentifier = U2FHID_INIT;
+            init.CommandIdentifier = (byte)U2FHidCommand.Init;
             init.ChannelIdentifier = U2FHID_BROADCAST_CID;
             init.PayloadLength = 8;
             var caps = device.GetCaps();
@@ -260,7 +346,9 @@ namespace U2FExperiments
 
         static unsafe void Wink(HidDevice device, byte b1, byte b2, byte b3, byte b4)
         {
-            var msg = new FidoU2FHidMessage((uint)(unchecked (b1 << 24 | b2 << 16 | b3 << 8 | b4)), U2FHID_WINK,
+            var msg = new FidoU2FHidMessage(
+                (uint)(unchecked (b1 << 24 | b2 << 16 | b3 << 8 | b4)),
+                U2FHidCommand.Wink, 
                 new ArraySegment<byte>(new byte[0]));
             device.WriteFidoU2FHidMessageAsync(msg);
 
