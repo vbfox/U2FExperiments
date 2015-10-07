@@ -12,27 +12,9 @@ namespace U2FExperiments
     {
         const byte TYPE_INIT = 0x80;
 
-        const ushort FIDO_USAGE_PAGE = 0xf1d0; // FIDO alliance HID usage page
-        const ushort FIDO_USAGE_U2FHID = 0x01; // U2FHID usage for top-level collection
         const int FIDO_USAGE_DATA_IN = 0x20; // Raw IN data report
         const int FIDO_USAGE_DATA_OUT = 0x21; // Raw OUT data report
         const uint U2FHID_BROADCAST_CID = 0xffffffff;
-
-        static bool IsFidoU2FDevice(DeviceInfo deviceInfo)
-        {
-            if (!deviceInfo.CanBeOpened || deviceInfo.Capabilities == null)
-            {
-                return false;
-            }
-
-            var caps = deviceInfo.Capabilities.Value;
-            return caps.UsagePage == FIDO_USAGE_PAGE && caps.Usage == FIDO_USAGE_U2FHID;
-        }
-
-        public static IEnumerable<DeviceInfo> GetFidoU2FDevices()
-        {
-            return DeviceList.Get().Where(IsFidoU2FDevice);
-        }
 
         private static void ShowDevices(ICollection<DeviceInfo> deviceInfos)
         {
@@ -43,7 +25,7 @@ namespace U2FExperiments
                 {
                     Console.WriteLine("   {0} {1} (VID=0x{2:X4}, PID=0x{3:X4}, SN={4})", device.Manufacturer, device.Product,
                         device.VendorId, device.ProductId, device.SerialNumber);
-                    if (IsFidoU2FDevice(device))
+                    if (device.IsFidoU2F())
                     {
                         Console.WriteLine("   FIDO Device !");
                     }
@@ -54,7 +36,7 @@ namespace U2FExperiments
         static void Main(string[] args)
         {
             var devices = DeviceList.Get();
-            var fidoInfo = devices.Where(IsFidoU2FDevice).FirstOrDefault();
+            var fidoInfo = devices.Where(FidoU2FIdentification.IsFidoU2F).FirstOrDefault();
 
             Console.WriteLine("Devices found:");
             ShowDevices(devices);
@@ -83,8 +65,6 @@ namespace U2FExperiments
                 Test(device);
                 Console.ReadLine();
             }
-
-            
         }
 
         static unsafe void Test(HidDevice device)

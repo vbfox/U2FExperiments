@@ -49,6 +49,7 @@
     <Compile Include="FidoU2F\FidoU2FHidMessage.cs" />
     <Compile Include="FidoU2F\FidoU2FHidPaketReader.cs" />
     <Compile Include="FidoU2F\FidoU2FHidPaketWriter.cs" />
+    <Compile Include="FidoU2F\FidoU2FIdentification.cs" />
     <Compile Include="MiniUsbHid\HidDevice.cs" />
     <Compile Include="MiniUsbHid\DeviceList.cs" />
     <Compile Include="MiniUsbHid\DeviceInfo.cs" />
