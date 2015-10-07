@@ -127,8 +127,8 @@ namespace U2FExperiments
         {
             var msg = new FidoU2FHidMessage(
                 (uint)(unchecked (b1 << 24 | b2 << 16 | b3 << 8 | b4)),
-                U2FHidCommand.Wink, 
-                new ArraySegment<byte>(new byte[0]));
+                U2FHidCommand.Wink,
+                EmptyArraySegment.Of<byte>());
             device.WriteFidoU2FHidMessageAsync(msg);
 
             var caps = device.Capabilities;
@@ -157,6 +157,19 @@ namespace U2FExperiments
             {
                 Console.WriteLine();
             }
+        }
+    }
+
+    internal static class EmptyArraySegment
+    {
+        private static class Holder<T>
+        {
+            public static readonly ArraySegment<T> Empty = new ArraySegment<T>(new T[0]);
+        }
+
+        public static ArraySegment<T> Of<T>()
+        {
+            return Holder<T>.Empty;
         }
     }
 }
