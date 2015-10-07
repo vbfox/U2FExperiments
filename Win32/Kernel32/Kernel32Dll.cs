@@ -1,66 +1,15 @@
 using System;
 using System.ComponentModel;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
-using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 
 namespace U2FExperiments.Win32.Kernel32
 {
-    static class Kernel32Dll
+    static partial class Kernel32Dll
     {
         public static IntPtr InvalidHandleValue = new IntPtr(-1);
-
-        [SuppressUnmanagedCodeSecurity]
-        [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
-        public static class NativeMethods
-        {
-            [DllImport("kernel32.dll", SetLastError = true, EntryPoint = "CreateFile")]
-            public static extern SafeFileHandle CreateFile(
-                [MarshalAs(UnmanagedType.LPStr)] string lpFileName,
-                uint dwDesiredAccess,
-                uint dwShareMode,
-                IntPtr lpSecurityAttributes,
-                uint dwCreationDisposition,
-                uint dwFlagsAndAttributes,
-                IntPtr hTemplateFile);
-
-            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-            public static extern bool DeviceIoControl(
-                SafeFileHandle hDevice,
-                uint dwIoControlCode,
-                IntPtr inBuffer,
-                int nInBufferSize,
-                IntPtr outBuffer,
-                int nOutBufferSize,
-                out int pBytesReturned,
-                IntPtr lpOverlapped);
-
-            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-            public static extern bool GetOverlappedResult(
-                SafeFileHandle hDevice,
-                IntPtr lpOverlapped,
-                out int lpNumberOfBytesTransferred,
-                bool wait);
-
-            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-            public static extern bool WriteFile(
-                SafeFileHandle hFile,
-                IntPtr lpBuffer,
-                int nNumberOfBytesToWrite,
-                out int lpNumberOfBytesWritten,
-                IntPtr lpOverlapped);
-
-            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-            public static extern bool ReadFile(
-                SafeFileHandle hFile,
-                IntPtr lpBuffer,
-                int nNumberOfBytesToRead,
-                out int lpNumberOfBytesRead,
-                IntPtr lpOverlapped);
-        }
 
         /// <summary>
         /// <para>Creates or opens a file or I/O device.</para>
@@ -71,11 +20,11 @@ namespace U2FExperiments.Win32.Kernel32
         /// </summary>
         public static SafeFileHandle CreateFile(
             string lpFileName,
-            uint dwDesiredAccess,
-            uint dwShareMode,
+            FileAccess dwDesiredAccess,
+            FileShareMode dwShareMode,
             IntPtr lpSecurityAttributes,
-            uint dwCreationDisposition,
-            uint dwFlagsAndAttributes,
+            FileCreationDisposition dwCreationDisposition,
+            FileFlags dwFlagsAndAttributes,
             IntPtr hTemplateFile,
             bool throwOnInvalid = true)
         {

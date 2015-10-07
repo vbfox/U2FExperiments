@@ -67,11 +67,11 @@ namespace U2FExperiments.MiniUsbHid
         private static SafeFileHandle OpenInfoHandle(string path, bool throwOnError)
         {
             return Kernel32Dll.CreateFile(path,
-                0,
-                Native.FILE_SHARE_READ | Native.FILE_SHARE_WRITE,
+                FileAccess.None,
+                FileShareMode.Read | FileShareMode.Write,
                 IntPtr.Zero,
-                Native.OPEN_EXISTING,
-                Native.FILE_FLAG_OVERLAPPED,
+                FileCreationDisposition.OpenExisiting, 
+                FileFlags.Overlapped, 
                 IntPtr.Zero,
                 throwOnError);
         }
@@ -89,10 +89,13 @@ namespace U2FExperiments.MiniUsbHid
 
         private static SafeFileHandle OpenHandle(string path, bool throwOnError)
         {
-            return Kernel32Dll.CreateFile(path,
-                Native.GENERIC_READ | Native.GENERIC_WRITE,
-                Native.FILE_SHARE_READ | Native.FILE_SHARE_WRITE,
-                IntPtr.Zero, Native.OPEN_EXISTING, Native.FILE_FLAG_OVERLAPPED,
+            return Kernel32Dll.CreateFile(
+                path,
+                FileAccess.GenericRead | FileAccess.GenericWrite,
+                FileShareMode.Read | FileShareMode.Write,
+                IntPtr.Zero,
+                FileCreationDisposition.OpenExisiting,
+                FileFlags.Overlapped,
                 IntPtr.Zero,
                 throwOnError);
         }

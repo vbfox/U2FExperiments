@@ -61,8 +61,14 @@
     <Compile Include="Win32\FixedArraySegment.cs" />
     <Compile Include="Win32\Hid\HidpCaps.cs" />
     <Compile Include="Win32\Hid\SafePreparsedDataHandle.cs" />
+    <Compile Include="Win32\Kernel32\FileAccess.cs" />
+    <Compile Include="Win32\Kernel32\FileAttributes.cs" />
+    <Compile Include="Win32\Kernel32\FileCreationDisposition.cs" />
+    <Compile Include="Win32\Kernel32\FileFlags.cs" />
+    <Compile Include="Win32\Kernel32\FileShareMode.cs" />
+    <Compile Include="Win32\Kernel32\Kernel32Dll.NativeMethods.cs" />
     <Compile Include="Win32\Kernel32\Kernel32Dll.cs" />
-    <Compile Include="Win32\Native.cs" />
+    <Compile Include="Win32\Kernel32\Kernell32Extensions.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Win32\Hid\HiddAttributes.cs" />

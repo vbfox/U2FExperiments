@@ -2,11 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.Win32.SafeHandles;
 using U2FExperiments.FidoU2F;
 using U2FExperiments.MiniUsbHid;
-using U2FExperiments.Win32;
-using U2FExperiments.Win32.Hid;
 using U2FExperiments.Win32.Kernel32;
 
 namespace U2FExperiments
@@ -67,6 +64,7 @@ namespace U2FExperiments
             {
                 Console.WriteLine("Can't find FIDO device :-(");
                 Console.ReadLine();
+                return;
             }
 
             Console.WriteLine(fidoInfo.Path);
