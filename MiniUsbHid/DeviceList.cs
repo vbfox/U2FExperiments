@@ -26,34 +26,24 @@ namespace U2FExperiments.MiniUsbHid
         {
             var path = SetupApiDll.GetDeviceInterfaceDetail(infoList, interfaceData, IntPtr.Zero);
 
-            using (var handle = OpenRead(path))
+            using (var device = HidDevice.TryOpenForInfo(path))
             {
-                if (handle.IsInvalid)
+                if (device == null)
                 {
-                    return new DeviceInfo(path, false, null, null, 0, 0, 0);
+                    return new DeviceInfo(path, false, null, null, null, 0, 0, 0, null);
                 }
-
-                var device = new HidDevice(handle, false);
 
                 return new DeviceInfo(
                         path,
                         true,
                         device.GetProduct(),
                         device.GetManufacturer(),
+                        device.GetSerialNumber(),
                         device.VendorId,
                         device.ProductId,
-                        device.Version);
+                        device.Version,
+                        device.GetCaps());
             }
         }
-
-        private static SafeFileHandle OpenRead(string path)
-        {
-            return Kernel32Dll.NativeMethods.CreateFile(path,
-                Native.GENERIC_READ,
-                Native.FILE_SHARE_READ,
-                IntPtr.Zero, Native.OPEN_EXISTING, 0,
-                IntPtr.Zero);
-        }
-
     }
 }

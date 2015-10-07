@@ -64,32 +64,48 @@ namespace U2FExperiments.MiniUsbHid
             HidDll.SetNumInputBuffers(Handle, numberBuffers);
         }
 
-        private static SafeFileHandle OpenReadHandle(string path)
+        private static SafeFileHandle OpenInfoHandle(string path, bool throwOnError)
         {
-            return Kernel32Dll.NativeMethods.CreateFile(path,
-                Native.GENERIC_READ,
-                Native.FILE_SHARE_READ,
-                IntPtr.Zero, Native.OPEN_EXISTING, Native.FILE_FLAG_OVERLAPPED,
-                IntPtr.Zero);
+            return Kernel32Dll.CreateFile(path,
+                0,
+                Native.FILE_SHARE_READ | Native.FILE_SHARE_WRITE,
+                IntPtr.Zero,
+                Native.OPEN_EXISTING,
+                Native.FILE_FLAG_OVERLAPPED,
+                IntPtr.Zero,
+                throwOnError);
         }
 
-        public static HidDevice OpenRead(string path)
+        public static HidDevice OpenForInfo(string path)
         {
-            return new HidDevice(OpenReadHandle(path), true);
+            return new HidDevice(OpenInfoHandle(path, true), true);
         }
 
-        private static SafeFileHandle OpenHandle(string path)
+        public static HidDevice TryOpenForInfo(string path)
+        {
+            var handle = OpenInfoHandle(path, false);
+            return handle.IsInvalid ? null : new HidDevice(handle, true);
+        }
+
+        private static SafeFileHandle OpenHandle(string path, bool throwOnError)
         {
             return Kernel32Dll.CreateFile(path,
                 Native.GENERIC_READ | Native.GENERIC_WRITE,
                 Native.FILE_SHARE_READ | Native.FILE_SHARE_WRITE,
                 IntPtr.Zero, Native.OPEN_EXISTING, Native.FILE_FLAG_OVERLAPPED,
-                IntPtr.Zero);
+                IntPtr.Zero,
+                throwOnError);
         }
 
         public static HidDevice Open(string path)
         {
-            return new HidDevice(OpenHandle(path), true);
+            return new HidDevice(OpenHandle(path, true), true);
+        }
+
+        public static HidDevice TryOpen(string path)
+        {
+            var handle = OpenHandle(path, false);
+            return handle.IsInvalid ? null : new HidDevice(handle, true);
         }
 
         public void Close()

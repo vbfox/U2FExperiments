@@ -71,7 +71,7 @@ namespace U2FExperiments.Win32.Hid
             return result;
         }
 
-        static string GrowBuffer(Func<StringBuilder, bool> nativeMethod)
+        static string GrowBufferOrNull(Func<StringBuilder, bool> nativeMethod)
         {
             var stringBuilder = new StringBuilder(256);
             while (true)
@@ -84,7 +84,7 @@ namespace U2FExperiments.Win32.Hid
                 var errorCode = Marshal.GetLastWin32Error();
                 if (errorCode != ERROR_INVALID_USER_BUFFER)
                 {
-                    throw new Win32Exception();
+                    return null;
                 }
 
                 stringBuilder.Capacity = stringBuilder.Capacity * 2;
@@ -93,17 +93,17 @@ namespace U2FExperiments.Win32.Hid
 
         public static string GetManufacturerString(SafeFileHandle hFile)
         {
-            return GrowBuffer(sb => NativeMethods.HidD_GetManufacturerString(hFile, sb, sb.Capacity));
+            return GrowBufferOrNull(sb => NativeMethods.HidD_GetManufacturerString(hFile, sb, sb.Capacity));
         }
 
         public static string GetProductString(SafeFileHandle hFile)
         {
-            return GrowBuffer(sb => NativeMethods.HidD_GetProductString(hFile, sb, sb.Capacity));
+            return GrowBufferOrNull(sb => NativeMethods.HidD_GetProductString(hFile, sb, sb.Capacity));
         }
 
         public static string GetSerialNumberString(SafeFileHandle hDevice)
         {
-            return GrowBuffer(sb => NativeMethods.HidD_GetSerialNumberString(hDevice, sb, sb.Capacity));
+            return GrowBufferOrNull(sb => NativeMethods.HidD_GetSerialNumberString(hDevice, sb, sb.Capacity));
         }
 
         public static void SetNumInputBuffers(SafeFileHandle hidDeviceObject, uint numberBuffers)

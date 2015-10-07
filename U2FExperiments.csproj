@@ -55,9 +55,9 @@
     <Compile Include="MiniUsbHid\HidInputReport.cs" />
     <Compile Include="MiniUsbHid\HidOutputReport.cs" />
     <Compile Include="ResharperAnnotations.cs" />
-    <Compile Include="FidoU2F\U2FContinuationPacket.cs" />
+    <Compile Include="FidoU2F\RawPackets\U2FContinuationPacket.cs" />
     <Compile Include="FidoU2F\U2FHidCommand.cs" />
-    <Compile Include="FidoU2F\U2FInitializationPacket.cs" />
+    <Compile Include="FidoU2F\RawPackets\U2FInitializationPacket.cs" />
     <Compile Include="Win32\FixedArraySegment.cs" />
     <Compile Include="Win32\Hid\HidpCaps.cs" />
     <Compile Include="Win32\Hid\SafePreparsedDataHandle.cs" />

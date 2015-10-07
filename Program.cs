@@ -21,32 +21,58 @@ namespace U2FExperiments
         const int FIDO_USAGE_DATA_OUT = 0x21; // Raw OUT data report
         const uint U2FHID_BROADCAST_CID = 0xffffffff;
 
-        static bool IsFidoU2fDevice(DeviceInfo deviceInfo)
+        static bool IsFidoU2FDevice(DeviceInfo deviceInfo)
         {
-            if (!deviceInfo.CanBeOpened)
+            if (!deviceInfo.CanBeOpened || deviceInfo.Capabilities == null)
             {
                 return false;
             }
 
-            using (var device = deviceInfo.OpenDevice())
-            {
-                var caps = device.GetCaps();
-                return caps.UsagePage == FIDO_USAGE_PAGE && caps.Usage == FIDO_USAGE_U2FHID;
-            }
+            var caps = deviceInfo.Capabilities.Value;
+            return caps.UsagePage == FIDO_USAGE_PAGE && caps.Usage == FIDO_USAGE_U2FHID;
         }
 
         public static IEnumerable<DeviceInfo> GetFidoU2FDevices()
         {
-            return DeviceList.Get().Where(IsFidoU2fDevice);
+            return DeviceList.Get().Where(IsFidoU2FDevice);
+        }
+
+        private static void ShowDevices(ICollection<DeviceInfo> deviceInfos)
+        {
+            foreach (var device in deviceInfos)
+            {
+                Console.WriteLine(" * {0}", device.Path);
+                if (device.CanBeOpened)
+                {
+                    Console.WriteLine("   {0} {1} (VID=0x{2:X4}, PID=0x{3:X4}, SN={4})", device.Manufacturer, device.Product,
+                        device.VendorId, device.ProductId, device.SerialNumber);
+                    if (IsFidoU2FDevice(device))
+                    {
+                        Console.WriteLine("   FIDO Device !");
+                    }
+                }
+            }
         }
 
         static void Main(string[] args)
         {
-            var fidoInfo = GetFidoU2FDevices().First();
+            var devices = DeviceList.Get();
+            var fidoInfo = devices.Where(IsFidoU2FDevice).FirstOrDefault();
+
+            Console.WriteLine("Devices found:");
+            ShowDevices(devices);
+            Console.WriteLine();
+            
+            if (fidoInfo == null)
+            {
+                Console.WriteLine("Can't find FIDO device :-(");
+                Console.ReadLine();
+            }
 
             Console.WriteLine(fidoInfo.Path);
             Console.WriteLine(fidoInfo.Manufacturer);
             Console.WriteLine(fidoInfo.Product);
+            Console.WriteLine(fidoInfo.SerialNumber);
             Console.WriteLine("VID = 0x{0:X4}", fidoInfo.VendorId);
             Console.WriteLine("PID = 0x{0:X4}", fidoInfo.ProductId);
 
@@ -57,10 +83,10 @@ namespace U2FExperiments
                 Console.WriteLine(caps.NumberFeatureButtonCaps);
 
                 Test(device);
-                
+                Console.ReadLine();
             }
 
-            Console.ReadLine();
+            
         }
 
         static unsafe void Test(HidDevice device)

@@ -76,12 +76,13 @@ namespace U2FExperiments.Win32.Kernel32
             IntPtr lpSecurityAttributes,
             uint dwCreationDisposition,
             uint dwFlagsAndAttributes,
-            IntPtr hTemplateFile)
+            IntPtr hTemplateFile,
+            bool throwOnInvalid = true)
         {
             var result = NativeMethods.CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
                 dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 
-            if (result.IsInvalid)
+            if (result.IsInvalid && throwOnInvalid)
             {
                 throw new Win32Exception();
             }
