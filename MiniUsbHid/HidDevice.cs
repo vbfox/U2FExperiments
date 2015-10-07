@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 using Microsoft.Win32.SafeHandles;
-using U2FExperiments.Win32;
 using U2FExperiments.Win32.Hid;
 using U2FExperiments.Win32.Kernel32;
 
@@ -20,23 +19,31 @@ namespace U2FExperiments.MiniUsbHid
 
             Handle = handle;
 
+            manufacturer = new Lazy<string>(() => HidDll.GetManufacturerString(Handle));
+            product = new Lazy<string>(() => HidDll.GetProductString(Handle));
+            serialNumber = new Lazy<string>(() => HidDll.GetSerialNumberString(Handle));
             attributes = new Lazy<HiddAttributes>(() => HidDll.GetAttributes(Handle));
+            capabilities = new Lazy<HidpCaps>(GetCapabilities);
         }
 
-        readonly Lazy<HiddAttributes> attributes;
+        private readonly Lazy<HiddAttributes> attributes;
+        private readonly Lazy<HidpCaps> capabilities;
+        private readonly Lazy<string> manufacturer;
+        private readonly Lazy<string> serialNumber;
+        private readonly Lazy<string> product;
 
+        public HidpCaps Capabilities => capabilities.Value;
         public ushort ProductId => attributes.Value.ProductId;
         public ushort VendorId => attributes.Value.VendorId;
         public ushort Version => attributes.Value.VersionNumber;
+        public string Manufacturer => manufacturer.Value;
+        public string Product => product.Value;
+        public string SerialNumber => serialNumber.Value;
 
-        public string GetManufacturer() => HidDll.GetManufacturerString(Handle);
-        public string GetProduct() => HidDll.GetProductString(Handle);
-        public string GetSerialNumber() => HidDll.GetSerialNumberString(Handle);
-
-        public HidOutputReport CreateOutputReport()
+        public HidOutputReport CreateOutputReport(byte id = 0)
         {
-            var buffer = new byte[GetCaps().OutputReportByteLength];
-            return new HidOutputReport(0, new ArraySegment<byte>(buffer));
+            var buffer = new byte[GetCapabilities().OutputReportByteLength];
+            return new HidOutputReport(id, new ArraySegment<byte>(buffer));
         }
 
         public Task<int> SendOutputReportAsync([NotNull] HidOutputReport report)
@@ -47,11 +54,11 @@ namespace U2FExperiments.MiniUsbHid
 
         public Task<HidInputReport> GetInputReportAsync()
         {
-            return Kernel32Dll.ReadFileAsync<byte>(Handle, GetCaps().InputReportByteLength)
+            return Kernel32Dll.ReadFileAsync<byte>(Handle, GetCapabilities().InputReportByteLength)
                 .ContinueWith(task => new HidInputReport(task.Result), TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
-        public HidpCaps GetCaps()
+        private HidpCaps GetCapabilities()
         {
             using (var preparsedData = HidDll.GetPreparsedData(Handle))
             {

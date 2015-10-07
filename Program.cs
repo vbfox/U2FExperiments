@@ -77,7 +77,7 @@ namespace U2FExperiments
             using (var device = fidoInfo.OpenDevice())
             {
                 device.SetNumInputBuffers(64);
-                var caps = device.GetCaps();
+                var caps = device.Capabilities;
                 Console.WriteLine(caps.NumberFeatureButtonCaps);
 
                 Test(device);
@@ -93,7 +93,7 @@ namespace U2FExperiments
             init.CommandIdentifier = (byte)U2FHidCommand.Init;
             init.ChannelIdentifier = U2FHID_BROADCAST_CID;
             init.PayloadLength = 8;
-            var caps = device.GetCaps();
+            var caps = device.Capabilities;
 
             var buffer = new byte[caps.InputReportByteLength];
             buffer[0] = 0x00;
@@ -151,7 +151,7 @@ namespace U2FExperiments
                 new ArraySegment<byte>(new byte[0]));
             device.WriteFidoU2FHidMessageAsync(msg);
 
-            var caps = device.GetCaps();
+            var caps = device.Capabilities;
 
             var bufferOut = new byte[caps.OutputReportByteLength];
             fixed (byte* pBuffer = bufferOut)

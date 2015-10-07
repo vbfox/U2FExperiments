@@ -89,7 +89,7 @@ namespace U2FExperiments.FidoU2F
         {
             if (message == null) throw new ArgumentNullException(nameof(message));
 
-            var paketLength = device.GetCaps().OutputReportByteLength - 1;
+            var paketLength = device.Capabilities.OutputReportByteLength - 1;
             var pakets = MakeOutputPackets(paketLength, message);
 
             Task task = device.SendOutputReportAsync(ToOutputReport(device, pakets.Item1));

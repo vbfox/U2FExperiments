@@ -36,13 +36,13 @@ namespace U2FExperiments.MiniUsbHid
                 return new DeviceInfo(
                         path,
                         true,
-                        device.GetProduct(),
-                        device.GetManufacturer(),
-                        device.GetSerialNumber(),
+                        device.Product,
+                        device.Manufacturer,
+                        device.SerialNumber,
                         device.VendorId,
                         device.ProductId,
                         device.Version,
-                        device.GetCaps());
+                        device.Capabilities);
             }
         }
     }
