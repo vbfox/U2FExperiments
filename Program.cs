@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
-using U2FExperiments.FidoU2F;
-using U2FExperiments.MiniUsbHid;
-using U2FExperiments.Win32.Kernel32;
+using BlackFox.U2FHid;
+using BlackFox.U2FHid.RawPackets;
+using BlackFox.UsbHid.Portable;
+using BlackFox.UsbHid.Win32;
+using BlackFox.Win32.Kernel32;
 
 namespace U2FExperiments
 {
@@ -16,26 +18,24 @@ namespace U2FExperiments
         const int FIDO_USAGE_DATA_OUT = 0x21; // Raw OUT data report
         const uint U2FHID_BROADCAST_CID = 0xffffffff;
 
-        private static void ShowDevices(ICollection<DeviceInfo> deviceInfos)
+        private static void ShowDevices(ICollection<IHidDeviceInformation> deviceInfos)
         {
             foreach (var device in deviceInfos)
             {
-                Console.WriteLine(" * {0}", device.Path);
-                if (device.CanBeOpened)
+                Console.WriteLine(" * {0}", device.Id);
+                Console.WriteLine("   {0} {1} (VID=0x{2:X4}, PID=0x{3:X4}, SN={4})", device.Manufacturer, device.Product,
+                    device.VendorId, device.ProductId, device.SerialNumber);
+                if (device.IsFidoU2F())
                 {
-                    Console.WriteLine("   {0} {1} (VID=0x{2:X4}, PID=0x{3:X4}, SN={4})", device.Manufacturer, device.Product,
-                        device.VendorId, device.ProductId, device.SerialNumber);
-                    if (device.IsFidoU2F())
-                    {
-                        Console.WriteLine("   FIDO Device !");
-                    }
+                    Console.WriteLine("   FIDO Device !");
                 }
             }
         }
 
         static void Main(string[] args)
         {
-            var devices = DeviceList.Get();
+            var factory = (IHidDeviceFactory) Win32HidDeviceFactory.Instance;
+            var devices = factory.FindAllAsync().Result;
             var fidoInfo = devices.Where(FidoU2FIdentification.IsFidoU2F).FirstOrDefault();
 
             Console.WriteLine("Devices found:");
@@ -49,17 +49,17 @@ namespace U2FExperiments
                 return;
             }
 
-            Console.WriteLine(fidoInfo.Path);
+            Console.WriteLine(fidoInfo.Id);
             Console.WriteLine(fidoInfo.Manufacturer);
             Console.WriteLine(fidoInfo.Product);
             Console.WriteLine(fidoInfo.SerialNumber);
             Console.WriteLine("VID = 0x{0:X4}", fidoInfo.VendorId);
             Console.WriteLine("PID = 0x{0:X4}", fidoInfo.ProductId);
 
-            using (var device = fidoInfo.OpenDevice())
+            using (var device = (Win32HidDevice)fidoInfo.OpenDeviceAsync().Result)
             {
                 device.SetNumInputBuffers(64);
-                var caps = device.Capabilities;
+                var caps = device.Information.Capabilities;
                 Console.WriteLine(caps.NumberFeatureButtonCaps);
 
                 Test(device);
@@ -67,13 +67,13 @@ namespace U2FExperiments
             }
         }
 
-        static unsafe void Test(HidDevice device)
+        static unsafe void Test(Win32HidDevice device)
         {
             var init = new U2FInitializationPacket();
             init.CommandIdentifier = (byte)U2FHidCommand.Init;
             init.ChannelIdentifier = U2FHID_BROADCAST_CID;
             init.PayloadLength = 8;
-            var caps = device.Capabilities;
+            var caps = device.Information.Capabilities;
 
             var buffer = new byte[caps.InputReportByteLength];
             buffer[0] = 0x00;
@@ -123,15 +123,15 @@ namespace U2FExperiments
             Wink(device, bufferOut[16], bufferOut[17], bufferOut[18], bufferOut[19]);
         }
 
-        static unsafe void Wink(HidDevice device, byte b1, byte b2, byte b3, byte b4)
+        static unsafe void Wink(Win32HidDevice device, byte b1, byte b2, byte b3, byte b4)
         {
             var msg = new FidoU2FHidMessage(
                 (uint)(unchecked (b1 << 24 | b2 << 16 | b3 << 8 | b4)),
                 U2FHidCommand.Wink,
                 EmptyArraySegment.Of<byte>());
-            device.WriteFidoU2FHidMessageAsync(msg);
+            device.WriteFidoU2FHidMessageAsync(msg).Wait();
 
-            var caps = device.Capabilities;
+            var caps = device.Information.Capabilities;
 
             var bufferOut = new byte[caps.OutputReportByteLength];
             fixed (byte* pBuffer = bufferOut)

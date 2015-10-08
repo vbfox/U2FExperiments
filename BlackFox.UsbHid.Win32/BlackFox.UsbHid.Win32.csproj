@@ -4,17 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{91F112E1-5DCB-4315-9C52-A34FD175C4FA}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{E54F34E3-1242-414B-B249-7742835A11A0}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>U2FExperiments</RootNamespace>
-    <AssemblyName>U2FExperiments</AssemblyName>
+    <RootNamespace>BlackFox.UsbHid.Win32</RootNamespace>
+    <AssemblyName>BlackFox.UsbHid.Win32</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,18 +21,14 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>true</Prefer32Bit>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -46,32 +41,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ResharperAnnotations.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Win32HidDevice.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ResharperAnnotations.cs" />
+    <Compile Include="Win32HidDeviceFactory.cs" />
+    <Compile Include="Win32HidDeviceInformation.cs" />
+    <Compile Include="Win32HidDeviceInformationLazy.cs" />
+    <Compile Include="Win32HidDeviceInformationStored.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="FidoU2F\" />
-    <Folder Include="MiniUsbHid\" />
-    <Folder Include="Win32\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BlackFox.U2FHid\BlackFox.U2FHid.csproj">
-      <Project>{82a6d2fa-7322-40f9-8cc8-91af500be384}</Project>
-      <Name>BlackFox.U2FHid</Name>
-    </ProjectReference>
-    <ProjectReference Include="BlackFox.UsbHid.Win32\BlackFox.UsbHid.Win32.csproj">
-      <Project>{e54f34e3-1242-414b-b249-7742835a11a0}</Project>
-      <Name>BlackFox.UsbHid.Win32</Name>
-    </ProjectReference>
-    <ProjectReference Include="BlackFox.UsbHid\BlackFox.UsbHid.Portable.csproj">
+    <ProjectReference Include="..\BlackFox.UsbHid\BlackFox.UsbHid.Portable.csproj">
       <Project>{9326377b-a51a-4cf4-b0f3-4a82060c419c}</Project>
       <Name>BlackFox.UsbHid.Portable</Name>
     </ProjectReference>
-    <ProjectReference Include="BlackFox.Win32\BlackFox.Win32.csproj">
+    <ProjectReference Include="..\BlackFox.Win32\BlackFox.Win32.csproj">
       <Project>{4b0bc1ca-6c41-4c3b-8e83-91f332f64e6f}</Project>
       <Name>BlackFox.Win32</Name>
     </ProjectReference>

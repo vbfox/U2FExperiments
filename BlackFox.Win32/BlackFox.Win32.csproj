@@ -4,17 +4,16 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{91F112E1-5DCB-4315-9C52-A34FD175C4FA}</ProjectGuid>
-    <OutputType>Exe</OutputType>
+    <ProjectGuid>{4B0BC1CA-6C41-4C3B-8E83-91F332F64E6F}</ProjectGuid>
+    <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>U2FExperiments</RootNamespace>
-    <AssemblyName>U2FExperiments</AssemblyName>
+    <RootNamespace>BlackFox.Win32</RootNamespace>
+    <AssemblyName>BlackFox.Win32</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -22,11 +21,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>true</Prefer32Bit>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -46,35 +43,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ResharperAnnotations.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="FixedArraySegment.cs" />
+    <Compile Include="Hid\HiddAttributes.cs" />
+    <Compile Include="Hid\HidDll.cs" />
+    <Compile Include="Hid\HidpCaps.cs" />
+    <Compile Include="Hid\SafePreparsedDataHandle.cs" />
+    <Compile Include="Kernel32\Kernel32FileAccess.cs" />
+    <Compile Include="Kernel32\FileAttributes.cs" />
+    <Compile Include="Kernel32\FileCreationDisposition.cs" />
+    <Compile Include="Kernel32\FileFlags.cs" />
+    <Compile Include="Kernel32\FileShareMode.cs" />
+    <Compile Include="Kernel32\Kernel32Dll.cs" />
+    <Compile Include="Kernel32\Kernel32Dll.NativeMethods.cs" />
+    <Compile Include="Kernel32\Kernell32Extensions.cs" />
+    <Compile Include="NullableStructPtr.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="FidoU2F\" />
-    <Folder Include="MiniUsbHid\" />
-    <Folder Include="Win32\" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BlackFox.U2FHid\BlackFox.U2FHid.csproj">
-      <Project>{82a6d2fa-7322-40f9-8cc8-91af500be384}</Project>
-      <Name>BlackFox.U2FHid</Name>
-    </ProjectReference>
-    <ProjectReference Include="BlackFox.UsbHid.Win32\BlackFox.UsbHid.Win32.csproj">
-      <Project>{e54f34e3-1242-414b-b249-7742835a11a0}</Project>
-      <Name>BlackFox.UsbHid.Win32</Name>
-    </ProjectReference>
-    <ProjectReference Include="BlackFox.UsbHid\BlackFox.UsbHid.Portable.csproj">
-      <Project>{9326377b-a51a-4cf4-b0f3-4a82060c419c}</Project>
-      <Name>BlackFox.UsbHid.Portable</Name>
-    </ProjectReference>
-    <ProjectReference Include="BlackFox.Win32\BlackFox.Win32.csproj">
-      <Project>{4b0bc1ca-6c41-4c3b-8e83-91f332f64e6f}</Project>
-      <Name>BlackFox.Win32</Name>
-    </ProjectReference>
+    <Compile Include="ResharperAnnotations.cs" />
+    <Compile Include="SetupApi\DeviceInterfaceData.cs" />
+    <Compile Include="SetupApi\GetClassDevsFlags.cs" />
+    <Compile Include="SetupApi\SafeDeviceInfoListHandle.cs" />
+    <Compile Include="SetupApi\SetupApiDll.cs" />
+    <Compile Include="SetupApi\SetupApiDll.NativeMethods.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
