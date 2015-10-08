@@ -53,11 +53,7 @@
   <ItemGroup>
     <None Include="App.config" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="FidoU2F\" />
-    <Folder Include="MiniUsbHid\" />
-    <Folder Include="Win32\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\BlackFox.U2FHid\BlackFox.U2FHid.csproj">
       <Project>{82a6d2fa-7322-40f9-8cc8-91af500be384}</Project>
