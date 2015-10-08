@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using BlackFox.U2FHid;
 using BlackFox.U2FHid.RawPackets;
 using BlackFox.UsbHid.Portable;
@@ -76,19 +77,22 @@ namespace U2FExperiments
             var caps = device.Information.Capabilities;
 
             var buffer = new byte[caps.InputReportByteLength];
-            buffer[0] = 0x00;
-            buffer[8] = 0xCA;
-            buffer[9] = 0xFE;
-            buffer[10] = 0xBA;
-            buffer[11] = 0xBE;
-            buffer[12] = 0xDE;
-            buffer[13] = 0xAD;
-            buffer[14] = 0xBA;
-            buffer[15] = 0xBE;
 
             fixed (byte* pBuffer = buffer)
             {
                 Marshal.StructureToPtr(init, new IntPtr(pBuffer + 1), false);
+
+                buffer[0] = 0x00;
+                buffer[8] = 0xCA;
+                buffer[9] = 0xFE;
+                buffer[10] = 0xBA;
+                buffer[11] = 0xBE;
+                buffer[12] = 0xDE;
+                buffer[13] = 0xAD;
+                buffer[14] = 0xBA;
+                buffer[15] = 0xBE;
+
+                WriteBuffer(buffer);
 
                 var task = Kernel32Dll.WriteFileAsync(device.Handle, new IntPtr(pBuffer), buffer.Length);
                 var writen = task.Result;
@@ -104,23 +108,37 @@ namespace U2FExperiments
                 Console.WriteLine("Read {0} bytes", read);
             }
 
-            int i = 0;
-            foreach(var b in bufferOut)
-            {
-                Console.Write("{0:X2} ", b);
-                i++;
-                if (i % 16 == 0)
-                {
-                    Console.WriteLine();
-                }
-            }
-
-            if (i % 16 != 0)
-            {
-                Console.WriteLine();
-            }
+            WriteBuffer(bufferOut);
 
             Wink(device, bufferOut[16], bufferOut[17], bufferOut[18], bufferOut[19]);
+        }
+
+        public static void WriteBuffer(byte[] array)
+        {
+            WriteBuffer(new ArraySegment<byte>(array));
+        }
+
+
+        public static void WriteBuffer(ArraySegment<byte> segment)
+        {
+            int shown = 0;
+            while (shown < segment.Count)
+            {
+                var bytes = segment.Array.Skip(segment.Offset + shown).Take(16).ToList();
+                foreach (var b in bytes)
+                {
+                    Console.Write("{0:X2} ", b);
+                }
+                Console.Write(new string(' ', (16 - bytes.Count)*2));
+                Console.Write("  ");
+                foreach (var b in bytes)
+                {
+                    var c = Encoding.ASCII.GetChars(new [] { b }).Single();
+                    Console.Write(char.IsLetterOrDigit(c) ? c : '.');
+                }
+                Console.WriteLine();
+                shown += bytes.Count;
+            }
         }
 
         static unsafe void Wink(Win32HidDevice device, byte b1, byte b2, byte b3, byte b4)
@@ -142,21 +160,7 @@ namespace U2FExperiments
                 Console.WriteLine("Read {0} bytes", read);
             }
 
-            int i = 0;
-            foreach (var b in bufferOut)
-            {
-                Console.Write("{0:X2} ", b);
-                i++;
-                if (i % 16 == 0)
-                {
-                    Console.WriteLine();
-                }
-            }
-
-            if (i % 16 != 0)
-            {
-                Console.WriteLine();
-            }
+            WriteBuffer(bufferOut);
         }
     }
 
