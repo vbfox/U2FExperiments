@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
 VisualStudioVersion = 14.0.23107.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "U2FExperiments", "U2FExperiments.csproj", "{91F112E1-5DCB-4315-9C52-A34FD175C4FA}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{C8819DE4-3045-4FB1-B4B0-001A6F18141B}"
 	ProjectSection(SolutionItems) = preProject
 		.gitignore = .gitignore
@@ -20,16 +18,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.UsbHid.Win32", "Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.Win32", "BlackFox.Win32\BlackFox.Win32.csproj", "{4B0BC1CA-6C41-4C3B-8E83-91F332F64E6F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestApp", "TestApp\TestApp.csproj", "{91F112E1-5DCB-4315-9C52-A34FD175C4FA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{91F112E1-5DCB-4315-9C52-A34FD175C4FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{91F112E1-5DCB-4315-9C52-A34FD175C4FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{91F112E1-5DCB-4315-9C52-A34FD175C4FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{91F112E1-5DCB-4315-9C52-A34FD175C4FA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{82A6D2FA-7322-40F9-8CC8-91AF500BE384}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{82A6D2FA-7322-40F9-8CC8-91AF500BE384}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82A6D2FA-7322-40F9-8CC8-91AF500BE384}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -46,6 +42,10 @@ Global
 		{4B0BC1CA-6C41-4C3B-8E83-91F332F64E6F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B0BC1CA-6C41-4C3B-8E83-91F332F64E6F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B0BC1CA-6C41-4C3B-8E83-91F332F64E6F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{91F112E1-5DCB-4315-9C52-A34FD175C4FA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{91F112E1-5DCB-4315-9C52-A34FD175C4FA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{91F112E1-5DCB-4315-9C52-A34FD175C4FA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{91F112E1-5DCB-4315-9C52-A34FD175C4FA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
