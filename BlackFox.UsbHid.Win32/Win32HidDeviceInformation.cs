@@ -1,9 +1,11 @@
+using System.Diagnostics;
 using System.Threading.Tasks;
 using BlackFox.UsbHid.Portable;
 using BlackFox.Win32.Hid;
 
 namespace BlackFox.UsbHid.Win32
 {
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public abstract class Win32HidDeviceInformation : IHidDeviceInformation
     {
         public abstract string Path { get; }
@@ -17,17 +19,18 @@ namespace BlackFox.UsbHid.Win32
 
         Task<IHidDevice> IHidDeviceInformation.OpenDeviceAsync(HidDeviceAccessMode accessMode)
         {
-            var factory = (IHidDeviceFactory) Win32HidDeviceFactory.Instance;
-            return factory.FromIdAsync(Path, accessMode);
+            return Win32HidDeviceFactory.Instance.FromIdAsyncInferface(Path, accessMode, this);
         }
 
         public Task<Win32HidDevice> OpenDeviceAsync(HidDeviceAccessMode accessMode = HidDeviceAccessMode.ReadWrite)
         {
-            return Win32HidDeviceFactory.Instance.FromIdAsync(Path, accessMode);
+            return Win32HidDeviceFactory.Instance.FromIdAsync(Path, accessMode, this);
         }
 
         string IHidDeviceInformation.Id => Path;
         ushort IHidDeviceInformation.UsageId => Capabilities.Usage;
         ushort IHidDeviceInformation.UsagePage => Capabilities.UsagePage;
+
+        internal abstract string DebuggerDisplay { get; }
     }
 }

@@ -1,10 +1,12 @@
 using System;
+using System.Diagnostics;
 using BlackFox.Win32.Hid;
 using JetBrains.Annotations;
 using Microsoft.Win32.SafeHandles;
 
 namespace BlackFox.UsbHid.Win32
 {
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     internal class Win32HidDeviceInformationLazy : Win32HidDeviceInformation
     {
         public override string Path { get;  }
@@ -25,12 +27,12 @@ namespace BlackFox.UsbHid.Win32
 
         internal Win32HidDeviceInformationLazy(string path, [NotNull] SafeFileHandle handle)
         {
-            Path = path;
             if (handle == null) throw new ArgumentNullException(nameof(handle));
             if (handle.IsInvalid) throw new ArgumentException("Handle is invalid", nameof(handle));
 
+            Path = path;
             this.handle = handle;
-
+            
             manufacturer = new Lazy<string>(() => HidDll.GetManufacturerString(handle));
             product = new Lazy<string>(() => HidDll.GetProductString(handle));
             serialNumber = new Lazy<string>(() => HidDll.GetSerialNumberString(handle));
@@ -43,6 +45,25 @@ namespace BlackFox.UsbHid.Win32
             using (var preparsedData = HidDll.GetPreparsedData(handle))
             {
                 return HidDll.GetCaps(preparsedData);
+            }
+        }
+
+        internal override string DebuggerDisplay
+        {
+            get
+            {
+                var manufacturerValue = manufacturer.IsValueCreated ? manufacturer.Value : null;
+                var productValue = product.IsValueCreated ? product.Value : null;
+                ushort? productIdValue = null;
+                ushort? vendorIdValue = null;
+                if (attributes.IsValueCreated)
+                {
+                    productIdValue = attributes.Value.ProductId;
+                    vendorIdValue = attributes.Value.VendorId;
+                }
+
+                return $"'{productValue}' (PID=0x{productIdValue:X2}) "
+                    + $"by '{manufacturerValue}' (VID=0x{vendorIdValue:X2})";
             }
         }
     }

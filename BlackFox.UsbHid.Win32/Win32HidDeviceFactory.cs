@@ -18,30 +18,44 @@ namespace BlackFox.UsbHid.Win32
         private static readonly Lazy<Win32HidDeviceFactory> instance = new Lazy<Win32HidDeviceFactory>(() => new Win32HidDeviceFactory());
         public static Win32HidDeviceFactory Instance => instance.Value;
 
-        private static Win32HidDevice FromId([NotNull] string deviceId, HidDeviceAccessMode accessMode)
+        private static Win32HidDevice FromId([NotNull] string deviceId, HidDeviceAccessMode accessMode,
+            [CanBeNull] Win32HidDeviceInformation knownInformation)
         {
             if (deviceId == null) throw new ArgumentNullException(nameof(deviceId));
             switch (accessMode)
             {
                 case HidDeviceAccessMode.Read:
-                    return Win32HidDevice.FromPath(deviceId, Kernel32FileAccess.GenericRead);
+                    return Win32HidDevice.FromPath(deviceId, Kernel32FileAccess.GenericRead, knownInformation);
                 case HidDeviceAccessMode.Write:
-                    return Win32HidDevice.FromPath(deviceId, Kernel32FileAccess.GenericWrite);
+                    return Win32HidDevice.FromPath(deviceId, Kernel32FileAccess.GenericWrite, knownInformation);
                 case HidDeviceAccessMode.ReadWrite:
-                    return Win32HidDevice.FromPath(deviceId, Kernel32FileAccess.GenericRead | Kernel32FileAccess.GenericWrite);
+                    return Win32HidDevice.FromPath(deviceId,
+                        Kernel32FileAccess.GenericRead | Kernel32FileAccess.GenericWrite, knownInformation);
                 default:
                     throw new ArgumentException("Access mode not supported: " + accessMode, nameof(accessMode));
             }
         }
 
+        internal Task<IHidDevice> FromIdAsyncInferface(string deviceId, HidDeviceAccessMode accessMode,
+            [CanBeNull] Win32HidDeviceInformation knownInformation)
+        {
+            return Task.Factory.StartNew(() => (IHidDevice)FromId(deviceId, accessMode, knownInformation));
+        }
+
         Task<IHidDevice> IHidDeviceFactory.FromIdAsync(string deviceId, HidDeviceAccessMode accessMode)
         {
-            return Task.Factory.StartNew(() => (IHidDevice)FromId(deviceId, accessMode));
+            return FromIdAsyncInferface(deviceId, accessMode, null);
+        }
+
+        internal Task<Win32HidDevice> FromIdAsync(string deviceId, HidDeviceAccessMode accessMode,
+            [CanBeNull] Win32HidDeviceInformation knownInformation)
+        {
+            return Task.Factory.StartNew(() => FromId(deviceId, accessMode, knownInformation));
         }
 
         public Task<Win32HidDevice> FromIdAsync(string deviceId, HidDeviceAccessMode accessMode)
         {
-            return Task.Factory.StartNew(() => FromId(deviceId, accessMode));
+            return FromIdAsync(deviceId, accessMode, null);
         }
 
         Task<ICollection<IHidDeviceInformation>> IHidDeviceFactory.FindAllAsync()

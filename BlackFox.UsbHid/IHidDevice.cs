@@ -6,6 +6,7 @@ namespace BlackFox.UsbHid.Portable
 {
     public interface IHidDevice : IDisposable
     {
+        [NotNull]
         IHidDeviceInformation Information { get; }
 
         [NotNull]

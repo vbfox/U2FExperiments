@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using BlackFox.UsbHid.Portable;
 using BlackFox.Win32.Hid;
@@ -9,6 +10,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace BlackFox.UsbHid.Win32
 {
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public class Win32HidDevice : IHidDevice
     {
         static readonly ILog log = LogManager.GetLogger(typeof(Win32HidDevice));
@@ -16,17 +18,25 @@ namespace BlackFox.UsbHid.Win32
         readonly bool ownHandle;
         public SafeFileHandle Handle { get; }
 
+        [NotNull]
         public Win32HidDeviceInformation Information { get; }
+
         IHidDeviceInformation IHidDevice.Information => Information;
 
         public Win32HidDevice([NotNull] string path, [NotNull] SafeFileHandle handle, bool ownHandle)
+            :this(path, handle, ownHandle, null)
+        {
+        }
+
+        internal Win32HidDevice([NotNull] string path, [NotNull] SafeFileHandle handle, bool ownHandle,
+            [CanBeNull] Win32HidDeviceInformation knownInformation)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
-            this.ownHandle = ownHandle;
             if (handle == null) throw new ArgumentNullException(nameof(handle));
 
+            this.ownHandle = ownHandle;
             Handle = handle;
-            Information = new Win32HidDeviceInformationLazy(path, handle);
+            Information = knownInformation ?? new Win32HidDeviceInformationLazy(path, handle);
         }
 
         public HidOutputReport CreateOutputReport(byte id = 0)
@@ -90,10 +100,18 @@ namespace BlackFox.UsbHid.Win32
             }
         }
 
+        internal static Win32HidDevice FromPath([NotNull] string path, Kernel32FileAccess accessMode,
+            [CanBeNull] Win32HidDeviceInformation knownInformation)
+        {
+            if (path == null) throw new ArgumentNullException(nameof(path));
+
+            var handle = OpenHandle(path, accessMode, true);
+            return new Win32HidDevice(path, handle, true, knownInformation);
+        }
+
         public static Win32HidDevice FromPath(string path, Kernel32FileAccess accessMode)
         {
-            var handle = OpenHandle(path, accessMode, true);
-            return new Win32HidDevice(path, handle, true);
+            return FromPath(path, accessMode, null);
         }
 
         public static Win32HidDevice TryFromPath(string path, Kernel32FileAccess accessMode)
@@ -101,5 +119,7 @@ namespace BlackFox.UsbHid.Win32
             var handle = OpenHandle(path, accessMode, false);
             return handle.IsInvalid ? null : new Win32HidDevice(path, handle, true);
         }
+
+        private string DebuggerDisplay => $"Win32 HID {Information.DebuggerDisplay}";
     }
 }
