@@ -10,8 +10,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Readme.md = Readme.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.U2FHid", "..\BlackFox.U2FHid\BlackFox.U2FHid.csproj", "{82A6D2FA-7322-40F9-8CC8-91AF500BE384}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.UsbHid.Portable", "BlackFox.UsbHid\BlackFox.UsbHid.Portable.csproj", "{9326377B-A51A-4CF4-B0F3-4A82060C419C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.UsbHid.Win32", "BlackFox.UsbHid.Win32\BlackFox.UsbHid.Win32.csproj", "{E54F34E3-1242-414B-B249-7742835A11A0}"
@@ -26,10 +24,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{82A6D2FA-7322-40F9-8CC8-91AF500BE384}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{82A6D2FA-7322-40F9-8CC8-91AF500BE384}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{82A6D2FA-7322-40F9-8CC8-91AF500BE384}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{82A6D2FA-7322-40F9-8CC8-91AF500BE384}.Release|Any CPU.Build.0 = Release|Any CPU
 		{9326377B-A51A-4CF4-B0F3-4A82060C419C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{9326377B-A51A-4CF4-B0F3-4A82060C419C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{9326377B-A51A-4CF4-B0F3-4A82060C419C}.Release|Any CPU.ActiveCfg = Release|Any CPU

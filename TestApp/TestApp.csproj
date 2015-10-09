@@ -54,10 +54,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\BlackFox.U2FHid\BlackFox.U2FHid.csproj">
-      <Project>{82a6d2fa-7322-40f9-8cc8-91af500be384}</Project>
-      <Name>BlackFox.U2FHid</Name>
-    </ProjectReference>
     <ProjectReference Include="..\BlackFox.UsbHid.Win32\BlackFox.UsbHid.Win32.csproj">
       <Project>{e54f34e3-1242-414b-b249-7742835a11a0}</Project>
       <Name>BlackFox.UsbHid.Win32</Name>
