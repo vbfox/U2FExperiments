@@ -16,7 +16,7 @@ using Common.Logging.NLog;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
-using NLog.Targets.Wrappers;
+
 namespace U2FExperiments
 {
     class Program
