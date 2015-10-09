@@ -35,7 +35,7 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
-    <ProjectReference Include="..\U2FExperiments\BlackFox.UsbHid\BlackFox.UsbHid.Portable.csproj">
+    <ProjectReference Include="..\BlackFox.UsbHid\BlackFox.UsbHid.Portable.csproj">
       <Project>{9326377b-a51a-4cf4-b0f3-4a82060c419c}</Project>
       <Name>BlackFox.UsbHid.Portable</Name>
     </ProjectReference>
@@ -50,9 +50,6 @@
     <Compile Include="RawPackets\U2FInitializationPacket.cs" />
     <Compile Include="ResharperAnnotations.cs" />
     <Compile Include="U2FHidCommand.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="project.json" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
