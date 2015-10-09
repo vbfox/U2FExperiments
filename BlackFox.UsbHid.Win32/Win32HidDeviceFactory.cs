@@ -6,12 +6,15 @@ using BlackFox.UsbHid.Portable;
 using BlackFox.Win32.Hid;
 using BlackFox.Win32.Kernel32;
 using BlackFox.Win32.SetupApi;
+using Common.Logging;
 using JetBrains.Annotations;
 
 namespace BlackFox.UsbHid.Win32
 {
     public class Win32HidDeviceFactory : IHidDeviceFactory
     {
+        static readonly ILog log = LogManager.GetLogger(typeof(Win32HidDevice));
+
         private static readonly Lazy<Win32HidDeviceFactory> instance = new Lazy<Win32HidDeviceFactory>(() => new Win32HidDeviceFactory());
         public static Win32HidDeviceFactory Instance => instance.Value;
 
@@ -71,10 +74,21 @@ namespace BlackFox.UsbHid.Win32
             {
                 if (device == null)
                 {
+                    if (log.IsDebugEnabled)
+                    {
+                        log.Debug($"Unable to open device {path}");
+                    }
                     return null;
                 }
 
-                return new Win32HidDeviceInformationStored(device.Information);
+                var information = new Win32HidDeviceInformationStored(device.Information);
+                if (log.IsDebugEnabled)
+                {
+                    log.Debug(
+                        $"Found device '{information.Product}' (PID=0x{information.ProductId:X2}) "
+                        + $"by '{information.Manufacturer}' (VID=0x{information.VendorId:X2})");
+                }
+                return information;
             }
         }
     }

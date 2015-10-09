@@ -1,10 +1,12 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using BlackFox.UsbHid.Portable;
 using JetBrains.Annotations;
 
 namespace BlackFox.U2FHid.Core.RawPackets
 {
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public struct InitializationPacket
     {
         public uint ChannelIdentifier;
@@ -13,6 +15,9 @@ namespace BlackFox.U2FHid.Core.RawPackets
         public ArraySegment<byte> Data;
 
         public static readonly int NoDataSize = 4 + 1 + 2;
+
+        private string DebuggerDisplay =>
+            $"Initialization Paket 0x{CommandIdentifier:X2}, {Data.Count} bytes on channel 0x{ChannelIdentifier:X8}";
 
         public static InitializationPacket ReadFrom(ArraySegment<byte> segment)
         {
@@ -50,8 +55,8 @@ namespace BlackFox.U2FHid.Core.RawPackets
             var writer = new BinaryWriter(stream);
             writer.Write(ChannelIdentifier);
             writer.Write(CommandIdentifier);
-            writer.Write((PayloadLength >> 8) & 0xFF);
-            writer.Write((PayloadLength >> 0) & 0xFF);
+            writer.Write((byte)((PayloadLength >> 8) & 0xFF));
+            writer.Write((byte)((PayloadLength >> 0) & 0xFF));
             stream.Write(Data.Array, Data.Offset, Data.Count);
         }
 

@@ -120,7 +120,7 @@ namespace U2FExperiments
                 var caps = device.Information.Capabilities;
                 Console.WriteLine(caps.NumberFeatureButtonCaps);
 
-                Test(device);
+                //Test(device);
 
                 Console.WriteLine("Using high level API");
 

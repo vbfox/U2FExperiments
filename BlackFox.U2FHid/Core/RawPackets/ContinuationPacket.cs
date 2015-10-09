@@ -1,10 +1,12 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using BlackFox.UsbHid.Portable;
 using JetBrains.Annotations;
 
 namespace BlackFox.U2FHid.Core.RawPackets
 {
+    [DebuggerDisplay("{DebuggerDisplay,nq}")]
     public struct ContinuationPacket
     {
         public uint ChannelIdentifier;
@@ -12,6 +14,9 @@ namespace BlackFox.U2FHid.Core.RawPackets
         public ArraySegment<byte> Data;
 
         public static readonly int NoDataSize = 4 + 1;
+
+        private string DebuggerDisplay =>
+            $"Continuation Paket {PaketSequence} of sequence, {Data.Count} bytes on channel 0x{ChannelIdentifier:X8}";
 
         public static ContinuationPacket ReadFrom(ArraySegment<byte> segment)
         {

@@ -127,7 +127,7 @@ namespace BlackFox.UsbHid.Portable
                 var thisValue = @this.Array[@this.Offset + i];
                 var otherValue = other.Array[other.Offset + i];
 
-                if (comparer.Equals(thisValue, otherValue))
+                if (!comparer.Equals(thisValue, otherValue))
                 {
                     return false;
                 }
@@ -136,28 +136,34 @@ namespace BlackFox.UsbHid.Portable
             return true;
         }
 
-        public static void WriteAsHexTo(this ArraySegment<byte> segment, [NotNull] TextWriter writer, bool includeAscii = false)
+        public static void WriteAsHexTo(this ArraySegment<byte> segment, [NotNull] TextWriter writer,
+            bool includeAscii = true, bool includeStartAddresses = true)
         {
             if (writer == null) throw new ArgumentNullException(nameof(writer));
-
+            
             int shown = 0;
             while (shown < segment.Count)
             {
-                var bytes = segment.Segment(segment.Offset + shown, Math.Min(16, segment.Count - shown));
+                if (includeStartAddresses)
+                {
+                    writer.Write("0x{0:X8}  ", shown);
+                }
+
+                var bytes = segment.Segment(shown, Math.Min(16, segment.Count - shown));
                 foreach (var b in bytes.AsEnumerable())
                 {
                     writer.Write("{0:X2} ", b);
                 }
                 if (includeAscii)
                 {
-                    writer.Write(new string(' ', (16 - bytes.Count)*2));
-                    writer.Write("  ");
+                    writer.Write(new string(' ', (16 - bytes.Count)*3));
+                    writer.Write(" ");
                     foreach (var b in bytes.AsEnumerable())
                     {
-                        if (b < 0xF0)
+                        if (b >= 0x20 && b < 0x7F)
                         {
                             var c = Encoding.UTF8.GetChars(new[] { b }).Single();
-                            writer.Write(char.IsLetterOrDigit(c) ? c : '.');
+                            writer.Write(c);
                         }
                         else
                         {
@@ -171,7 +177,7 @@ namespace BlackFox.UsbHid.Portable
         }
 
         public static Action<FormatMessageHandler> ToLoggableAsHex(this ArraySegment<byte> segment, [CanBeNull] string header,
-            bool includeAscii = false)
+            bool includeAscii = true, bool includeStartAddresses = true)
         {
             return m =>
             {
@@ -181,7 +187,7 @@ namespace BlackFox.UsbHid.Portable
                     writer.WriteLine(header);
                     writer.WriteLine();
                 }
-                segment.WriteAsHexTo(writer, includeAscii);
+                segment.WriteAsHexTo(writer, includeAscii, includeStartAddresses);
                 m(writer.ToString());
             };
         }
