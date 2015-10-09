@@ -193,7 +193,7 @@ namespace BlackFox.U2FHid
                 }, TaskContinuationOptions.OnlyOnRanToCompletion);
         }
 
-        void ThrowForError(FidoU2FHidMessage message)
+        static void ThrowForError(FidoU2FHidMessage message)
         {
             Debug.Assert(message.Command == U2FHidCommand.Error);
 

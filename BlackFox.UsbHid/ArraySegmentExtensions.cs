@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Common.Logging;
 using JetBrains.Annotations;
 
 namespace BlackFox.UsbHid.Portable
@@ -148,23 +149,42 @@ namespace BlackFox.UsbHid.Portable
                 {
                     writer.Write("{0:X2} ", b);
                 }
-                writer.Write(new string(' ', (16 - bytes.Count) * 2));
-                writer.Write("  ");
-                foreach (var b in bytes.AsEnumerable())
+                if (includeAscii)
                 {
-                    if (b < 0xF0)
+                    writer.Write(new string(' ', (16 - bytes.Count)*2));
+                    writer.Write("  ");
+                    foreach (var b in bytes.AsEnumerable())
                     {
-                        var c = Encoding.UTF8.GetChars(new[] { b }).Single();
-                        writer.Write(char.IsLetterOrDigit(c) ? c : '.');
-                    }
-                    else
-                    {
-                        writer.Write('.');
+                        if (b < 0xF0)
+                        {
+                            var c = Encoding.UTF8.GetChars(new[] { b }).Single();
+                            writer.Write(char.IsLetterOrDigit(c) ? c : '.');
+                        }
+                        else
+                        {
+                            writer.Write('.');
+                        }
                     }
                 }
                 writer.WriteLine();
                 shown += bytes.Count;
             }
+        }
+
+        public static Action<FormatMessageHandler> ToLoggableAsHex(this ArraySegment<byte> segment, [CanBeNull] string header,
+            bool includeAscii = false)
+        {
+            return m =>
+            {
+                var writer = new StringWriter();
+                if (header != null)
+                {
+                    writer.WriteLine(header);
+                    writer.WriteLine();
+                }
+                segment.WriteAsHexTo(writer, includeAscii);
+                m(writer.ToString());
+            };
         }
     }
 }

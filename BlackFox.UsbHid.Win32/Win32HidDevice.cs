@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using BlackFox.UsbHid.Portable;
 using BlackFox.Win32.Hid;
 using BlackFox.Win32.Kernel32;
+using Common.Logging;
 using JetBrains.Annotations;
 using Microsoft.Win32.SafeHandles;
 
@@ -10,6 +11,8 @@ namespace BlackFox.UsbHid.Win32
 {
     public class Win32HidDevice : IHidDevice
     {
+        static readonly ILog log = LogManager.GetLogger(typeof(Win32HidDevice));
+
         readonly bool ownHandle;
         public SafeFileHandle Handle { get; }
 
@@ -35,13 +38,25 @@ namespace BlackFox.UsbHid.Win32
         public Task<int> SendOutputReportAsync(HidOutputReport report)
         {
             if (report == null) throw new ArgumentNullException(nameof(report));
-            return Kernel32Dll.WriteFileAsync(Handle, report.GetOutputBuffer());
+
+            var outputBuffer = report.GetOutputBuffer();
+            log.Trace(outputBuffer.ToLoggableAsHex("Sending output report:"));
+
+            return Kernel32Dll.WriteFileAsync(Handle, outputBuffer)
+                .LogFaulted(log, "Sending output report failed");
         }
 
         public Task<HidInputReport> GetInputReportAsync()
         {
             return Kernel32Dll.ReadFileAsync<byte>(Handle, Information.Capabilities.InputReportByteLength)
-                .ContinueWith(task => new HidInputReport(task.Result), TaskContinuationOptions.OnlyOnRanToCompletion);
+                .ContinueWith(task => OnInputReportRead(task), TaskContinuationOptions.OnlyOnRanToCompletion)
+                .LogFaulted(log, "Receiving input report failed");
+        }
+
+        static HidInputReport OnInputReportRead(Task<ArraySegment<byte>> task)
+        {
+            log.Trace(task.Result.ToLoggableAsHex("Received input report:"));
+            return new HidInputReport(task.Result);
         }
 
         public void SetNumInputBuffers(uint numberBuffers)
