@@ -71,7 +71,7 @@ namespace U2FExperiments
 
         static unsafe void Test(Win32HidDevice device)
         {
-            var init = new U2FInitializationPacket();
+            var init = new InitializationPacket();
             init.CommandIdentifier = (byte)U2FHidCommand.Init;
             init.ChannelIdentifier = U2FHID_BROADCAST_CID;
             init.PayloadLength = 8;

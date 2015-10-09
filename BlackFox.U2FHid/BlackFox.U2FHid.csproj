@@ -48,10 +48,12 @@
     <Compile Include="FidoU2FDevice.cs" />
     <Compile Include="FidoU2FDeviceInformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Core\RawPackets\U2FContinuationPacket.cs" />
-    <Compile Include="Core\RawPackets\U2FInitializationPacket.cs" />
+    <Compile Include="Core\RawPackets\ContinuationPacket.cs" />
+    <Compile Include="Core\RawPackets\InitializationPacket.cs" />
     <Compile Include="Core\U2FHidCommand.cs" />
     <Compile Include="ResharperAnnotations.cs" />
+    <Compile Include="U2FDeviceCapabilities.cs" />
+    <Compile Include="U2FHidErrors.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

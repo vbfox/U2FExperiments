@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using JetBrains.Annotations;
 
 namespace BlackFox.UsbHid.Portable
@@ -36,6 +37,14 @@ namespace BlackFox.UsbHid.Portable
             if (array == null) throw new ArgumentNullException(nameof(array));
 
             return new ArraySegment<T>(array, 0, count);
+        }
+
+        /// <summary>
+        /// Wrap the segment in a <see cref="Stream"/> instance.
+        /// </summary>
+        public static Stream ToStream(this ArraySegment<byte> segment)
+        {
+            return new MemoryStream(segment.Array, segment.Offset, segment.Count);
         }
     }
 }

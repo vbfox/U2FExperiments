@@ -5,12 +5,6 @@ using JetBrains.Annotations;
 
 namespace BlackFox.U2FHid
 {
-    [Flags]
-    enum FidoU2FDeviceCapabilities
-    {
-        Wink = 0x01
-    }
-
     class InitResponse
     {
         public ArraySegment<byte> Nonce { get; }
@@ -19,7 +13,7 @@ namespace BlackFox.U2FHid
         public byte MajorVersionNumber { get; }
         public byte MinorVersionNumber { get; }
         public byte BuildVersionNumber { get; }
-        public FidoU2FDeviceCapabilities Capabilities { get; }
+        public U2FDeviceCapabilities Capabilities { get; }
     }
 
     class FidoU2FDevice
@@ -32,7 +26,7 @@ namespace BlackFox.U2FHid
         public byte MajorVersionNumber { get; }
         public byte MinorVersionNumber { get; }
         public byte BuildVersionNumber { get; }
-        public FidoU2FDeviceCapabilities Capabilities { get; }
+        public U2FDeviceCapabilities Capabilities { get; }
 
         [NotNull]
         private IHidDevice device;
@@ -63,7 +57,7 @@ namespace BlackFox.U2FHid
             if (nonce.Count != INIT_NONCE_SIZE)
             {
                 throw new ArgumentException(
-                    $"Nonce should be exactly {INIT_NONCE_SIZE} bytes but is {nonce.Count} bytes long.",
+                    $"Nonce should be exactly {INIT_NONCE_SIZE} bytes but is {nonce.Count} bytes long instead.",
                     nameof(nonce));
             }
 
@@ -94,6 +88,16 @@ namespace BlackFox.U2FHid
                 .ContinueWith(
                     response => instance,
                     TaskContinuationOptions.OnlyOnRanToCompletion);
+        }
+
+        public Task Wink()
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<bool> Lock()
+        {
+            throw new NotImplementedException();
         }
     }
 }
