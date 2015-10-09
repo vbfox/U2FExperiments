@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading.Tasks;
 using BlackFox.U2FHid.Core;
@@ -209,15 +208,15 @@ namespace BlackFox.U2FHid
 
         public Task Ping()
         {
-            const string ANSWER = "Pong !";
+            const string answer = "Pong !";
 
-            var data = Encoding.UTF8.GetBytes(ANSWER);
+            var data = Encoding.UTF8.GetBytes(answer);
             return Ping(data.Segment()).ContinueWith(task =>
             {
                 var str = Encoding.UTF8.GetString(task.Result.Array,
                     task.Result.Offset, task.Result.Count);
 
-                if (str != ANSWER)
+                if (str != answer)
                 {
                     throw new InvalidPingResponseException("The device didn't echo back our ping message.");
                 }
