@@ -128,9 +128,12 @@ namespace U2FExperiments
 
                 var init = u2f.Init().Result;
 
-                var pong = u2f.Ping(Encoding.UTF8.GetBytes("Pong !").Segment()).Result;
+                var pong = u2f.Ping(Encoding.UTF8.GetBytes("Pong !!").Segment()).Result;
+                //var pong = u2f.Ping(Encoding.UTF8.GetBytes("Pong !! Pong !! Pong !! Pong !! Pong !! Pong !! Pong !! Pong !! Pong !! ").Segment()).Result;
 
                 WriteBuffer(pong);
+
+                u2f.Wink().Wait();
 
                 Console.ReadLine();
             }

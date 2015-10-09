@@ -151,7 +151,8 @@ namespace BlackFox.U2FHid
 
         public Task Wink()
         {
-            throw new NotImplementedException();
+            var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Wink);
+            return Query(message);
         }
 
         public Task<bool> Lock()
