@@ -3,7 +3,7 @@
 namespace BlackFox.U2FHid
 {
     [Flags]
-    enum U2FDeviceCapabilities : byte
+    public enum U2FDeviceCapabilities : byte
     {
         /// <summary>
         /// Device supports WINK command

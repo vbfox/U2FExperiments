@@ -27,12 +27,12 @@ namespace BlackFox.U2FHid
 
         [NotNull]
         [ItemNotNull]
-        Task<FidoU2FDevice> OpenDeviceAsync()
+        Task<U2FDevice> OpenDeviceAsync()
         {
             return info
                 .OpenDeviceAsync()
                 .ContinueWith(
-                    task => FidoU2FDevice.Open(task.Result),
+                    task => U2FDevice.Open(task.Result),
                     TaskContinuationOptions.OnlyOnRanToCompletion)
                 .Unwrap();
         }

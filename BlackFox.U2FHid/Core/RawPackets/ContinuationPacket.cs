@@ -30,7 +30,7 @@ namespace BlackFox.U2FHid.Core.RawPackets
 
         public void WriteTo(ArraySegment<byte> segment)
         {
-            using (var stream = segment.ToStream())
+            using (var stream = segment.AsStream())
             {
                 WriteTo(stream);
             }

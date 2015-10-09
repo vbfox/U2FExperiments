@@ -65,6 +65,17 @@ namespace U2FExperiments
                 Console.WriteLine(caps.NumberFeatureButtonCaps);
 
                 Test(device);
+
+                Console.WriteLine("Using high level API");
+
+                var u2f = new U2FDevice(device, false);
+
+                var init = u2f.Init().Result;
+
+                var pong = u2f.Ping(Encoding.UTF8.GetBytes("Pong !").Segment()).Result;
+
+                WriteBuffer(pong);
+
                 Console.ReadLine();
             }
         }
