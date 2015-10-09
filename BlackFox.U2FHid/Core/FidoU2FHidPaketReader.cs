@@ -2,12 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using BlackFox.U2FHid.RawPackets;
-using BlackFox.UsbHid;
+using BlackFox.U2FHid.Core.RawPackets;
 using BlackFox.UsbHid.Portable;
 using JetBrains.Annotations;
 
-namespace BlackFox.U2FHid
+namespace BlackFox.U2FHid.Core
 {
     internal static class FidoU2FHidPaketReader
     {

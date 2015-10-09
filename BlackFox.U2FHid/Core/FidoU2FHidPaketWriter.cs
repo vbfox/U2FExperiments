@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using BlackFox.U2FHid.RawPackets;
+using BlackFox.U2FHid.Core.RawPackets;
 using BlackFox.UsbHid.Portable;
 using JetBrains.Annotations;
 
-namespace BlackFox.U2FHid
+namespace BlackFox.U2FHid.Core
 {
     public static class FidoU2FHidPaketWriter
     {
@@ -55,8 +55,8 @@ namespace BlackFox.U2FHid
 
             var init = new U2FInitializationPacket
             {
-                ChannelIdentifier = message.ChannelIdentifier,
-                CommandIdentifier = (byte)message.CommandIdentifier,
+                ChannelIdentifier = message.Channel,
+                CommandIdentifier = (byte)message.Command,
                 PayloadLength = (ushort)data.Count,
                 Data = new ArraySegment<byte>(data.Array, data.Offset,
                     Math.Min(data.Count, availableInInit))
@@ -69,7 +69,7 @@ namespace BlackFox.U2FHid
             {
                 var continuation = new U2FContinuationPacket
                 {
-                    ChannelIdentifier = message.ChannelIdentifier,
+                    ChannelIdentifier = message.Channel,
                     PaketSequence = sequence,
                     Data = new ArraySegment<byte>(data.Array, data.Offset + sizeHandled,
                         Math.Min(data.Count - sizeHandled, availableInContinuation))

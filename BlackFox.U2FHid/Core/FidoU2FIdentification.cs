@@ -1,6 +1,6 @@
 ﻿using BlackFox.UsbHid.Portable;
 
-namespace BlackFox.U2FHid
+namespace BlackFox.U2FHid.Core
 {
     public static class FidoU2FIdentification
     {

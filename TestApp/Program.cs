@@ -4,7 +4,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using BlackFox.U2FHid;
-using BlackFox.U2FHid.RawPackets;
+using BlackFox.U2FHid.Core;
+using BlackFox.U2FHid.Core.RawPackets;
 using BlackFox.UsbHid.Portable;
 using BlackFox.UsbHid.Win32;
 using BlackFox.Win32.Kernel32;
@@ -145,8 +146,7 @@ namespace U2FExperiments
         {
             var msg = new FidoU2FHidMessage(
                 (uint)(unchecked (b1 << 24 | b2 << 16 | b3 << 8 | b4)),
-                U2FHidCommand.Wink,
-                EmptyArraySegment.Of<byte>());
+                U2FHidCommand.Wink);
             device.WriteFidoU2FHidMessageAsync(msg).Wait();
 
             var caps = device.Information.Capabilities;
@@ -161,19 +161,6 @@ namespace U2FExperiments
             }
 
             WriteBuffer(bufferOut);
-        }
-    }
-
-    internal static class EmptyArraySegment
-    {
-        private static class Holder<T>
-        {
-            public static readonly ArraySegment<T> Empty = new ArraySegment<T>(new T[0]);
-        }
-
-        public static ArraySegment<T> Of<T>()
-        {
-            return Holder<T>.Empty;
         }
     }
 }

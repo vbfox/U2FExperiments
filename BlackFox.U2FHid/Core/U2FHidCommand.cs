@@ -1,4 +1,4 @@
-namespace BlackFox.U2FHid
+namespace BlackFox.U2FHid.Core
 {
     public enum U2FHidCommand : byte
     {

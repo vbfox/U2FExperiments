@@ -1,6 +1,6 @@
 using System;
 
-namespace BlackFox.U2FHid.RawPackets
+namespace BlackFox.U2FHid.Core.RawPackets
 {
     public struct U2FContinuationPacket
     {
