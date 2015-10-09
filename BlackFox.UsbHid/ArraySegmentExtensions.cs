@@ -2,6 +2,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Text;
 using JetBrains.Annotations;
 
 namespace BlackFox.UsbHid.Portable
@@ -107,13 +109,6 @@ namespace BlackFox.UsbHid.Portable
             }
         }
 
-        static bool SegmentsEquals(ArraySegment<byte> a, ArraySegment<byte> b)
-        {
-
-
-            return true;
-        }
-
         public static bool ContentEquals<T>(this ArraySegment<T> @this, ArraySegment<T> other,
             IEqualityComparer<T> comparer = null)
         {
@@ -139,6 +134,37 @@ namespace BlackFox.UsbHid.Portable
             }
 
             return true;
+        }
+
+        public static void WriteAsHexTo(this ArraySegment<byte> segment, [NotNull] TextWriter writer, bool includeAscii = false)
+        {
+            if (writer == null) throw new ArgumentNullException(nameof(writer));
+
+            int shown = 0;
+            while (shown < segment.Count)
+            {
+                var bytes = segment.Segment(segment.Offset + shown, Math.Min(16, segment.Count - shown));
+                foreach (var b in bytes.AsEnumerable())
+                {
+                    writer.Write("{0:X2} ", b);
+                }
+                writer.Write(new string(' ', (16 - bytes.Count) * 2));
+                writer.Write("  ");
+                foreach (var b in bytes.AsEnumerable())
+                {
+                    if (b < 0xF0)
+                    {
+                        var c = Encoding.UTF8.GetChars(new[] { b }).Single();
+                        writer.Write(char.IsLetterOrDigit(c) ? c : '.');
+                    }
+                    else
+                    {
+                        writer.Write('.');
+                    }
+                }
+                writer.WriteLine();
+                shown += bytes.Count;
+            }
         }
     }
 }

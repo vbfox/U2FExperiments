@@ -1,0 +1,21 @@
+group Main
+    source https://nuget.org/api/v2
+
+    nuget NLog ~> 4.1
+    nuget Common.Logging ~> 3.3
+    nuget Common.Logging.Portable ~> 3.3
+    nuget Common.Logging.NLog40 ~> 3.3
+
+group Tests
+    source https://nuget.org/api/v2
+
+    nuget NUnit
+    nuget NFluent
+
+group Fake
+    source https://nuget.org/api/v2
+
+    nuget FAKE
+    nuget SourceLink.Fake
+    nuget NUnit.Runners
+    github fsharp/FAKE modules/Octokit/Octokit.fsx

@@ -1,4 +1,7 @@
-﻿using System;
+﻿extern alias LoggingPcl;
+extern alias LoggingNet4x;
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -9,7 +12,11 @@ using BlackFox.U2FHid.Core.RawPackets;
 using BlackFox.UsbHid.Portable;
 using BlackFox.UsbHid.Win32;
 using BlackFox.Win32.Kernel32;
-
+using Common.Logging.NLog;
+using NLog;
+using NLog.Config;
+using NLog.Targets;
+using NLog.Targets.Wrappers;
 namespace U2FExperiments
 {
     class Program
@@ -20,30 +27,79 @@ namespace U2FExperiments
         const int FIDO_USAGE_DATA_OUT = 0x21; // Raw OUT data report
         const uint U2FHID_BROADCAST_CID = 0xffffffff;
 
-        private static void ShowDevices(ICollection<IHidDeviceInformation> deviceInfos)
+        static void ShowDevices(ICollection<IHidDeviceInformation> deviceInfos)
         {
             foreach (var device in deviceInfos)
             {
                 Console.WriteLine(" * {0}", device.Id);
                 Console.WriteLine("   {0} {1} (VID=0x{2:X4}, PID=0x{3:X4}, SN={4})", device.Manufacturer, device.Product,
                     device.VendorId, device.ProductId, device.SerialNumber);
-                if (device.IsFidoU2F())
-                {
-                    Console.WriteLine("   FIDO Device !");
-                }
+                if (device.IsFidoU2F()) Console.WriteLine("   FIDO Device !");
             }
+        }
+
+        static void ConfigureLogging()
+        {
+            ConfigureNLog();
+            ConfigureCommonLogging();
+        }
+
+        static void ConfigureCommonLogging()
+        {
+            var nameValueCollection = new LoggingNet4x::Common.Logging.Configuration.NameValueCollection();
+            var nlogAdapter = new NLogLoggerFactoryAdapter(nameValueCollection);
+            LoggingNet4x::Common.Logging.LogManager.Adapter = nlogAdapter;
+            LoggingPcl::Common.Logging.LogManager.Adapter = nlogAdapter;
+        }
+
+        static void ConfigureNLog()
+        {
+            const string logLayout =
+                "[${date:format=HH\\:mm} ${logger}.${callsite:className=False:methodName=True}] "
+                + "${message}${onexception:${newline}${exception:format=ToString}}";
+
+            var consoleTarget = new ColoredConsoleTarget
+            {
+                Name = "Console",
+                Layout = logLayout,
+            };
+
+            var rowHighlightingRules = new[]
+            {
+                new ConsoleRowHighlightingRule("level == LogLevel.Fatal", ConsoleOutputColor.White, ConsoleOutputColor.Red),
+                new ConsoleRowHighlightingRule("level == LogLevel.Error", ConsoleOutputColor.Red, ConsoleOutputColor.NoChange),
+                new ConsoleRowHighlightingRule("level == LogLevel.Warn", ConsoleOutputColor.Yellow, ConsoleOutputColor.NoChange),
+                new ConsoleRowHighlightingRule("level == LogLevel.Info", ConsoleOutputColor.White, ConsoleOutputColor.NoChange),
+                new ConsoleRowHighlightingRule("level == LogLevel.Debug", ConsoleOutputColor.Gray, ConsoleOutputColor.NoChange),
+                new ConsoleRowHighlightingRule("level == LogLevel.Trace", ConsoleOutputColor.DarkGray,
+                    ConsoleOutputColor.NoChange),
+            };
+
+            consoleTarget.RowHighlightingRules.Clear();
+            foreach (var highlightingRule in rowHighlightingRules)
+            {
+                consoleTarget.RowHighlightingRules.Add(highlightingRule);
+            }
+
+            LogManager.Configuration = new LoggingConfiguration();
+
+            LogManager.Configuration.AddTarget(consoleTarget);
+            LogManager.Configuration.LoggingRules.Add(new LoggingRule("*", LogLevel.Trace, consoleTarget));
+            LogManager.ReconfigExistingLoggers();
         }
 
         static void Main(string[] args)
         {
-            var factory = (IHidDeviceFactory) Win32HidDeviceFactory.Instance;
+            ConfigureLogging();
+
+            var factory = (IHidDeviceFactory)Win32HidDeviceFactory.Instance;
             var devices = factory.FindAllAsync().Result;
             var fidoInfo = devices.Where(FidoU2FIdentification.IsFidoU2F).FirstOrDefault();
 
             Console.WriteLine("Devices found:");
             ShowDevices(devices);
             Console.WriteLine();
-            
+
             if (fidoInfo == null)
             {
                 Console.WriteLine("Can't find FIDO device :-(");
@@ -130,27 +186,9 @@ namespace U2FExperiments
             WriteBuffer(new ArraySegment<byte>(array));
         }
 
-
         public static void WriteBuffer(ArraySegment<byte> segment)
         {
-            int shown = 0;
-            while (shown < segment.Count)
-            {
-                var bytes = segment.Array.Skip(segment.Offset + shown).Take(16).ToList();
-                foreach (var b in bytes)
-                {
-                    Console.Write("{0:X2} ", b);
-                }
-                Console.Write(new string(' ', (16 - bytes.Count)*2));
-                Console.Write("  ");
-                foreach (var b in bytes)
-                {
-                    var c = Encoding.ASCII.GetChars(new [] { b }).Single();
-                    Console.Write(char.IsLetterOrDigit(c) ? c : '.');
-                }
-                Console.WriteLine();
-                shown += bytes.Count;
-            }
+            segment.WriteAsHexTo(Console.Out, true);
         }
 
         static unsafe void Wink(Win32HidDevice device, byte b1, byte b2, byte b3, byte b4)

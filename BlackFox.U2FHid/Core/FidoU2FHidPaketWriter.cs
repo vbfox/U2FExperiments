@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using BlackFox.U2FHid.Core.RawPackets;
 using BlackFox.UsbHid.Portable;
+using Common.Logging;
 using JetBrains.Annotations;
 
 namespace BlackFox.U2FHid.Core
 {
     public static class FidoU2FHidPaketWriter
     {
+        static readonly ILog log = LogManager.GetLogger(typeof(FidoU2FHidPaketWriter));
+
         static Tuple<InitializationPacket, List<ContinuationPacket>> MakeOutputPackets(
             int paketLength, FidoU2FHidMessage message)
         {
@@ -52,11 +55,13 @@ namespace BlackFox.U2FHid.Core
             if (device == null) throw new ArgumentNullException(nameof(device));
             if (message == null) throw new ArgumentNullException(nameof(message));
 
+            log.Debug($"Sending U2FHid message {message.Command} on channel 0x{message.Channel:X8} with {message.Data.Count} bytes of data");
+                
             var report = device.CreateOutputReport();
             var pakets = MakeOutputPackets(report.Data.Count, message);
             pakets.Item1.WriteTo(report.Data);
             
-            Task task = device.SendOutputReportAsync(report);
+            var task = device.SendOutputReportAsync(report);
 
             foreach (var continuation in pakets.Item2)
             {

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using BlackFox.U2FHid.Core;
 using BlackFox.U2FHid.Utils;
 using BlackFox.UsbHid.Portable;
+using Common.Logging;
 using JetBrains.Annotations;
 
 namespace BlackFox.U2FHid
@@ -35,6 +36,8 @@ namespace BlackFox.U2FHid
 
     public class U2FDevice : IDisposable
     {
+        static readonly ILog log = LogManager.GetLogger(typeof(FidoU2FHidPaketWriter));
+
         /// <summary>
         /// Size of the nonce for INIT messages in bytes.
         /// </summary>
@@ -79,6 +82,7 @@ namespace BlackFox.U2FHid
                     nameof(nonce));
             }
 
+            log.Info("Sending initialization");
             var message = new FidoU2FHidMessage(BROADCAST_CHANNEL, U2FHidCommand.Init, nonce);
             return Query(message)
                 .ContinueWith(
@@ -88,6 +92,8 @@ namespace BlackFox.U2FHid
 
         InitResponse OnInitAnswered(FidoU2FHidMessage response, ArraySegment<byte> nonce)
         {
+            log.Info("Initialization response received");
+
             if (response.Data.Count < 17)
             {
                 throw new Exception("Answer too small");
