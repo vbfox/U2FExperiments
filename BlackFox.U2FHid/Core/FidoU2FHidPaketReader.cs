@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using BlackFox.U2FHid.Core.RawPackets;
-using BlackFox.UsbHid.Portable;
+using BlackFox.UsbHid;
 using JetBrains.Annotations;
 
 namespace BlackFox.U2FHid.Core

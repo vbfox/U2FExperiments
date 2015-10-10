@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
-using BlackFox.UsbHid.Portable;
+using BlackFox.UsbHid;
 using JetBrains.Annotations;
 
 namespace BlackFox.U2FHid.Core.RawPackets

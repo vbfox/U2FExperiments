@@ -1,0 +1,3 @@
+﻿group Tests
+    NUnit
+    NFluent

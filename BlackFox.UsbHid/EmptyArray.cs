@@ -1,4 +1,4 @@
-namespace BlackFox.UsbHid.Portable
+namespace BlackFox.UsbHid
 {
     public static class EmptyArray
     {

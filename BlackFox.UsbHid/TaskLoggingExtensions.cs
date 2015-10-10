@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Common.Logging;
 using JetBrains.Annotations;
 
-namespace BlackFox.UsbHid.Portable
+namespace BlackFox.UsbHid
 {
     public static class TaskLoggingExtensions
     {

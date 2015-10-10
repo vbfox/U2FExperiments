@@ -9,7 +9,7 @@ using System.Text;
 using BlackFox.U2FHid;
 using BlackFox.U2FHid.Core;
 using BlackFox.U2FHid.Core.RawPackets;
-using BlackFox.UsbHid.Portable;
+using BlackFox.UsbHid;
 using BlackFox.UsbHid.Win32;
 using BlackFox.Win32.Kernel32;
 using Common.Logging.NLog;

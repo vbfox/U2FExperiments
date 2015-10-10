@@ -6,7 +6,7 @@ using System.Text;
 using Common.Logging;
 using JetBrains.Annotations;
 
-namespace BlackFox.UsbHid.Portable
+namespace BlackFox.UsbHid
 {
     public static class ArraySegmentExtensions
     {

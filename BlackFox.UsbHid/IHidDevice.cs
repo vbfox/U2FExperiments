@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
-namespace BlackFox.UsbHid.Portable
+namespace BlackFox.UsbHid
 {
     public interface IHidDevice : IDisposable
     {

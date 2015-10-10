@@ -1,6 +1,5 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
-using BlackFox.UsbHid.Portable;
 using BlackFox.Win32.Hid;
 
 namespace BlackFox.UsbHid.Win32

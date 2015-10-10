@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using BlackFox.UsbHid.Portable;
 using BlackFox.Win32.Hid;
 using BlackFox.Win32.Kernel32;
 using BlackFox.Win32.SetupApi;

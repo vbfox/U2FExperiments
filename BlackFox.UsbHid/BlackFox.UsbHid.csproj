@@ -8,8 +8,8 @@
     <ProjectGuid>{9326377B-A51A-4CF4-B0F3-4A82060C419C}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BlackFox.UsbHid.Portable</RootNamespace>
-    <AssemblyName>BlackFox.UsbHid.Portable</AssemblyName>
+    <RootNamespace>BlackFox.UsbHid</RootNamespace>
+    <AssemblyName>BlackFox.UsbHid</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>

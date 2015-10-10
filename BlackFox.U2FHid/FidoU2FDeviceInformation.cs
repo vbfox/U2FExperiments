@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using BlackFox.UsbHid.Portable;
+using BlackFox.UsbHid;
 using JetBrains.Annotations;
 
 namespace BlackFox.U2FHid

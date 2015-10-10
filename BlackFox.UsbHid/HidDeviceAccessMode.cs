@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace BlackFox.UsbHid.Portable
+namespace BlackFox.UsbHid
 {
     [Flags]
     public enum HidDeviceAccessMode

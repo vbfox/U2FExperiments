@@ -6,7 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using BlackFox.U2FHid.Core;
 using BlackFox.U2FHid.Utils;
-using BlackFox.UsbHid.Portable;
+using BlackFox.UsbHid;
 using Common.Logging;
 using JetBrains.Annotations;
 

@@ -64,9 +64,9 @@
       <Project>{e54f34e3-1242-414b-b249-7742835a11a0}</Project>
       <Name>BlackFox.UsbHid.Win32</Name>
     </ProjectReference>
-    <ProjectReference Include="..\BlackFox.UsbHid\BlackFox.UsbHid.Portable.csproj">
+    <ProjectReference Include="..\BlackFox.UsbHid\BlackFox.UsbHid.csproj">
       <Project>{9326377b-a51a-4cf4-b0f3-4a82060c419c}</Project>
-      <Name>BlackFox.UsbHid.Portable</Name>
+      <Name>BlackFox.UsbHid</Name>
     </ProjectReference>
     <ProjectReference Include="..\BlackFox.Win32\BlackFox.Win32.csproj">
       <Project>{4b0bc1ca-6c41-4c3b-8e83-91f332f64e6f}</Project>

@@ -1,6 +1,6 @@
 using System;
 
-namespace BlackFox.UsbHid.Portable
+namespace BlackFox.UsbHid
 {
     public static class EmptyArraySegment
     {
