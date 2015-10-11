@@ -217,7 +217,7 @@ namespace BlackFox.U2FHid.Tests
                 if (expected != null)
                 {
                     throw new InvalidOperationException(
-                        $"Not all steps were executed, finished at step {index} : {expected.Operation}.");
+                        $"Not all steps were executed. Finished while still expecting step {index+1}/{steps.Count} : {expected.Operation}.");
                 }
             }
         }

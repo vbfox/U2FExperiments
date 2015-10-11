@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using BlackFox.UsbHid;
 using NFluent;
+using NUnit.Framework;
 
 namespace BlackFox.U2FHid.Tests
 {
@@ -41,6 +42,14 @@ namespace BlackFox.U2FHid.Tests
                 {
                     size += ((BytesHolder)arg).ByteCount;
                 }
+                else if (type == typeof (ArraySegment<byte>))
+                {
+                    size += ((ArraySegment<byte>)arg).Count;
+                }
+                else if (type == typeof (byte[]))
+                {
+                    size += ((byte[])arg).Length;
+                }
                 else
                 {
                     throw new ArgumentException($"Unsupported type: {type.Name}", nameof(args));
@@ -75,6 +84,16 @@ namespace BlackFox.U2FHid.Tests
                         var holder = ((BytesHolder)arg);
                         writer.Write(holder.Bytes);
                     }
+                    else if (type == typeof(ArraySegment<byte>))
+                    {
+                        var segment = (ArraySegment<byte>)arg;
+                        writer.Write(segment.Array, segment.Offset, segment.Count);
+                    }
+                    else if (type == typeof(byte[]))
+                    {
+                        var array = (byte[])arg;
+                        writer.Write(array);
+                    }
                 }
 
                 return stream.GetBuffer();
@@ -83,12 +102,15 @@ namespace BlackFox.U2FHid.Tests
 
         public static void AssertBinary(ArraySegment<byte> actualBytes, params object[] expectedContent)
         {
+            var str = SegmentToString(actualBytes);
+
             using (var stream = actualBytes.AsStream())
             {
                 var reader = new BinaryReader(stream);
 
                 foreach (var expectedObject in expectedContent)
                 {
+                    var index = stream.Position;
                     var type = expectedObject.GetType();
                     if (type == typeof (uint))
                     {
@@ -106,14 +128,45 @@ namespace BlackFox.U2FHid.Tests
                     {
                         var expected = (byte)expectedObject;
                         var actual = reader.ReadByte();
-                        Check.That(actual).IsEqualTo(expected);
+                        if (actual != expected)
+                        {
+                            throw new AssertionException(
+                                $"Byte at index {index} is 0x{actual:X2} but 0x{expected:X2} was expected.\r\n\r\n{str}");
+                        }
                     } else if (type == typeof (BytesHolder))
                     {
                         var holder = (BytesHolder)expectedObject;
                         reader.Read(holder.Bytes, 0, holder.ByteCount);
                     }
+                    else if (type == typeof (ArraySegment<byte>))
+                    {
+                        var expected = (ArraySegment<byte>)expectedObject;
+                        var actual = new byte[expected.Count];
+                        reader.Read(actual, 0, actual.Length);
+                        Check.That(expected.ContentEquals(actual.Segment())).IsTrue();
+                    }
+                    else if (type == typeof (byte[]))
+                    {
+                        var expected = (byte[])expectedObject;
+                        var actual = new byte[expected.Length];
+                        reader.Read(actual, 0, actual.Length);
+                        if (!expected.Segment().ContentEquals(actual.Segment()))
+                        {
+                            var actualStr = SegmentToString(actual.Segment());
+                            var expectedStr = SegmentToString(expected.Segment());
+                            throw new AssertionException($"The 2 binary data differ, expected: \r\n{expectedStr}\r\nRead:\r\n{actualStr}\r\nFull actual data:\r\n{str}");
+                        }
+                    }
                 }
             }
+        }
+
+        static string SegmentToString(ArraySegment<byte> segment)
+        {
+            var w = new StringWriter();
+            segment.WriteAsHexTo(w);
+            var str = w.ToString();
+            return str;
         }
     }
 }

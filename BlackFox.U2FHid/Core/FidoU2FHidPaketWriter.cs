@@ -58,12 +58,12 @@ namespace BlackFox.U2FHid.Core
             log.Debug($"Sending U2FHid message {message.Command} on channel 0x{message.Channel:X8} with {message.Data.Count} bytes of data");
                 
             var report = device.CreateOutputReport();
-            var pakets = MakeOutputPackets(report.Data.Count, message);
-            pakets.Item1.WriteTo(report.Data);
+            var packets = MakeOutputPackets(report.Data.Count, message);
+            packets.Item1.WriteTo(report.Data);
             
             var task = device.SendOutputReportAsync(report);
 
-            foreach (var continuation in pakets.Item2)
+            foreach (var continuation in packets.Item2)
             {
                 task = task
                     .ContinueWith(previous => device.SendOutputReportAsync(ToOutputReport(device, continuation)))
