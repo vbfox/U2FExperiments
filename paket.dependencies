@@ -9,6 +9,7 @@ group Main
 group Tests
     source https://nuget.org/api/v2
 
+    nuget Moq
     nuget NUnit
     nuget NFluent
 

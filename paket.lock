@@ -35,5 +35,6 @@ GROUP Tests
 NUGET
   remote: https://nuget.org/api/v2
   specs:
+    Moq (4.2.1507.118)
     NFluent (1.3.1)
     NUnit (2.6.4)

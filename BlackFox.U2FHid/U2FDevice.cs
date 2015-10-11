@@ -175,7 +175,7 @@ namespace BlackFox.U2FHid
                 {
                     if (task.Result.Channel != query.Channel)
                     {
-                        throw new Exception("Woopsie");
+                        throw new Exception("Bad channel in query answer");
                     }
                     if (task.Result.Command == query.Command)
                     {

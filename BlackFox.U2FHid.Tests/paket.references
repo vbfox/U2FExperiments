@@ -1,3 +1,4 @@
 ﻿group Tests
+    Moq
     NUnit
     NFluent
