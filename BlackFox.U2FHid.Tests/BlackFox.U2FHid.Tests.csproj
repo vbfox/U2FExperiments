@@ -56,6 +56,19 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <ProjectReference Include="..\BlackFox.U2FHid\BlackFox.U2FHid.csproj">
+      <Project>{82a6d2fa-7322-40f9-8cc8-91af500be384}</Project>
+      <Name>BlackFox.U2FHid</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlackFox.UsbHid\BlackFox.UsbHid.csproj">
+      <Project>{9326377b-a51a-4cf4-b0f3-4a82060c419c}</Project>
+      <Name>BlackFox.UsbHid</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
+  </ItemGroup>
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v3.5'">
       <ItemGroup>
@@ -120,18 +133,5 @@
       <Private>True</Private>
       <Paket>True</Paket>
     </Reference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\BlackFox.U2FHid\BlackFox.U2FHid.csproj">
-      <Project>{82a6d2fa-7322-40f9-8cc8-91af500be384}</Project>
-      <Name>BlackFox.U2FHid</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\BlackFox.UsbHid\BlackFox.UsbHid.csproj">
-      <Project>{9326377b-a51a-4cf4-b0f3-4a82060c419c}</Project>
-      <Name>BlackFox.UsbHid</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82A7F48D-3B50-4B1E-B82E-3ADA8210C358}" />
   </ItemGroup>
 </Project>

@@ -23,9 +23,8 @@ namespace BlackFox.U2FHid.Core.RawPackets
         {
             if (segment.Count < NoDataSize)
             {
-                throw new ArgumentException(
-                    $"Data is too small, expected {NoDataSize} bytes but provided only {segment.Count}",
-                    nameof(segment));
+                throw new InvalidPacketSizeException(segment,
+                    $"Data is too small, expected {NoDataSize} bytes but provided only {segment.Count}");
             }
 
             var result = new InitializationPacket();
@@ -35,6 +34,8 @@ namespace BlackFox.U2FHid.Core.RawPackets
                 var reader = new BinaryReader(stream);
                 result.ChannelIdentifier = reader.ReadUInt32();
                 result.CommandIdentifier = reader.ReadByte();
+
+                CheckCommand(segment, result.CommandIdentifier);
 
                 var payloadLengthHi = reader.ReadByte();
                 var payloadLengthLo = reader.ReadByte();
@@ -46,6 +47,20 @@ namespace BlackFox.U2FHid.Core.RawPackets
                 remainingBytes);
 
             return result;
+        }
+
+        public static bool IsCommand(byte identifier)
+        {
+            return (identifier & 0x80) != 0x00;
+        }
+
+        private static void CheckCommand(ArraySegment<byte> data, byte commandIdentifier)
+        {
+            if (!IsCommand(commandIdentifier))
+            {
+                throw new InvalidCommandIdentifierException(data,
+                    $"The command ID is invalid for an initialization packet (0x{commandIdentifier:X2}) it might be a continuation one");
+            }
         }
 
         public void WriteTo([NotNull] Stream stream)

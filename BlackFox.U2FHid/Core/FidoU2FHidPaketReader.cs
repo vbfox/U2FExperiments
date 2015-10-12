@@ -14,16 +14,13 @@ namespace BlackFox.U2FHid.Core
             return new FidoU2FHidMessage(init.ChannelIdentifier, (U2FHidCommand)init.CommandIdentifier, init.Data);
         }
 
-        public static Task<FidoU2FHidMessage> ReadFidoU2FHidMessageAsync([NotNull] this IHidDevice device)
+        public static async Task<FidoU2FHidMessage> ReadFidoU2FHidMessageAsync([NotNull] this IHidDevice device)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
 
-            return device.GetInputReportAsync()
-                .ContinueWith(task =>
-                {
-                    var init = InitializationPacket.ReadFrom(task.Result.Data);
-                    return BuildMessage(init, null);
-                });
+            var inputReport = await device.GetInputReportAsync();
+            var init = InitializationPacket.ReadFrom(inputReport.Data);
+            return BuildMessage(init, null);
         }
     }
 }

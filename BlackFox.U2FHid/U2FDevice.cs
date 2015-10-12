@@ -138,15 +138,21 @@ namespace BlackFox.U2FHid
             return Init(nonce.Segment());
         }
 
-        public static Task<U2FDevice> Open([NotNull] IHidDevice device, bool closeDeviceOnDispose = true)
+        public static async Task<U2FDevice> OpenAsync([NotNull] IHidDevice device, bool closeDeviceOnDispose = true)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
 
             var instance = new U2FDevice(device, closeDeviceOnDispose);
-            return instance.Init()
-                .ContinueWith(
-                    response => instance,
-                    TaskContinuationOptions.OnlyOnRanToCompletion);
+            try
+            {
+                await instance.Init();
+                return instance;
+            }
+            catch
+            {
+                instance.Dispose();
+                throw;
+            }
         }
 
         public Task Wink()
@@ -166,33 +172,31 @@ namespace BlackFox.U2FHid
             return Query(message).ContinueWith(task => task.Result.Data);
         }
 
-        Task<FidoU2FHidMessage> Query(FidoU2FHidMessage query)
+        async Task<FidoU2FHidMessage> Query(FidoU2FHidMessage query)
         {
-            return device.WriteFidoU2FHidMessageAsync(query)
-                .ContinueWith(_ => device.ReadFidoU2FHidMessageAsync(), TaskContinuationOptions.OnlyOnRanToCompletion)
-                .Unwrap()
-                .ContinueWith(task =>
-                {
-                    if (task.Result.Channel != query.Channel)
-                    {
-                        throw new Exception("Bad channel in query answer");
-                    }
-                    if (task.Result.Command == query.Command)
-                    {
-                        return task.Result;
-                    }
-                    else if (task.Result.Command == U2FHidCommand.Error)
-                    {
-                        ThrowForError(task.Result);
-                        return task.Result;
-                    }
-                    else
-                    {
-                        throw new Exception("Bad answer ???");
-                    }
-                }, TaskContinuationOptions.OnlyOnRanToCompletion);
+            await device.WriteFidoU2FHidMessageAsync(query);
+            var init = await device.ReadFidoU2FHidMessageAsync();
+
+            if (init.Channel != query.Channel)
+            {
+                throw new Exception($"Bad channel in query answer (0x{init.Channel:X8} but expected 0x{query.Channel:X8})");
+            }
+
+            if (init.Command == U2FHidCommand.Error)
+            {
+                ThrowForError(init);
+                return init;
+            }
+
+            if (init.Command != query.Command)
+            {
+                throw new Exception($"Bad command in query answer ({init.Command} but expected {query.Command})");
+            }
+
+            return init;
         }
 
+        [ContractAnnotation("=> halt")]
         static void ThrowForError(FidoU2FHidMessage message)
         {
             Debug.Assert(message.Command == U2FHidCommand.Error);

@@ -5,6 +5,7 @@ group Main
     nuget Common.Logging ~> 3.3
     nuget Common.Logging.Portable ~> 3.3
     nuget Common.Logging.NLog40 ~> 3.3
+	nuget Microsoft.Bcl.Async
 
 group Tests
     source https://nuget.org/api/v2
