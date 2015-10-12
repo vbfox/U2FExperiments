@@ -168,6 +168,11 @@ namespace BlackFox.U2FHid
         {
             var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Ping, pingData);
             var response = await Query(message);
+            if (!pingData.ContentEquals(response.Data))
+            {
+                throw new InvalidPingResponseException("The device didn't echo back our ping message.");
+            }
+
             return response.Data;
         }
 
@@ -212,18 +217,8 @@ namespace BlackFox.U2FHid
 
         public async Task Ping()
         {
-            const string answer = "Pong !";
-
-            var data = Encoding.UTF8.GetBytes(answer);
-            var pingResponse = await Ping(data.Segment());
-
-            var str = Encoding.UTF8.GetString(pingResponse.Array,
-                    pingResponse.Offset, pingResponse.Count);
-
-            if (str != answer)
-            {
-                throw new InvalidPingResponseException("The device didn't echo back our ping message.");
-            }
+            var data = Encoding.UTF8.GetBytes("Pong !");
+            await Ping(data.Segment());
         }
 
         public void Dispose()

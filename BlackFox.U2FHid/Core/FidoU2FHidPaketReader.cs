@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using BlackFox.U2FHid.Core.RawPackets;
 using BlackFox.UsbHid;
@@ -11,16 +12,42 @@ namespace BlackFox.U2FHid.Core
     {
         static FidoU2FHidMessage BuildMessage(InitializationPacket init, List<ContinuationPacket> continuations)
         {
-            return new FidoU2FHidMessage(init.ChannelIdentifier, (U2FHidCommand)init.CommandIdentifier, init.Data);
+            var stream = new MemoryStream(init.PayloadLength);
+            stream.Write(init.Data.Array, init.Data.Offset, init.Data.Count);
+            foreach (var continuation in continuations)
+            {
+                stream.Write(continuation.Data.Array, continuation.Data.Offset, continuation.Data.Count);
+            }
+
+            var data = stream.ToArray().Segment();
+            return new FidoU2FHidMessage(init.ChannelIdentifier, (U2FHidCommand)init.CommandIdentifier, data);
         }
 
         public static async Task<FidoU2FHidMessage> ReadFidoU2FHidMessageAsync([NotNull] this IHidDevice device)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
 
-            var inputReport = await device.GetInputReportAsync();
-            var init = InitializationPacket.ReadFrom(inputReport.Data);
-            return BuildMessage(init, null);
+            var initReport = await device.GetInputReportAsync();
+            var init = InitializationPacket.ReadFrom(initReport.Data);
+
+            var dataSizeReceived = init.Data.Count;
+            var continuations = new List<ContinuationPacket>();
+            byte index = 0;
+            while (dataSizeReceived < init.PayloadLength)
+            {
+                var continuationReport = await device.GetInputReportAsync();
+                var continuation = ContinuationPacket.ReadFrom(continuationReport.Data, init.PayloadLength - dataSizeReceived);
+                if (continuation.PaketSequence != index)
+                {
+                    throw new InvalidSequenceNumberException(continuationReport.Data,
+                        $"The sequence number isn't the expected one, expected {index} but read {continuation.PaketSequence}");
+                }
+                continuations.Add(continuation);
+                dataSizeReceived += continuation.Data.Count;
+                index += 1;
+            }
+
+            return BuildMessage(init, continuations);
         }
     }
 }

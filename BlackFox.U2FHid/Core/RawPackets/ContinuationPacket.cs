@@ -18,9 +18,43 @@ namespace BlackFox.U2FHid.Core.RawPackets
         private string DebuggerDisplay =>
             $"Continuation Paket {PaketSequence} of sequence, {Data.Count} bytes on channel 0x{ChannelIdentifier:X8}";
 
-        public static ContinuationPacket ReadFrom(ArraySegment<byte> segment)
+        public static ContinuationPacket ReadFrom(ArraySegment<byte> segment, int maxDataSize)
         {
-            throw new NotImplementedException();
+            if (segment.Count < NoDataSize)
+            {
+                throw new InvalidPacketSizeException(segment,
+                    $"Data is too small, expected {NoDataSize} bytes but provided only {segment.Count}");
+            }
+
+            var result = new ContinuationPacket();
+
+            using (var stream = new MemoryStream(segment.Array, segment.Offset, segment.Count))
+            {
+                var reader = new BinaryReader(stream);
+                result.ChannelIdentifier = reader.ReadUInt32();
+                result.PaketSequence = reader.ReadByte();
+
+                CheckSequence(segment, result.PaketSequence);
+            }
+
+            var remainingBytes = Math.Min(maxDataSize, segment.Count - NoDataSize);
+            result.Data = new ArraySegment<byte>(segment.Array, segment.Offset + NoDataSize, remainingBytes);
+
+            return result;
+        }
+
+        public static bool IsSequence(byte identifier)
+        {
+            return (identifier & 0x80) == 0x00;
+        }
+
+        private static void CheckSequence(ArraySegment<byte> data, byte commandIdentifier)
+        {
+            if (!IsSequence(commandIdentifier))
+            {
+                throw new InvalidSequenceNumberException(data,
+                    $"The sequence number is invalid (0x{commandIdentifier:X2}) it might be an initialization one");
+            }
         }
 
         public void WriteTo([NotNull] Stream stream)

@@ -59,7 +59,7 @@ namespace BlackFox.U2FHid.Core.RawPackets
             if (!IsCommand(commandIdentifier))
             {
                 throw new InvalidCommandIdentifierException(data,
-                    $"The command ID is invalid for an initialization packet (0x{commandIdentifier:X2}) it might be a continuation one");
+                    $"The command ID is invalid (0x{commandIdentifier:X2}) it might be a continuation one");
             }
         }
 

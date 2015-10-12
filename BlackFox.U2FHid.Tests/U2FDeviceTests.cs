@@ -92,19 +92,19 @@ namespace BlackFox.U2FHid.Tests
         }
 
         [Test]
-        public void PingWithContinuation()
+        public async Task PingWithContinuation()
         {
             // Setup
             var pingData = new byte[100];
             new Random().NextBytes(pingData);
-            var initData = pingData.Take(63 - 7).ToArray();
-            var contData = pingData.Skip(63 - 7).Take(63 - 5).ToArray();
+            var writeInitData = pingData.Take(63 - 7).ToArray();
+            var writeContData = pingData.Skip(63 - 7).Take(63 - 5).ToArray();
 
             var scenario = HidScenario.Build();
-            scenario.Write(report => AssertWriteInitPacketSized(report.Data, TEST_CHANNEL, U2FHidCommand.Ping, pingData.Length, initData));
-            scenario.Write(report => AssertWriteContinuation(report.Data, TEST_CHANNEL, 0, contData));
-            scenario.Read(() => new HidInputReport(BuildInitPacket(TEST_CHANNEL, U2FHidCommand.Ping, contData)));
-            scenario.Read(() => new HidInputReport(BuildContinuationPacket(TEST_CHANNEL, 0, contData)));
+            scenario.Write(report => AssertWriteInitPacketSized(report.Data, TEST_CHANNEL, U2FHidCommand.Ping, pingData.Length, writeInitData));
+            scenario.Write(report => AssertWriteContinuation(report.Data, TEST_CHANNEL, 0, writeContData));
+            scenario.Read(() => new HidInputReport(BuildInitPacketSized(TEST_CHANNEL, U2FHidCommand.Ping, pingData.Length, writeInitData)));
+            scenario.Read(() => new HidInputReport(BuildContinuationPacket(TEST_CHANNEL, 0, writeContData)));
 
             var hid = CreateHidMock();
             var device = new U2FDevice(hid.Object, false);
@@ -113,7 +113,7 @@ namespace BlackFox.U2FHid.Tests
             scenario.Run(hid);
 
             // Act
-            var returnedResponse = device.Ping(pingData.Segment()).Result;
+            var returnedResponse = await device.Ping(pingData.Segment());
 
             // Assert
             scenario.End();
@@ -203,9 +203,14 @@ namespace BlackFox.U2FHid.Tests
             AssertWriteInitPacketSized(actual, channel, command, size, data);
         }
 
-        static ArraySegment<byte> BuildInitPacket(uint channel, U2FHidCommand command, params object[] data)
+        private static ArraySegment<byte> BuildInitPacket(uint channel, U2FHidCommand command, params object[] data)
         {
             var size = GetSize(data);
+            return BuildInitPacketSized(channel, command, size, data);
+        }
+
+        static ArraySegment<byte> BuildInitPacketSized(uint channel, U2FHidCommand command, int size, params object[] data)
+        {
             var sizeHi = (byte)((size >> 8) & 0xFF);
             var sizeLo = (byte)((size >> 0) & 0xFF);
 

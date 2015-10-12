@@ -45,6 +45,7 @@
     <Compile Include="Core\FidoU2FHidPaketReader.cs" />
     <Compile Include="Core\FidoU2FHidPaketWriter.cs" />
     <Compile Include="Core\FidoU2FIdentification.cs" />
+    <Compile Include="Core\InvalidSequenceNumberException.cs" />
     <Compile Include="Core\RawPackets\InvalidCommandIdentifierException.cs" />
     <Compile Include="Core\RawPackets\InvalidPacketException.cs" />
     <Compile Include="Core\RawPackets\InvalidPacketSizeException.cs" />
