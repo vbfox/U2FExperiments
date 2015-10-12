@@ -72,7 +72,7 @@ namespace BlackFox.U2FHid
 
         [NotNull]
         [ItemNotNull]
-        public Task<InitResponse> Init(ArraySegment<byte> nonce)
+        public async Task<InitResponse> Init(ArraySegment<byte> nonce)
         {
             if (nonce.Count != INIT_NONCE_SIZE)
             {
@@ -83,10 +83,8 @@ namespace BlackFox.U2FHid
 
             log.Info("Sending initialization");
             var message = new FidoU2FHidMessage(BROADCAST_CHANNEL, U2FHidCommand.Init, nonce);
-            return Query(message)
-                .ContinueWith(
-                    task => OnInitAnswered(task.Result, nonce),
-                    TaskContinuationOptions.OnlyOnRanToCompletion);
+            var answer = await Query(message);
+            return OnInitAnswered(answer, nonce);
         }
 
         InitResponse OnInitAnswered(FidoU2FHidMessage response, ArraySegment<byte> nonce)
@@ -166,10 +164,11 @@ namespace BlackFox.U2FHid
             throw new NotImplementedException();
         }
 
-        public Task<ArraySegment<byte>> Ping(ArraySegment<byte> pingData)
+        public async Task<ArraySegment<byte>> Ping(ArraySegment<byte> pingData)
         {
             var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Ping, pingData);
-            return Query(message).ContinueWith(task => task.Result.Data);
+            var response = await Query(message);
+            return response.Data;
         }
 
         async Task<FidoU2FHidMessage> Query(FidoU2FHidMessage query)
@@ -211,23 +210,20 @@ namespace BlackFox.U2FHid
             throw new Exception("Error: " + EnumDescription.Get(error));
         }
 
-        public Task Ping()
+        public async Task Ping()
         {
             const string answer = "Pong !";
 
             var data = Encoding.UTF8.GetBytes(answer);
-            return Ping(data.Segment()).ContinueWith(task =>
+            var pingResponse = await Ping(data.Segment());
+
+            var str = Encoding.UTF8.GetString(pingResponse.Array,
+                    pingResponse.Offset, pingResponse.Count);
+
+            if (str != answer)
             {
-                var str = Encoding.UTF8.GetString(task.Result.Array,
-                    task.Result.Offset, task.Result.Count);
-
-                if (str != answer)
-                {
-                    throw new InvalidPingResponseException("The device didn't echo back our ping message.");
-                }
-
-                return true;
-            }, TaskContinuationOptions.OnlyOnRanToCompletion);
+                throw new InvalidPingResponseException("The device didn't echo back our ping message.");
+            }
         }
 
         public void Dispose()

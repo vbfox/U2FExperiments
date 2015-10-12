@@ -50,7 +50,7 @@ namespace BlackFox.U2FHid.Core
             return Tuple.Create(init, continuations);
         }
 
-        public static Task WriteFidoU2FHidMessageAsync([NotNull] this IHidDevice device, [NotNull] FidoU2FHidMessage message)
+        public static async Task WriteFidoU2FHidMessageAsync([NotNull] this IHidDevice device, [NotNull] FidoU2FHidMessage message)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
             if (message == null) throw new ArgumentNullException(nameof(message));
@@ -61,15 +61,12 @@ namespace BlackFox.U2FHid.Core
             var packets = MakeOutputPackets(report.Data.Count, message);
             packets.Item1.WriteTo(report.Data);
             
-            var task = device.SendOutputReportAsync(report);
+            await device.SendOutputReportAsync(report);
 
             foreach (var continuation in packets.Item2)
             {
-                task = task
-                    .ContinueWith(previous => device.SendOutputReportAsync(ToOutputReport(device, continuation)))
-                    .Unwrap();
+                await device.SendOutputReportAsync(ToOutputReport(device, continuation));
             }
-            return task;
         }
 
         static HidOutputReport ToOutputReport(IHidDevice device, ContinuationPacket continuation)
