@@ -12,14 +12,24 @@ namespace BlackFox.U2FHid.Core
     {
         static FidoU2FHidMessage BuildMessage(InitializationPacket init, List<ContinuationPacket> continuations)
         {
-            var stream = new MemoryStream(init.PayloadLength);
-            stream.Write(init.Data.Array, init.Data.Offset, init.Data.Count);
-            foreach (var continuation in continuations)
+            ArraySegment<byte> data;
+            if (continuations.Count > 0)
             {
-                stream.Write(continuation.Data.Array, continuation.Data.Offset, continuation.Data.Count);
+                // We must allocate memory to reconstruct the message
+                var stream = new MemoryStream(init.PayloadLength);
+                stream.Write(init.Data.Array, init.Data.Offset, init.Data.Count);
+                foreach (var continuation in continuations)
+                {
+                    stream.Write(continuation.Data.Array, continuation.Data.Offset, continuation.Data.Count);
+                }
+                data = stream.ToArray().Segment();
+            }
+            else
+            {
+                // No need to reconstruct the message
+                data = init.Data;
             }
 
-            var data = stream.ToArray().Segment();
             return new FidoU2FHidMessage(init.ChannelIdentifier, (U2FHidCommand)init.CommandIdentifier, data);
         }
 

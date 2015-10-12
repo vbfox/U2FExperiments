@@ -65,9 +65,11 @@ namespace BlackFox.U2FHid
 
         [NotNull]
         [ItemNotNull]
-        public Task<ArraySegment<byte>> SendU2FMessage(ArraySegment<byte> message)
+        public async Task<ArraySegment<byte>> SendU2FMessage(ArraySegment<byte> message)
         {
-            throw new NotImplementedException();
+            var fidoMessage = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Message);
+            var response = await Query(fidoMessage);
+            return response.Data;
         }
 
         [NotNull]
@@ -159,24 +161,44 @@ namespace BlackFox.U2FHid
             return Query(message);
         }
 
-        public Task<bool> Lock()
+        public Task<bool> ReleaseLock()
         {
-            throw new NotImplementedException();
+            return Lock(0);
         }
 
-        public async Task<ArraySegment<byte>> Ping(ArraySegment<byte> pingData)
+        /// <summary>
+        /// The lock command places an exclusive lock for one channel to communicate with the device.
+        /// As long as the lock is active, any other channel trying to send a message will fail.
+        /// In order to prevent a stalling or crashing application to lock the device indefinitely, a lock time up to
+        /// 10 seconds may be set. An application requiring a longer lock has to send repeating lock commands to
+        /// maintain the lock.
+        /// </summary>
+        public async Task<bool> Lock(byte timeInSeconds)
         {
-            var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Ping, pingData);
-            var response = await Query(message);
-            if (!pingData.ContentEquals(response.Data))
+            if (timeInSeconds > 10)
             {
-                throw new InvalidPingResponseException("The device didn't echo back our ping message.");
+                throw new ArgumentOutOfRangeException(nameof(timeInSeconds), timeInSeconds,
+                    "Lock time must be between 0 and 10s");
             }
 
-            return response.Data;
+            var data = new [] { timeInSeconds }.Segment();
+            var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Lock, data);
+            var response = await Query(message, false);
+            if (response.Command == U2FHidCommand.Error)
+            {
+                var errorCode = GetError(response);
+                if (errorCode == U2FHidErrors.Busy)
+                {
+                    return false;
+                }
+
+                ThrowForError(response);
+            }
+
+            return true;
         }
 
-        async Task<FidoU2FHidMessage> Query(FidoU2FHidMessage query)
+        async Task<FidoU2FHidMessage> Query(FidoU2FHidMessage query, bool throwErrors = true)
         {
             await device.WriteFidoU2FHidMessageAsync(query);
             var init = await device.ReadFidoU2FHidMessageAsync();
@@ -188,7 +210,10 @@ namespace BlackFox.U2FHid
 
             if (init.Command == U2FHidCommand.Error)
             {
-                ThrowForError(init);
+                if (throwErrors)
+                {
+                    ThrowForError(init);
+                }
                 return init;
             }
 
@@ -203,6 +228,12 @@ namespace BlackFox.U2FHid
         [ContractAnnotation("=> halt")]
         static void ThrowForError(FidoU2FHidMessage message)
         {
+            var error = GetError(message);
+            throw new Exception("Error: " + EnumDescription.Get(error));
+        }
+
+        private static U2FHidErrors GetError(FidoU2FHidMessage message)
+        {
             Debug.Assert(message.Command == U2FHidCommand.Error);
 
             if (message.Data.Count < 1)
@@ -210,15 +241,34 @@ namespace BlackFox.U2FHid
                 throw new Exception("Bad length for error");
             }
 
-            var error = (U2FHidErrors)message.Data.AsEnumerable().First();
-
-            throw new Exception("Error: " + EnumDescription.Get(error));
+            var error = (U2FHidErrors) message.Data.AsEnumerable().First();
+            return error;
         }
 
+        /// <summary>
+        /// Sends a transaction to the device, which immediately echoes the same data back.
+        /// This command is defined to be an uniform function for debugging, latency and performance measurements.
+        /// </summary>
         public async Task Ping()
         {
             var data = Encoding.UTF8.GetBytes("Pong !");
             await Ping(data.Segment());
+        }
+
+        /// <summary>
+        /// Sends a transaction to the device, which immediately echoes the same data back.
+        /// This command is defined to be an uniform function for debugging, latency and performance measurements.
+        /// </summary>
+        public async Task<ArraySegment<byte>> Ping(ArraySegment<byte> pingData)
+        {
+            var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Ping, pingData);
+            var response = await Query(message);
+            if (!pingData.ContentEquals(response.Data))
+            {
+                throw new InvalidPingResponseException("The device didn't echo back our ping message.");
+            }
+
+            return response.Data;
         }
 
         public void Dispose()

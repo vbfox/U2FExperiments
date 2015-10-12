@@ -50,10 +50,9 @@ namespace BlackFox.U2FHid.Core
             return Tuple.Create(init, continuations);
         }
 
-        public static async Task WriteFidoU2FHidMessageAsync([NotNull] this IHidDevice device, [NotNull] FidoU2FHidMessage message)
+        public static async Task WriteFidoU2FHidMessageAsync([NotNull] this IHidDevice device, FidoU2FHidMessage message)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
-            if (message == null) throw new ArgumentNullException(nameof(message));
 
             log.Debug($"Sending U2FHid message {message.Command} on channel 0x{message.Channel:X8} with {message.Data.Count} bytes of data");
                 

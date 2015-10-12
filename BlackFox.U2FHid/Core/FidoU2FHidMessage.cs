@@ -3,7 +3,7 @@ using BlackFox.UsbHid;
 
 namespace BlackFox.U2FHid.Core
 {
-    public class FidoU2FHidMessage
+    public struct FidoU2FHidMessage
     {
         public uint Channel { get; }
         public U2FHidCommand Command { get; }
