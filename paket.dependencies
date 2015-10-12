@@ -1,11 +1,13 @@
 group Main
     source https://nuget.org/api/v2
 
-    nuget NLog ~> 4.1
-    nuget Common.Logging ~> 3.3
-    nuget Common.Logging.Portable ~> 3.3
-    nuget Common.Logging.NLog40 ~> 3.3
+    nuget NLog
+    nuget Common.Logging
+    nuget Common.Logging.Portable
+    nuget Common.Logging.NLog40
 	nuget Microsoft.Bcl.Async
+    nuget Newtonsoft.Json
+    nuget Portable.BouncyCastle
 
 group Tests
     source https://nuget.org/api/v2

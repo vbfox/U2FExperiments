@@ -18,6 +18,11 @@ I might also experiment with :
 * [Windows.Devices.HumanInterfaceDevice][Windows10Hid] to get Windows 10
   support. (Also to steal their nice API)
 
+Other FIDO U2F Projects in .Net :
+
+* https://github.com/hanswolff/fido-u2f-net MIT, Client only
+* https://github.com/matsprea/AspNetIdentity_U2F/tree/master/U2F Apache License, Full port of the official Google code
+
 Warning
 -------
 

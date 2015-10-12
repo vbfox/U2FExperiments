@@ -23,6 +23,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.U2FHid", "BlackFox
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.U2FHid.Tests", "BlackFox.U2FHid.Tests\BlackFox.U2FHid.Tests.csproj", "{6781A77F-B12F-46A7-9031-7DC282226A11}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.U2F", "BlackFox.U2F\BlackFox.U2F.csproj", "{029AD986-B1C8-4713-AAC6-783761E8D042}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,6 +55,10 @@ Global
 		{6781A77F-B12F-46A7-9031-7DC282226A11}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6781A77F-B12F-46A7-9031-7DC282226A11}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6781A77F-B12F-46A7-9031-7DC282226A11}.Release|Any CPU.Build.0 = Release|Any CPU
+		{029AD986-B1C8-4713-AAC6-783761E8D042}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{029AD986-B1C8-4713-AAC6-783761E8D042}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{029AD986-B1C8-4713-AAC6-783761E8D042}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{029AD986-B1C8-4713-AAC6-783761E8D042}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

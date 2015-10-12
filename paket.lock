@@ -14,7 +14,9 @@ NUGET
     Microsoft.Bcl.Async (1.0.168)
       Microsoft.Bcl (>= 1.1.8)
     Microsoft.Bcl.Build (1.0.21) - import_targets: false
+    Newtonsoft.Json (7.0.1)
     NLog (4.1.2)
+    Portable.BouncyCastle (1.7.0.2)
 
 GROUP Fake
 NUGET
