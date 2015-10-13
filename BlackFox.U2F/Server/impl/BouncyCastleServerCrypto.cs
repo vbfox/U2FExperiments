@@ -1,5 +1,5 @@
 using System;
-using Org.BouncyCastle.Asn1.X9;
+using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Math.EC;
@@ -8,7 +8,7 @@ using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Server.impl
 {
-    public class BouncyCastleCrypto : IServerCrypto
+    public class BouncyCastleServerCrypto : IServerCrypto
     {
         public bool VerifySignature(X509Certificate attestationCertificate, byte[] signedBytes, byte[] signature)
         {
@@ -16,6 +16,15 @@ namespace BlackFox.U2F.Server.impl
             {
                 throw new ArgumentNullException(nameof(attestationCertificate));
             }
+            if (signedBytes == null)
+            {
+                throw new ArgumentNullException(nameof(signedBytes));
+            }
+            if (signature == null)
+            {
+                throw new ArgumentNullException(nameof(signature));
+            }
+
             var publicKey = attestationCertificate.GetPublicKey() as ECPublicKeyParameters;
             if (publicKey == null)
             {
@@ -27,6 +36,19 @@ namespace BlackFox.U2F.Server.impl
 
         public bool VerifySignature(ECPublicKeyParameters publicKey, byte[] signedBytes, byte[] signature)
         {
+            if (publicKey == null)
+            {
+                throw new ArgumentNullException(nameof(publicKey));
+            }
+            if (signedBytes == null)
+            {
+                throw new ArgumentNullException(nameof(signedBytes));
+            }
+            if (signature == null)
+            {
+                throw new ArgumentNullException(nameof(signature));
+            }
+
             try
             {
                 var ecdsaSignature = SignerUtilities.GetSigner("SHA-256withECDSA");
@@ -48,7 +70,7 @@ namespace BlackFox.U2F.Server.impl
         {
             try
             {
-                var curve = X962NamedCurves.GetByName("secp256r1");
+                var curve = SecNamedCurves.GetByName("secp256r1");
                 if (curve == null)
                 {
                     throw new U2FException("Named curve 'secp256r1' isn't supported");

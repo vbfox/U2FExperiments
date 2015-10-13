@@ -80,7 +80,7 @@
     <Compile Include="Server\data\SecurityKeyData.cs" />
     <Compile Include="Server\data\SecurityKeyDataTransports.cs" />
     <Compile Include="Server\data\SignSessionData.cs" />
-    <Compile Include="Server\impl\BouncyCastleCrypto.cs" />
+    <Compile Include="Server\impl\BouncyCastleServerCrypto.cs" />
     <Compile Include="Server\impl\MemoryDataStore.cs" />
     <Compile Include="Server\impl\U2FServerReferenceImpl.cs" />
     <Compile Include="Server\messages\RegistrationRequest.cs" />

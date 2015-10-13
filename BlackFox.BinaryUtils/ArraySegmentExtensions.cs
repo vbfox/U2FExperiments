@@ -221,7 +221,7 @@ namespace BlackFox.BinaryUtils
             var end = offset + count;
             for(var i = offset; i < end; i++)
             {
-                writer.Write("{0:X2} ", array[i]);
+                writer.Write("{0:X2}", array[i]);
             }
         }
     }

@@ -1,3 +1,5 @@
+using System;
+using JetBrains.Annotations;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
@@ -6,11 +8,18 @@ namespace BlackFox.U2F.Key.impl
 {
 	public class BouncyCastleCrypto : IKeyCrypto
 	{
-		/// <exception cref="U2FException"/>
-		public byte[] Sign(byte[] signedData, ECPrivateKeyParameters privateKey
-			)
+		public byte[] Sign(byte[] signedData, ECPrivateKeyParameters privateKey)
 		{
-			try
+		    if (signedData == null)
+		    {
+		        throw new ArgumentNullException(nameof(signedData));
+		    }
+		    if (privateKey == null)
+		    {
+		        throw new ArgumentNullException(nameof(privateKey));
+		    }
+
+		    try
 			{
 			    var signature = SignerUtilities.GetSigner("SHA-256withECDSA");
 				signature.Init(true, privateKey);

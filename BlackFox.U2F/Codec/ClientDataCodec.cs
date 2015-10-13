@@ -14,7 +14,7 @@ namespace BlackFox.U2F.Codec
 
         public const string JsonPropertyServerOrigin = "origin";
 
-        public const string JsonPropertyChannelID = "cid_pubkey";
+        public const string JsonPropertyChannelId = "cid_pubkey";
 
         // Constants for ClientData.typ
         // Constants for building ClientData.challenge
@@ -26,7 +26,7 @@ namespace BlackFox.U2F.Codec
             {
                 { JsonPropertyRequestType, requestType },
                 { JsonPropertyServerChallengeBase64, serverChallengeBase64 },
-                { JsonPropertyChannelID, jsonChannelId },
+                { JsonPropertyChannelId, jsonChannelId },
                 { JsonPropertyServerOrigin, origin }
             };
             return browserData.ToString();

@@ -25,5 +25,42 @@ namespace BlackFox.U2F.Server.messages
 
         /// <summary>application id originally passed</summary>
         public string AppId { get; }
+
+        protected bool Equals(SignResponse other)
+        {
+            return string.Equals(Bd, other.Bd) && string.Equals(Sign, other.Sign) &&
+                   string.Equals(Challenge, other.Challenge) && string.Equals(SessionId, other.SessionId) &&
+                   string.Equals(AppId, other.AppId);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+            return Equals((SignResponse) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = (Bd != null ? Bd.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (Sign != null ? Sign.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (Challenge != null ? Challenge.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (SessionId != null ? SessionId.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (AppId != null ? AppId.GetHashCode() : 0);
+                return hashCode;
+            }
+        }
     }
 }

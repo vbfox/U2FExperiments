@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using JetBrains.Annotations;
 using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Server.data
@@ -9,13 +11,27 @@ namespace BlackFox.U2F.Server.data
     {
         public SecurityKeyData(long enrollmentTime, byte[] keyHandle, byte[] publicKey, X509Certificate attestationCert,
             int counter)
-            : this(enrollmentTime, null, keyHandle, publicKey, attestationCert, counter)
+            : this(enrollmentTime, null, keyHandle, publicKey, attestationCert, counter
+                )
         {
         }
 
-        public SecurityKeyData(long enrollmentTime, IList<SecurityKeyDataTransports> transports, byte[] keyHandle,
-            byte[] publicKey, X509Certificate attestationCert, int counter)
+        public SecurityKeyData(long enrollmentTime, [CanBeNull] IList<SecurityKeyDataTransports> transports,
+            [NotNull] byte[] keyHandle, [NotNull] byte[] publicKey, [NotNull] X509Certificate attestationCert,
+            int counter)
         {
+            if (keyHandle == null)
+            {
+                throw new ArgumentNullException(nameof(keyHandle));
+            }
+            if (publicKey == null)
+            {
+                throw new ArgumentNullException(nameof(publicKey));
+            }
+            if (attestationCert == null)
+            {
+                throw new ArgumentNullException(nameof(attestationCert));
+            }
             /* transports */
             EnrollmentTime = enrollmentTime;
             Transports = transports;
@@ -27,6 +43,7 @@ namespace BlackFox.U2F.Server.data
 
         /// <summary>When these keys were created/enrolled with the relying party.</summary>
         public long EnrollmentTime { get; }
+
         public IList<SecurityKeyDataTransports> Transports { get; }
         public byte[] KeyHandle { get; }
         public byte[] PublicKey { get; }
@@ -37,9 +54,10 @@ namespace BlackFox.U2F.Server.data
         /// <param name="transports1">first List of Transports</param>
         /// <param name="transports2">second List of Transports</param>
         /// <returns>
-        /// True if both lists are null or if both lists contain the same transport values
+        ///     True if both lists are null or if both lists contain the same transport values
         /// </returns>
-        public static bool ContainSameTransports(IList<SecurityKeyDataTransports> transports1, IList<SecurityKeyDataTransports> transports2)
+        public static bool ContainSameTransports(IList<SecurityKeyDataTransports> transports1,
+            IList<SecurityKeyDataTransports> transports2)
         {
             if (transports1 == null && transports2 == null)
             {
@@ -61,8 +79,46 @@ namespace BlackFox.U2F.Server.data
                 .AppendFormat("counter: {0}\n", Counter)
                 .AppendFormat("attestation certificate:\n")
                 .Append(AttestationCertificate)
-                .AppendFormat("transports: {0}\n", string.Join(", ", Transports.Select(t => t.ToString())))
+                .AppendFormat("transports: {0}\n", Transports == null ? "" : string.Join(", ", Transports.Select(t => t.ToString())))
                 .ToString();
+        }
+
+        protected bool Equals(SecurityKeyData other)
+        {
+            return EnrollmentTime == other.EnrollmentTime && ContainSameTransports(Transports, other.Transports) &&
+                   KeyHandle.SequenceEqual(other.KeyHandle) && PublicKey.SequenceEqual(other.PublicKey) &&
+                   Equals(AttestationCertificate, other.AttestationCertificate) && Counter == other.Counter;
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+            return Equals((SecurityKeyData) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            unchecked
+            {
+                var hashCode = EnrollmentTime.GetHashCode();
+                hashCode = (hashCode*397) ^ (Transports != null ? Transports.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (KeyHandle != null ? KeyHandle.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (PublicKey != null ? PublicKey.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ (AttestationCertificate != null ? AttestationCertificate.GetHashCode() : 0);
+                hashCode = (hashCode*397) ^ Counter;
+                return hashCode;
+            }
         }
     }
 }

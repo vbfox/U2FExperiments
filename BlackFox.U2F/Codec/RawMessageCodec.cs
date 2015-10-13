@@ -1,6 +1,5 @@
 using System.IO;
 using BlackFox.U2F.Key.messages;
-using Org.BouncyCastle.OpenSsl;
 using Org.BouncyCastle.Security.Certificates;
 using Org.BouncyCastle.X509;
 
