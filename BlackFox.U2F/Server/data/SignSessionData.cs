@@ -20,7 +20,7 @@ namespace BlackFox.U2F.Server.data
 			this.publicKey = publicKey;
 		}
 
-		public virtual byte[] GetPublicKey()
+		public byte[] GetPublicKey()
 		{
 			return publicKey;
 		}

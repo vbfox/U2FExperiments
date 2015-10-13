@@ -19,12 +19,12 @@ namespace BlackFox.U2F.Key.messages
 	    /// (hence the name of the parameter). See below for a detailed explanation of
 	    /// Client Data.
 	    /// </remarks>
-	    public virtual byte[] ChallengeSha256 { get; }
+	    public byte[] ChallengeSha256 { get; }
 
 	    /// <summary>
 	    /// The application parameter is the SHA-256 hash of the application identity
 	    /// of the application requesting the registration
 	    /// </summary>
-	    public virtual byte[] ApplicationSha256 { get; }
+	    public byte[] ApplicationSha256 { get; }
 	}
 }

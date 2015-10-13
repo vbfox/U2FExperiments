@@ -7,7 +7,7 @@ namespace BlackFox.U2F.Key.impl
 	public class BouncyCastleCrypto : ICrypto
 	{
 		/// <exception cref="U2FException"/>
-		public virtual byte[] Sign(byte[] signedData, ECPrivateKeyParameters privateKey
+		public byte[] Sign(byte[] signedData, ECPrivateKeyParameters privateKey
 			)
 		{
 			try

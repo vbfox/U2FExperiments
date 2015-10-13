@@ -47,6 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentExtensions.cs">
+      <Link>Utils\ArraySegmentExtensions.cs</Link>
+    </Compile>
     <Compile Include="ResharperAnnotations.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

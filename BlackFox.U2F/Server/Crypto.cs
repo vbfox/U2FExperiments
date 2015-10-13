@@ -9,7 +9,7 @@ namespace BlackFox.U2F.Server
 	public interface ICrypto
 	{
 		/// <exception cref="U2FException"/>
-		bool verifySignature(rg.BouncyCastle.X509.X509Certificate attestationCertificate, byte
+		bool verifySignature(Org.BouncyCastle.X509.X509Certificate attestationCertificate, byte
 			[] signedBytes, byte[] signature);
 
 		/// <exception cref="U2FException"/>

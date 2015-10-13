@@ -38,6 +38,15 @@
     <None Include="paket.references" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentExtensions.cs">
+      <Link>Utils\ArraySegmentExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentLoggingExtensions.cs">
+      <Link>Utils\ArraySegmentLoggingExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\ResharperAnnotations.cs">
+      <Link>Utils\ResharperAnnotations.cs</Link>
+    </Compile>
     <Compile Include="Client\IChannelIdProvider.cs" />
     <Compile Include="Client\ICrypto.cs" />
     <Compile Include="Client\impl\BouncyCastleCrypto.cs" />
@@ -68,6 +77,7 @@
     <Compile Include="Server\DataStore.cs" />
     <Compile Include="Server\data\EnrollSessionData.cs" />
     <Compile Include="Server\data\SecurityKeyData.cs" />
+    <Compile Include="Server\data\SecurityKeyDataTransports.cs" />
     <Compile Include="Server\data\SignSessionData.cs" />
     <Compile Include="Server\impl\BouncyCastleCrypto.cs" />
     <Compile Include="Server\impl\MemoryDataStore.cs" />

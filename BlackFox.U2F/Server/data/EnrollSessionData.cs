@@ -6,7 +6,6 @@
 
 namespace BlackFox.U2F.Server.data
 {
-	[System.Serializable]
 	public class EnrollSessionData
 	{
 		private const long SERIAL_VERSION_UID = 1750990095756334568L;
@@ -24,17 +23,17 @@ namespace BlackFox.U2F.Server.data
 			this.appId = appId;
 		}
 
-		public virtual string GetAccountName()
+		public string GetAccountName()
 		{
 			return accountName;
 		}
 
-		public virtual byte[] GetChallenge()
+		public byte[] GetChallenge()
 		{
 			return challenge;
 		}
 
-		public virtual string GetAppId()
+		public string GetAppId()
 		{
 			return appId;
 		}

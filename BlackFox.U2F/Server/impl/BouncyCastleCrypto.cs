@@ -15,7 +15,7 @@ namespace BlackFox.U2F.Server.impl
 		}
 
 		/// <exception cref="U2FException"/>
-		public virtual bool verifySignature(rg.BouncyCastle.X509.X509Certificate attestationCertificate
+		public bool verifySignature(Org.BouncyCastle.X509.X509Certificate attestationCertificate
 			, byte[] signedBytes, byte[] signature)
 		{
 			return verifySignature(attestationCertificate.getPublicKey(), signedBytes, signature
@@ -23,7 +23,7 @@ namespace BlackFox.U2F.Server.impl
 		}
 
 		/// <exception cref="U2FException"/>
-		public virtual bool verifySignature(java.security.PublicKey publicKey, byte[] signedBytes
+		public bool verifySignature(java.security.PublicKey publicKey, byte[] signedBytes
 			, byte[] signature)
 		{
 			try
@@ -49,7 +49,7 @@ namespace BlackFox.U2F.Server.impl
 		}
 
 		/// <exception cref="U2FException"/>
-		public virtual java.security.PublicKey DecodePublicKey(byte[] encodedPublicKey)
+		public java.security.PublicKey DecodePublicKey(byte[] encodedPublicKey)
 		{
 			try
 			{
@@ -79,7 +79,7 @@ namespace BlackFox.U2F.Server.impl
 		}
 
 		/// <exception cref="U2FException"/>
-		public virtual byte[] ComputeSha256(byte[] bytes)
+		public byte[] ComputeSha256(byte[] bytes)
 		{
 			try
 			{

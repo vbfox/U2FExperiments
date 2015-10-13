@@ -20,7 +20,7 @@ namespace BlackFox.U2F.Key.messages
 	    /// 0x07 ("check-only")
 	    /// 0x03 ("enforce-user-presence-and-sign")
 	    /// </summary>
-	    public virtual byte Control { get; }
+	    public byte Control { get; }
 
 	    /// <summary>
 	    /// The challenge parameter is the SHA-256 hash of the Client Data, a
@@ -33,15 +33,15 @@ namespace BlackFox.U2F.Key.messages
 	    /// (hence the name of the parameter). See below for a detailed explanation of
 	    /// Client Data.
 	    /// </remarks>
-	    public virtual byte[] ChallengeSha256 { get; }
+	    public byte[] ChallengeSha256 { get; }
 
 	    /// <summary>
 	    /// The application parameter is the SHA-256 hash of the application identity
 	    /// of the application requesting the registration
 	    /// </summary>
-	    public virtual byte[] ApplicationSha256 { get; }
+	    public byte[] ApplicationSha256 { get; }
 
 	    /// <summary>The key handle obtained during registration.</summary>
-	    public virtual byte[] KeyHandle { get; }
+	    public byte[] KeyHandle { get; }
 	}
 }

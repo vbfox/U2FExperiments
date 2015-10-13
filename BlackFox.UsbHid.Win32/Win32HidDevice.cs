@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using BlackFox.BinaryUtils;
 using BlackFox.Win32.Hid;
 using BlackFox.Win32.Kernel32;
 using Common.Logging;

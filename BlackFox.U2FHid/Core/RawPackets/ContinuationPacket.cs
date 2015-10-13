@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using BlackFox.BinaryUtils;
 using BlackFox.UsbHid;
 using JetBrains.Annotations;
 

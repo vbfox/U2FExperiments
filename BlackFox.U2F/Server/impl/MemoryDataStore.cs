@@ -28,31 +28,31 @@ namespace BlackFox.U2F.Server.impl
 		    this.sessionIdGenerator = sessionIdGenerator;
 		}
 
-	    public virtual string StoreSessionData(EnrollSessionData sessionData)
+	    public string StoreSessionData(EnrollSessionData sessionData)
 		{
 			var sessionId = sessionIdGenerator.GenerateSessionId(sessionData.GetAccountName());
 			sessionDataBase[sessionId] = sessionData;
 			return sessionId;
 		}
 
-		public virtual EnrollSessionData GetEnrollSessionData(string sessionId)
+		public EnrollSessionData GetEnrollSessionData(string sessionId)
 		{
 			return sessionDataBase[sessionId];
 		}
 
-		public virtual SignSessionData GetSignSessionData(string sessionId)
+		public SignSessionData GetSignSessionData(string sessionId)
 		{
 			return (SignSessionData)sessionDataBase[sessionId];
 		}
 
-		public virtual void AddSecurityKeyData(string accountName, SecurityKeyData securityKeyData)
+		public void AddSecurityKeyData(string accountName, SecurityKeyData securityKeyData)
 		{
 			var tokens = GetSecurityKeyData(accountName);
 			tokens.Add(securityKeyData);
 			securityKeyDataBase[accountName] = tokens;
 		}
 
-		public virtual IList<SecurityKeyData
+		public IList<SecurityKeyData
 			> GetSecurityKeyData(string accountName)
 		{
 			return com.google.common.@base.Objects.firstNonNull(securityKeyDataBase[accountName
@@ -60,24 +60,24 @@ namespace BlackFox.U2F.Server.impl
 				>());
 		}
 
-		public virtual HashSet<Org.BouncyCastle.X509.X509Certificate> GetTrustedCertificates()
+		public HashSet<Org.BouncyCastle.X509.X509Certificate> GetTrustedCertificates()
 		{
 			return trustedCertificateDataBase;
 		}
 
-		public virtual void AddTrustedCertificate(rg.BouncyCastle.X509.X509Certificate certificate
+		public void AddTrustedCertificate(Org.BouncyCastle.X509.X509Certificate certificate
 			)
 		{
 			trustedCertificateDataBase.add(certificate);
 		}
 
-		public virtual void RemoveSecuityKey(string accountName, byte[] publicKey)
+		public void RemoveSecuityKey(string accountName, byte[] publicKey)
 		{
 			var tokens
 				 = GetSecurityKeyData(accountName);
 			foreach (var token in tokens)
 			{
-				if (java.util.Arrays.equals(token.GetPublicKey(), publicKey))
+				if (java.util.Arrays.equals(token.PublicKey, publicKey))
 				{
 					tokens.remove(token);
 					break;
@@ -85,16 +85,16 @@ namespace BlackFox.U2F.Server.impl
 			}
 		}
 
-		public virtual void UpdateSecurityKeyCounter(string accountName, byte[] publicKey
+		public void UpdateSecurityKeyCounter(string accountName, byte[] publicKey
 			, int newCounterValue)
 		{
 			var tokens
 				 = GetSecurityKeyData(accountName);
 			foreach (var token in tokens)
 			{
-				if (java.util.Arrays.equals(token.GetPublicKey(), publicKey))
+				if (java.util.Arrays.equals(token.PublicKey, publicKey))
 				{
-					token.SetCounter(newCounterValue);
+					token.Counter = newCounterValue;
 					break;
 				}
 			}

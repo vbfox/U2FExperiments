@@ -1,3 +1,4 @@
+using BlackFox.BinaryUtils;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Key;
 using BlackFox.U2F.Key.impl;
@@ -51,7 +52,7 @@ namespace BlackFox.U2F.Server.impl
 			allowedOrigins = CanonicalizeOrigins(origins);
 		}
 
-		public virtual RegistrationRequest GetRegistrationRequest
+		public RegistrationRequest GetRegistrationRequest
 			(string accountName, string appId)
 		{
 			log.Info(">> getRegistrationRequest " + accountName);
@@ -63,17 +64,14 @@ namespace BlackFox.U2F.Server.impl
 				(challenge);
 			log.Info("-- Output --");
 			log.Info("  sessionId: " + sessionId);
-			log.Info("  challenge: " + org.apache.commons.codec.binary.Hex.encodeHexString(challenge
-				));
+			log.Info("  challenge: " + challenge.ToHexString());
 			log.Info("<< getRegistrationRequest " + accountName);
 			return new RegistrationRequest(U2FConsts
 				.U2Fv2, challengeBase64, appId, sessionId);
 		}
 
 		/// <exception cref="U2FException"/>
-		public virtual SecurityKeyData ProcessRegistrationResponse
-			(RegistrationResponse registrationResponse, long 
-			currentTimeInMillis)
+		public SecurityKeyData ProcessRegistrationResponse(RegistrationResponse registrationResponse, long currentTimeInMillis)
 		{
 			log.Info(">> processRegistrationResponse");
 			string sessionId = registrationResponse.GetSessionId();
@@ -92,19 +90,19 @@ namespace BlackFox.U2F.Server.impl
 				rawRegistrationDataBase64);
 			log.Info("-- Input --");
 			log.Info("  sessionId: " + sessionId);
-			log.Info("  challenge: " + org.apache.commons.codec.binary.Hex.encodeHexString(sessionData
-				.GetChallenge()));
+			log.Info("  challenge: " + sessionData
+			    .GetChallenge().ToHexString());
 			log.Info("  accountName: " + sessionData.GetAccountName());
 			log.Info("  browserData: " + browserData);
-			log.Info("  rawRegistrationData: " + org.apache.commons.codec.binary.Hex.encodeHexString
-				(rawRegistrationData));
+			log.Info("  rawRegistrationData: " + rawRegistrationData.ToHexString
+				());
 			RegisterResponse registerResponse = RawMessageCodec
 				.DecodeRegisterResponse(rawRegistrationData);
 			byte[] userPublicKey = registerResponse.UserPublicKey;
 			byte[] keyHandle = registerResponse.KeyHandle;
 			Org.BouncyCastle.X509.X509Certificate attestationCertificate = registerResponse.AttestationCertificate;
 			byte[] signature = registerResponse.Signature;
-			System.Collections.Generic.IList<SecurityKeyData.Transports
+			System.Collections.Generic.IList<SecurityKeyDataTransports
 				> transports = null;
 			try
 			{
@@ -112,13 +110,12 @@ namespace BlackFox.U2F.Server.impl
 			}
 			catch (java.security.cert.CertificateParsingException e1)
 			{
-				log.warning("Could not parse transports extension " + e1.Message);
+				log.Warn("Could not parse transports extension " + e1.Message);
 			}
 			log.Info("-- Parsed rawRegistrationResponse --");
-			log.Info("  userPublicKey: " + org.apache.commons.codec.binary.Hex.encodeHexString
-				(userPublicKey));
-			log.Info("  keyHandle: " + org.apache.commons.codec.binary.Hex.encodeHexString(keyHandle
-				));
+			log.Info("  userPublicKey: " + userPublicKey.ToHexString
+				());
+			log.Info("  keyHandle: " + keyHandle.ToHexString());
 			log.Info("  attestationCertificate: " + attestationCertificate.ToString());
 			log.Info("  transports: " + transports);
 			try
@@ -130,15 +127,14 @@ namespace BlackFox.U2F.Server.impl
 			{
 				throw new U2FException("Cannot encode certificate", e);
 			}
-			log.Info("  signature: " + org.apache.commons.codec.binary.Hex.encodeHexString(signature
-				));
+			log.Info("  signature: " + signature.ToHexString());
 			byte[] appIdSha256 = cryto.ComputeSha256(System.Text.Encoding.UTF8.GetBytes(appId)
 				);
 			byte[] browserDataSha256 = cryto.ComputeSha256(System.Text.Encoding.UTF8.GetBytes(
 				browserData));
 			byte[] signedBytes = RawMessageCodec.EncodeRegistrationSignedBytes
 				(appIdSha256, browserDataSha256, keyHandle, userPublicKey);
-			System.Collections.Generic.ICollection<rg.BouncyCastle.X509.X509Certificate> trustedCertificates
+			System.Collections.Generic.ICollection<Org.BouncyCastle.X509.X509Certificate> trustedCertificates
 				 = dataStore.GetTrustedCertificates();
 			if (!trustedCertificates.contains(attestationCertificate))
 			{
@@ -146,8 +142,8 @@ namespace BlackFox.U2F.Server.impl
 			}
 			VerifyBrowserData(new com.google.gson.JsonParser().parse(browserData), "navigator.id.finishEnrollment"
 				, sessionData);
-			log.Info("Verifying signature of bytes " + org.apache.commons.codec.binary.Hex.encodeHexString
-				(signedBytes));
+			log.Info("Verifying signature of bytes " + signedBytes.ToHexString
+				());
 			if (!cryto.verifySignature(attestationCertificate, signedBytes, signature))
 			{
 				throw new U2FException("Signature is invalid");
@@ -165,7 +161,7 @@ namespace BlackFox.U2F.Server.impl
 		}
 
 		/// <exception cref="U2FException"/>
-		public virtual System.Collections.Generic.IList<SignRequest
+		public System.Collections.Generic.IList<SignRequest
 			> GetSignRequest(string accountName, string appId)
 		{
 			log.Info(">> getSignRequest " + accountName);
@@ -177,15 +173,13 @@ namespace BlackFox.U2F.Server.impl
 			{
 				byte[] challenge = challengeGenerator.GenerateChallenge(accountName);
 				SignSessionData sessionData = new SignSessionData
-					(accountName, appId, challenge, securityKeyData.GetPublicKey());
+					(accountName, appId, challenge, securityKeyData.PublicKey);
 				string sessionId = dataStore.StoreSessionData(sessionData);
-				byte[] keyHandle = securityKeyData.GetKeyHandle();
+				byte[] keyHandle = securityKeyData.KeyHandle;
 				log.Info("-- Output --");
 				log.Info("  sessionId: " + sessionId);
-				log.Info("  challenge: " + org.apache.commons.codec.binary.Hex.encodeHexString(challenge
-					));
-				log.Info("  keyHandle: " + org.apache.commons.codec.binary.Hex.encodeHexString(keyHandle
-					));
+				log.Info("  challenge: " + challenge.ToHexString());
+				log.Info("  keyHandle: " + keyHandle.ToHexString());
 				string challengeBase64 = WebSafeBase64Converter.ToBase64String
 					(challenge);
 				string keyHandleBase64 = WebSafeBase64Converter.ToBase64String
@@ -199,7 +193,7 @@ namespace BlackFox.U2F.Server.impl
 		}
 
 		/// <exception cref="U2FException"/>
-		public virtual SecurityKeyData ProcessSignResponse(SignResponse
+		public SecurityKeyData ProcessSignResponse(SignResponse
 			 signResponse)
 		{
 			log.Info(">> processSignResponse");
@@ -217,7 +211,7 @@ namespace BlackFox.U2F.Server.impl
 			foreach (SecurityKeyData temp in dataStore.GetSecurityKeyData
 				(sessionData.GetAccountName()))
 			{
-				if (java.util.Arrays.equals(sessionData.GetPublicKey(), temp.GetPublicKey()))
+				if (java.util.Arrays.equals(sessionData.GetPublicKey(), temp.PublicKey))
 				{
 					securityKeyData = temp;
 					break;
@@ -234,14 +228,12 @@ namespace BlackFox.U2F.Server.impl
 				);
 			log.Info("-- Input --");
 			log.Info("  sessionId: " + sessionId);
-			log.Info("  publicKey: " + org.apache.commons.codec.binary.Hex.encodeHexString(securityKeyData
-				.GetPublicKey()));
-			log.Info("  challenge: " + org.apache.commons.codec.binary.Hex.encodeHexString(sessionData
-				.GetChallenge()));
+			log.Info("  publicKey: " + securityKeyData.PublicKey.ToHexString());
+			log.Info("  challenge: " + sessionData
+			    .GetChallenge().ToHexString());
 			log.Info("  accountName: " + sessionData.GetAccountName());
 			log.Info("  browserData: " + browserData);
-			log.Info("  rawSignData: " + org.apache.commons.codec.binary.Hex.encodeHexString(
-				rawSignData));
+			log.Info("  rawSignData: " + rawSignData.ToHexString());
 			VerifyBrowserData(new com.google.gson.JsonParser().parse(browserData), "navigator.id.getAssertion"
 				, sessionData);
 			AuthenticateResponse authenticateResponse = RawMessageCodec
@@ -253,14 +245,13 @@ namespace BlackFox.U2F.Server.impl
 			log.Info("  userPresence: " + int.toHexString(userPresence & unchecked((int)(0xFF
 				))));
 			log.Info("  counter: " + counter);
-			log.Info("  signature: " + org.apache.commons.codec.binary.Hex.encodeHexString(signature
-				));
+			log.Info("  signature: " + signature.ToHexString());
 			if (userPresence != UserPresenceVerifierConstants.UserPresentFlag)
 			{
 				throw new U2FException("User presence invalid during authentication"
 					);
 			}
-			if (counter <= securityKeyData.GetCounter())
+			if (counter <= securityKeyData.Counter)
 			{
 				throw new U2FException("Counter value smaller than expected!");
 			}
@@ -270,15 +261,14 @@ namespace BlackFox.U2F.Server.impl
 				browserData));
 			byte[] signedBytes = RawMessageCodec.EncodeAuthenticateSignedBytes
 				(appIdSha256, userPresence, counter, browserDataSha256);
-			log.Info("Verifying signature of bytes " + org.apache.commons.codec.binary.Hex.encodeHexString
-				(signedBytes));
-			if (!cryto.verifySignature(cryto.DecodePublicKey(securityKeyData.GetPublicKey()), 
+			log.Info("Verifying signature of bytes " + signedBytes.ToHexString
+				());
+			if (!cryto.verifySignature(cryto.DecodePublicKey(securityKeyData.PublicKey), 
 				signedBytes, signature))
 			{
 				throw new U2FException("Signature is invalid");
 			}
-			dataStore.UpdateSecurityKeyCounter(sessionData.GetAccountName(), securityKeyData.
-				GetPublicKey(), counter);
+			dataStore.UpdateSecurityKeyCounter(sessionData.GetAccountName(), securityKeyData.PublicKey, counter);
 			log.Info("<< processSignResponse");
 			return securityKeyData;
 		}
@@ -313,12 +303,12 @@ namespace BlackFox.U2F.Server.impl
         /// was found
         /// </returns>
         /// <exception cref="CertificateParsingException"/>
-        public static System.Collections.Generic.IList<SecurityKeyData.Transports
-			> ParseTransportsExtension(rg.BouncyCastle.X509.X509Certificate cert)
+        public static System.Collections.Generic.IList<SecurityKeyDataTransports
+			> ParseTransportsExtension(Org.BouncyCastle.X509.X509Certificate cert)
 		{
 			byte[] extValue = cert.getExtensionValue(TRANSPORT_EXTENSION_OID);
-			System.Collections.Generic.LinkedList<SecurityKeyData.Transports
-				> transportsList = new System.Collections.Generic.LinkedList<SecurityKeyData.Transports
+			System.Collections.Generic.LinkedList<SecurityKeyDataTransports
+				> transportsList = new System.Collections.Generic.LinkedList<SecurityKeyDataTransports
 				>();
 			if (extValue == null)
 			{
@@ -332,7 +322,7 @@ namespace BlackFox.U2F.Server.impl
 			try
 			{
 				asn1Object = ais.ReadObject();
-				ais.close();
+				ais.Dispose();
 			}
 			catch (System.IO.IOException e)
 			{
@@ -372,7 +362,7 @@ namespace BlackFox.U2F.Server.impl
 			{
 				if (bitSet.get(BITS_IN_A_BYTE - i - 1))
 				{
-					transportsList.add(SecurityKeyData.Transports.values()
+					transportsList.add(SecurityKeyDataTransports.values()
 						[i]);
 				}
 			}
@@ -428,14 +418,14 @@ namespace BlackFox.U2F.Server.impl
 			}
 		}
 
-		public virtual System.Collections.Generic.IList<SecurityKeyData
+		public System.Collections.Generic.IList<SecurityKeyData
 			> GetAllSecurityKeys(string accountName)
 		{
 			return dataStore.GetSecurityKeyData(accountName);
 		}
 
 		/// <exception cref="U2FException"/>
-		public virtual void RemoveSecurityKey(string accountName, byte[] publicKey)
+		public void RemoveSecurityKey(string accountName, byte[] publicKey)
 		{
 			dataStore.RemoveSecuityKey(accountName, publicKey);
 		}

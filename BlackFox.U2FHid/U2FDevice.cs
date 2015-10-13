@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using BlackFox.BinaryUtils;
 using BlackFox.U2FHid.Core;
 using BlackFox.U2FHid.Utils;
 using BlackFox.UsbHid;

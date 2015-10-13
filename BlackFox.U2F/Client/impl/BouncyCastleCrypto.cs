@@ -6,7 +6,7 @@ namespace BlackFox.U2F.Client.impl
 	public class BouncyCastleCrypto : ICrypto
 	{
 		/// <exception cref="U2FException"/>
-		public virtual byte[] ComputeSha256(string message)
+		public byte[] ComputeSha256(string message)
 		{
 			try
 			{

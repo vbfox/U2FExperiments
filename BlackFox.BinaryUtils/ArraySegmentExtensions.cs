@@ -3,12 +3,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Common.Logging;
 using JetBrains.Annotations;
 
-namespace BlackFox.UsbHid
+namespace BlackFox.BinaryUtils
 {
-    public static class ArraySegmentExtensions
+    internal static class ArraySegmentExtensions
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ArraySegment{T}"/> structure that delimits the specified
@@ -87,7 +86,6 @@ namespace BlackFox.UsbHid
 
             return new ArraySegment<T>(segment.Array, segment.Offset + offset, segment.Count - offset);
         }
-
 
         /// <summary>
         /// Wrap the segment in a <see cref="Stream"/> instance.
@@ -176,20 +174,49 @@ namespace BlackFox.UsbHid
             }
         }
 
-        public static Action<FormatMessageHandler> ToLoggableAsHex(this ArraySegment<byte> segment, [CanBeNull] string header,
-            bool includeAscii = true, bool includeStartAddresses = true)
+        public static string ToHexString(this ArraySegment<byte> segment)
         {
-            return m =>
+            var writer = new StringWriter();
+            segment.WriteHexString(writer);
+            return writer.ToString();
+        }
+
+        public static string ToHexString(this byte[] array)
+        {
+            var writer = new StringWriter();
+            array.WriteHexString(writer);
+            return writer.ToString();
+        }
+
+        public static string ToHexString(this byte[] array, int offset, int count)
+        {
+            var writer = new StringWriter();
+            array.WriteHexString(writer, offset, count);
+            return writer.ToString();
+        }
+
+        public static void WriteHexString(this ArraySegment<byte> segment, [NotNull] TextWriter writer)
+        {
+            WriteHexString(segment.Array, writer, segment.Offset, segment.Count);
+        }
+
+        public static void WriteHexString(this byte[] array, [NotNull] TextWriter writer)
+        {
+            WriteHexString(array, writer, 0, array.Length);
+        }
+
+        public static void WriteHexString(this byte[] array, [NotNull] TextWriter writer, int offset, int count)
+        {
+            if (writer == null)
             {
-                var writer = new StringWriter();
-                if (header != null)
-                {
-                    writer.WriteLine(header);
-                    writer.WriteLine();
-                }
-                segment.WriteAsHexTo(writer, includeAscii, includeStartAddresses);
-                m(writer.ToString());
-            };
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            var end = offset + count;
+            for(var i = offset; i < end; i++)
+            {
+                writer.Write("{0:X2} ", array[i]);
+            }
         }
     }
 }

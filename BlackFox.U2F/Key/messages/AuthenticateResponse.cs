@@ -17,15 +17,15 @@ namespace BlackFox.U2F.Key.messages
 	    /// well as Bits 1 through 7, are reserved for future use. The values of Bit 1
 	    /// through 7 SHOULD be 0
 	    /// </remarks>
-	    public virtual byte UserPresence { get; }
+	    public byte UserPresence { get; }
 
 	    /// <summary>
 	    /// This is the big-endian representation of a counter value that the U2F token
 	    /// increments every time it performs an authentication operation.
 	    /// </summary>
-	    public virtual int Counter { get; }
+	    public int Counter { get; }
 
 	    /// <summary>This is a ECDSA signature (on P-256)</summary>
-	    public virtual byte[] Signature { get; }
+	    public byte[] Signature { get; }
 	}
 }

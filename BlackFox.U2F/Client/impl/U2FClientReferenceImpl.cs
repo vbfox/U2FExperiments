@@ -27,7 +27,7 @@ namespace BlackFox.U2F.Client.impl
         }
 
         /// <exception cref="U2FException"/>
-        public virtual void Register(string origin, string accountName)
+        public void Register(string origin, string accountName)
         {
             var registrationRequest = server.GetRegistrationRequest
                 (accountName, origin);
@@ -59,7 +59,7 @@ namespace BlackFox.U2F.Client.impl
         }
 
         /// <exception cref="U2FException"/>
-        public virtual void Authenticate(string origin, string accountName)
+        public void Authenticate(string origin, string accountName)
         {
             // the key can be used to sign any of the requests - we're gonna sign the first one.
             var signRequest = server.GetSignRequest(accountName, origin)[0];

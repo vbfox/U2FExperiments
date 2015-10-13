@@ -41,6 +41,15 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentExtensions.cs">
+      <Link>Utils\ArraySegmentExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentLoggingExtensions.cs">
+      <Link>Utils\ArraySegmentLoggingExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\ResharperAnnotations.cs">
+      <Link>Utils\ResharperAnnotations.cs</Link>
+    </Compile>
     <Compile Include="Core\FidoU2FHidMessage.cs" />
     <Compile Include="Core\FidoU2FHidPaketReader.cs" />
     <Compile Include="Core\FidoU2FHidPaketWriter.cs" />
@@ -57,7 +66,6 @@
     <Compile Include="Core\RawPackets\ContinuationPacket.cs" />
     <Compile Include="Core\RawPackets\InitializationPacket.cs" />
     <Compile Include="Core\U2FHidCommand.cs" />
-    <Compile Include="ResharperAnnotations.cs" />
     <Compile Include="U2FDeviceCapabilities.cs" />
     <Compile Include="U2FHidErrors.cs" />
     <Compile Include="Utils\EnumDescription.cs" />
