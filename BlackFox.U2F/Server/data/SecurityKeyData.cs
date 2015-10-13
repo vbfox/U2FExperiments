@@ -78,9 +78,24 @@ namespace BlackFox.U2F.Server.data
                 .AppendFormat("key_handle: {0}\n", WebSafeBase64Converter.ToBase64String(KeyHandle))
                 .AppendFormat("counter: {0}\n", Counter)
                 .AppendFormat("attestation certificate:\n")
-                .Append(AttestationCertificate)
+                .Append(SafeCertificateToString(AttestationCertificate))
                 .AppendFormat("transports: {0}\n", Transports == null ? "" : string.Join(", ", Transports.Select(t => t.ToString())))
                 .ToString();
+        }
+
+        /// <summary>
+        /// Work around a BouncyCastle bug
+        /// </summary>
+        public static string SafeCertificateToString(X509Certificate attestationCertificate)
+        {
+            try
+            {
+                return attestationCertificate.ToString();
+            }
+            catch (Exception)
+            {
+                return "???";
+            }
         }
 
         protected bool Equals(SecurityKeyData other)

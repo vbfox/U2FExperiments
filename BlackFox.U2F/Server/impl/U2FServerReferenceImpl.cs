@@ -14,6 +14,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Security.Certificates;
+using Org.BouncyCastle.Utilities.Encoders;
 using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Server.impl
@@ -99,7 +100,7 @@ namespace BlackFox.U2F.Server.impl
             var keyHandle = registerResponse.KeyHandle;
             var attestationCertificate = registerResponse.AttestationCertificate;
             var signature = registerResponse.Signature;
-            IList<SecurityKeyDataTransports> transports = new List<SecurityKeyDataTransports>();
+            IList<SecurityKeyDataTransports> transports = null;
             try
             {
                 transports = ParseTransportsExtension(attestationCertificate);
@@ -112,7 +113,7 @@ namespace BlackFox.U2F.Server.impl
             log.Info("  userPublicKey: " + userPublicKey.ToHexString
                 ());
             log.Info("  keyHandle: " + keyHandle.ToHexString());
-            log.Info("  attestationCertificate: " + attestationCertificate);
+            log.Info("  attestationCertificate: " + SecurityKeyData.SafeCertificateToString(attestationCertificate));
             log.Info("  transports: " + transports);
             log.Info("  attestationCertificate bytes: " + attestationCertificate.GetEncoded().ToHexString());
             log.Info("  signature: " + signature.ToHexString());

@@ -100,65 +100,69 @@ namespace BlackFox.U2F.Tests.Server
             var trustedCertificates = new List<X509Certificate>();
             trustedCertificates.Add(TRUSTED_CERTIFICATE_ONE_TRANSPORT);
             mockDataStore.Setup(x => x.GetTrustedCertificates()).Returns(trustedCertificates);
-            u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto, TRUSTED_DOMAINS);
+            u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto,
+                TRUSTED_DOMAINS);
 
-            var registrationResponse = new RegistrationResponse(REGISTRATION_RESPONSE_DATA_ONE_TRANSPORT_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
+            var registrationResponse = new RegistrationResponse(REGISTRATION_RESPONSE_DATA_ONE_TRANSPORT_BASE64,
+                BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
             u2fServer.ProcessRegistrationResponse(registrationResponse, 0L);
 
             var transports = new List<SecurityKeyDataTransports>();
             transports.Add(SecurityKeyDataTransports.BluetoothRadio);
-            var expectedKeyData = new SecurityKeyData(0L, transports, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, TRUSTED_CERTIFICATE_ONE_TRANSPORT, 0);
+            var expectedKeyData = new SecurityKeyData(0L, transports, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
+                TRUSTED_CERTIFICATE_ONE_TRANSPORT, 0);
             mockDataStore.Verify(x => x.AddSecurityKeyData(ACCOUNT_NAME, expectedKeyData));
         }
 
-        
-		/// <exception cref="U2FException"/>
-		[Test]
-		public virtual void TestProcessRegistrationResponse_MultipleTransports()
-		{
+
+        /// <exception cref="U2FException" />
+        [Test]
+        public virtual void TestProcessRegistrationResponse_MultipleTransports()
+        {
             mockDataStore.Setup(x => x.GetEnrollSessionData(SESSION_ID))
                 .Returns(new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL));
             var trustedCertificates = new List<X509Certificate>();
             trustedCertificates.Add(TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS);
             mockDataStore.Setup(x => x.GetTrustedCertificates()).Returns(trustedCertificates);
-            u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto, TRUSTED_DOMAINS);
+            u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto,
+                TRUSTED_DOMAINS);
 
-            var registrationResponse = new RegistrationResponse(REGISTRATION_RESPONSE_DATA_MULTIPLE_TRANSPORTS_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
+            var registrationResponse = new RegistrationResponse(REGISTRATION_RESPONSE_DATA_MULTIPLE_TRANSPORTS_BASE64,
+                BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
             u2fServer.ProcessRegistrationResponse(registrationResponse, 0L);
 
             var transports = new List<SecurityKeyDataTransports>();
             transports.Add(SecurityKeyDataTransports.BluetoothRadio);
             transports.Add(SecurityKeyDataTransports.BluetoothLowEnergy);
             transports.Add(SecurityKeyDataTransports.Nfc);
-            var expectedKeyData = new SecurityKeyData(0L, transports, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS, 0);
+            var expectedKeyData = new SecurityKeyData(0L, transports, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX,
+                TRUSTED_CERTIFICATE_MULTIPLE_TRANSPORTS, 0);
             mockDataStore.Verify(x => x.AddSecurityKeyData(ACCOUNT_NAME, expectedKeyData));
-		}
+        }
+
+
+        /// <exception cref="U2FException" />
+        [Test]
+        public virtual void TestProcessRegistrationResponse_MalformedTransports()
+        {
+            mockDataStore.Setup(x => x.GetEnrollSessionData(SESSION_ID))
+                .Returns(new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL));
+            var trustedCertificates = new List<X509Certificate>();
+            trustedCertificates.Add(TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION);
+            mockDataStore.Setup(x => x.GetTrustedCertificates()).Returns(trustedCertificates);
+            u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto,
+                TRUSTED_DOMAINS);
+
+            var registrationResponse = new RegistrationResponse(REGISTRATION_RESPONSE_DATA_MALFORMED_TRANSPORTS_BASE64,
+                BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
+            u2fServer.ProcessRegistrationResponse(registrationResponse, 0L);
+
+            var expectedKeyData = new SecurityKeyData
+                (0L, null, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION, 0);
+            mockDataStore.Verify(x => x.AddSecurityKeyData(ACCOUNT_NAME, expectedKeyData));
+        }
 
         /*
-		/// <exception cref="U2FException"/>
-		[Test]
-		public virtual void testProcessRegistrationResponse_malformedTransports()
-		{
-			org.mockito.Mockito.when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn
-				(new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL
-				));
-			java.util.HashSet<X509Certificate> trustedCertificates = new java.util.HashSet
-				<X509Certificate>();
-			trustedCertificates.add(TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION);
-			org.mockito.Mockito.when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates
-				);
-			u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator
-				, mockDataStore, crypto, TRUSTED_DOMAINS);
-			RegistrationResponse registrationResponse = new RegistrationResponse
-				(REGISTRATION_RESPONSE_DATA_MALFORMED_TRANSPORTS_BASE64, BROWSER_DATA_ENROLL_BASE64
-				, SESSION_ID);
-			u2fServer.processRegistrationResponse(registrationResponse, 0L);
-			org.mockito.Mockito.verify(mockDataStore).addSecurityKeyData(org.mockito.Matchers.eq
-				(ACCOUNT_NAME), org.mockito.Matchers.eq(new SecurityKeyData
-				(0L, null, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION
-				, 0)));
-		}
-
 		// transports 
 		/// <exception cref="U2FException"/>
 		[Test]
