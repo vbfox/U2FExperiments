@@ -1,94 +1,88 @@
-// Copyright 2014 Google Inc. All rights reserved.
-//
-// Use of this source code is governed by a BSD-style
-// license that can be found in the LICENSE file or at
-// https://developers.google.com/open-source/licenses/bsd
+using System;
+using Org.BouncyCastle.Asn1.X9;
+using Org.BouncyCastle.Crypto;
+using Org.BouncyCastle.Crypto.Parameters;
+using Org.BouncyCastle.Math.EC;
+using Org.BouncyCastle.Security;
+using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Server.impl
 {
-	public class BouncyCastleCrypto : ICrypto
-	{
-		static BouncyCastleCrypto()
-		{
-			java.security.Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider
-				());
-		}
+    public class BouncyCastleCrypto : IServerCrypto
+    {
+        public bool VerifySignature(X509Certificate attestationCertificate, byte[] signedBytes, byte[] signature)
+        {
+            if (attestationCertificate == null)
+            {
+                throw new ArgumentNullException(nameof(attestationCertificate));
+            }
+            var publicKey = attestationCertificate.GetPublicKey() as ECPublicKeyParameters;
+            if (publicKey == null)
+            {
+                throw new U2FException("The certificate publickey isn't an Elliptic curve");
+            }
 
-		/// <exception cref="U2FException"/>
-		public bool verifySignature(Org.BouncyCastle.X509.X509Certificate attestationCertificate
-			, byte[] signedBytes, byte[] signature)
-		{
-			return verifySignature(attestationCertificate.getPublicKey(), signedBytes, signature
-				);
-		}
+            return VerifySignature(publicKey, signedBytes, signature);
+        }
 
-		/// <exception cref="U2FException"/>
-		public bool verifySignature(java.security.PublicKey publicKey, byte[] signedBytes
-			, byte[] signature)
-		{
-			try
-			{
-				java.security.Signature ecdsaSignature = java.security.Signature.getInstance("SHA256withECDSA"
-					);
-				ecdsaSignature.initVerify(publicKey);
-				ecdsaSignature.update(signedBytes);
-				return ecdsaSignature.verify(signature);
-			}
-			catch (java.security.InvalidKeyException e)
-			{
-				throw new U2FException("Error when verifying signature", e);
-			}
-			catch (java.security.SignatureException e)
-			{
-				throw new U2FException("Error when verifying signature", e);
-			}
-			catch (java.security.NoSuchAlgorithmException e)
-			{
-				throw new U2FException("Error when verifying signature", e);
-			}
-		}
+        public bool VerifySignature(ECPublicKeyParameters publicKey, byte[] signedBytes, byte[] signature)
+        {
+            try
+            {
+                var ecdsaSignature = SignerUtilities.GetSigner("SHA-256withECDSA");
+                ecdsaSignature.Init(false, publicKey);
+                ecdsaSignature.BlockUpdate(signedBytes, 0, signedBytes.Length);
+                return ecdsaSignature.VerifySignature(signature);
+            }
+            catch (SecurityUtilityException e)
+            {
+                throw new U2FException("Error when verifying signature", e);
+            }
+            catch (CryptoException e)
+            {
+                throw new U2FException("Error when verifying signature", e);
+            }
+        }
 
-		/// <exception cref="U2FException"/>
-		public java.security.PublicKey DecodePublicKey(byte[] encodedPublicKey)
-		{
-			try
-			{
-				org.bouncycastle.asn1.x9.X9ECParameters curve = org.bouncycastle.asn1.sec.SECNamedCurves
-					.getByName("secp256r1");
-				org.bouncycastle.math.ec.ECPoint point;
-				try
-				{
-					point = curve.getCurve().decodePoint(encodedPublicKey);
-				}
-				catch (System.Exception e)
-				{
-					throw new U2FException("Couldn't parse user public key", e);
-				}
-				return java.security.KeyFactory.getInstance("ECDSA").generatePublic(new org.bouncycastle.jce.spec.ECPublicKeySpec
-					(point, new org.bouncycastle.jce.spec.ECParameterSpec(curve.getCurve(), curve.getG
-					(), curve.getN(), curve.getH())));
-			}
-			catch (java.security.spec.InvalidKeySpecException e)
-			{
-				throw new U2FException("Error when decoding public key", e);
-			}
-			catch (java.security.NoSuchAlgorithmException e)
-			{
-				throw new U2FException("Error when decoding public key", e);
-			}
-		}
+        public ECPublicKeyParameters DecodePublicKey(byte[] encodedPublicKey)
+        {
+            try
+            {
+                var curve = X962NamedCurves.GetByName("secp256r1");
+                if (curve == null)
+                {
+                    throw new U2FException("Named curve 'secp256r1' isn't supported");
+                }
 
-		/// <exception cref="U2FException"/>
-		public byte[] ComputeSha256(byte[] bytes)
-		{
-			try
-			{
-				return java.security.MessageDigest.getInstance("SHA-256").digest(bytes);
-			}
-			catch (java.security.NoSuchAlgorithmException e)
-			{
-				throw new U2FException("Error when computing SHA-256", e);
-			}
-		}
-	}
+                ECPoint point;
+                try
+                {
+                    point = curve.Curve.DecodePoint(encodedPublicKey);
+                }
+                catch (Exception e)
+                {
+                    throw new U2FException("Couldn't parse user public key", e);
+                }
+
+                var parameters = new ECDomainParameters(curve.Curve, curve.G, curve.N, curve.H);
+                return new ECPublicKeyParameters(point, parameters);
+            }
+            catch (Exception e)
+            {
+                throw new U2FException("Error when decoding public key", e);
+            }
+        }
+
+        public byte[] ComputeSha256(byte[] bytes)
+        {
+            try
+            {
+                return DigestUtilities.CalculateDigest("SHA-256", bytes);
+            }
+            catch (SecurityUtilityException e)
+            {
+                throw new U2FException("Cannot compute SHA-256", e);
+            }
+        }
+    }
 }

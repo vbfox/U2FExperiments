@@ -9,7 +9,7 @@ namespace BlackFox.U2F.Server
 		// attestation certs and trust
 		void AddTrustedCertificate(X509Certificate certificate);
 
-		HashSet<X509Certificate> GetTrustedCertificates ();
+		List<X509Certificate> GetTrustedCertificates ();
 
 		// session handling
 		string StoreSessionData(EnrollSessionData sessionData);

@@ -1,5 +1,8 @@
 using System.IO;
 using BlackFox.U2F.Key.messages;
+using Org.BouncyCastle.OpenSsl;
+using Org.BouncyCastle.Security.Certificates;
+using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Codec
 {
@@ -58,10 +61,9 @@ namespace BlackFox.U2F.Codec
             {
                 attestationCertificateBytes = attestationCertificate.GetEncoded();
             }
-            catch (java.security.cert.CertificateEncodingException e)
+            catch (CertificateEncodingException e)
             {
-                throw new U2FException("Error when encoding attestation certificate."
-                    , e);
+                throw new U2FException("Error when encoding attestation certificate.", e);
             }
             if (keyHandle.Length > 255)
             {
@@ -93,20 +95,16 @@ namespace BlackFox.U2F.Codec
                     var userPublicKey = inputStream.ReadBytes(65);
                     var keyHandleSize = inputStream.ReadByte();
                     var keyHandle = inputStream.ReadBytes(keyHandleSize);
-                    Org.BouncyCastle.X509.X509Certificate attestationCertificate =
-                        (Org.BouncyCastle.X509.X509Certificate
-                            )java.security.cert.CertificateFactory.getInstance("X.509").generateCertificate(
-                                inputStream);
-                    var signature = new byte[inputStream.available()];
-                    inputStream.readFully(signature);
-                    if (inputStream.available() != 0)
-                    {
-                        throw new U2FException("Message ends with unexpected data");
-                    }
+
+                    var parser = new X509CertificateParser();
+                    var attestationCertificate = parser.ReadCertificate(inputStream.BaseStream);
+
+                    var signatureSize = (int) (inputStream.BaseStream.Length - inputStream.BaseStream.Position);
+                    var signature = inputStream.ReadBytes(signatureSize);
                     if (reservedByte != RegistrationReservedByteValue)
                     {
-                        throw new U2FException(string.format("Incorrect value of reserved byte. Expected: %d. Was: %d"
-                            , RegistrationReservedByteValue, reservedByte));
+                        throw new U2FException(
+                            $"Incorrect value of reserved byte. Expected: {RegistrationReservedByteValue}. Was: {reservedByte}");
                     }
                     return new RegisterResponse(userPublicKey, keyHandle,
                         attestationCertificate, signature);
@@ -116,7 +114,7 @@ namespace BlackFox.U2F.Codec
             {
                 throw new U2FException("Error when parsing raw RegistrationResponse", e);
             }
-            catch (java.security.cert.CertificateException e)
+            catch (CertificateException e)
             {
                 throw new U2FException("Error when parsing attestation certificate", e);
             }
@@ -197,14 +195,10 @@ namespace BlackFox.U2F.Codec
                 {
                     var userPresence = inputStream.ReadByte();
                     var counter = inputStream.ReadInt32();
-                    var signature = new byte[inputStream.available()];
-                    inputStream.readFully(signature);
-                    if (inputStream.BaseStream.Position != inputStream.BaseStream.Length)
-                    {
-                        throw new U2FException("Message ends with unexpected data");
-                    }
-                    return new AuthenticateResponse(userPresence, counter
-                        , signature);
+                    var signatureSize = (int)(inputStream.BaseStream.Length - inputStream.BaseStream.Position);
+                    var signature = inputStream.ReadBytes(signatureSize);
+
+                    return new AuthenticateResponse(userPresence, counter, signature);
                 }
             }
             catch (IOException e)
@@ -213,12 +207,10 @@ namespace BlackFox.U2F.Codec
             }
         }
 
-        public static byte[] EncodeRegistrationSignedBytes(byte[] applicationSha256, byte[] challengeSha256,
-            byte[] keyHandle, byte[] userPublicKey)
+        public static byte[] EncodeRegistrationSignedBytes(byte[] applicationSha256, byte[] challengeSha256, byte[] keyHandle, byte[] userPublicKey)
         {
-            var signedData =
-                new byte[1 + applicationSha256.Length + challengeSha256.Length + keyHandle.Length + userPublicKey.Length
-                    ];
+            var size = 1 + applicationSha256.Length + challengeSha256.Length + keyHandle.Length + userPublicKey.Length;
+            var signedData = new byte[size];
 
             using (var writer = new BinaryWriter(new MemoryStream(signedData)))
             {
@@ -233,10 +225,10 @@ namespace BlackFox.U2F.Codec
             return signedData;
         }
 
-        public static byte[] EncodeAuthenticateSignedBytes(byte[] applicationSha256, byte
-            userPresence, int counter, byte[] challengeSha256)
+        public static byte[] EncodeAuthenticateSignedBytes(byte[] applicationSha256, byte userPresence, int counter, byte[] challengeSha256)
         {
-            var signedData = new byte[applicationSha256.Length + 1 + 4 + challengeSha256.Length];
+            var size = applicationSha256.Length + 1 + 4 + challengeSha256.Length;
+            var signedData = new byte[size];
             using (var writer = new BinaryWriter(new MemoryStream(signedData)))
             {
                 writer.Write(applicationSha256);

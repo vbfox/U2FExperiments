@@ -2,8 +2,7 @@ namespace BlackFox.U2F.Server.messages
 {
     public class SignRequest
     {
-        public SignRequest(string version, string challenge, string appId, string keyHandle
-            , string sessionId)
+        public SignRequest(string version, string challenge, string appId, string keyHandle, string sessionId)
         {
             Version = version;
             Challenge = challenge;

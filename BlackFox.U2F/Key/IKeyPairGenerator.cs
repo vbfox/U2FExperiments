@@ -1,10 +1,12 @@
+using JetBrains.Annotations;
+using Org.BouncyCastle.Crypto.Parameters;
+
 namespace BlackFox.U2F.Key
 {
 	public interface IKeyPairGenerator
 	{
-		java.security.KeyPair GenerateKeyPair(byte[] applicationSha256, byte[] challengeSha256
-			);
+		ECKeyPair GenerateKeyPair([NotNull] byte[] applicationSha256, [NotNull] byte[] challengeSha256);
 
-		byte[] EncodePublicKey(java.security.PublicKey publicKey);
+		byte[] EncodePublicKey([NotNull] ECPublicKeyParameters publicKey);
 	}
 }

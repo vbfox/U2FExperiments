@@ -48,7 +48,7 @@
       <Link>Utils\ResharperAnnotations.cs</Link>
     </Compile>
     <Compile Include="Client\IChannelIdProvider.cs" />
-    <Compile Include="Client\ICrypto.cs" />
+    <Compile Include="Client\IClientCrypto.cs" />
     <Compile Include="Client\impl\BouncyCastleCrypto.cs" />
     <Compile Include="Client\impl\U2FClientReferenceImpl.cs" />
     <Compile Include="Client\IOriginVerifier.cs" />
@@ -56,7 +56,8 @@
     <Compile Include="Codec\ClientDataCodec.cs" />
     <Compile Include="Codec\RawMessageCodec.cs" />
     <Compile Include="Codec\SerialCodec.cs" />
-    <Compile Include="Key\ICrypto.cs" />
+    <Compile Include="Key\ECKeyPair.cs" />
+    <Compile Include="Key\IKeyCrypto.cs" />
     <Compile Include="Key\IDataStore.cs" />
     <Compile Include="Key\impl\BouncyCastleCrypto.cs" />
     <Compile Include="Key\impl\U2FKeyReferenceImpl.cs" />
@@ -72,9 +73,9 @@
     <Compile Include="Key\IUserPresenceVerifier.cs" />
     <Compile Include="Key\UserPresenceVerifierConstants.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Server\ChallengeGenerator.cs" />
-    <Compile Include="Server\Crypto.cs" />
-    <Compile Include="Server\DataStore.cs" />
+    <Compile Include="Server\IChallengeGenerator.cs" />
+    <Compile Include="Server\IServerCrypto.cs" />
+    <Compile Include="Server\IDataStore.cs" />
     <Compile Include="Server\data\EnrollSessionData.cs" />
     <Compile Include="Server\data\SecurityKeyData.cs" />
     <Compile Include="Server\data\SecurityKeyDataTransports.cs" />
@@ -86,11 +87,12 @@
     <Compile Include="Server\messages\RegistrationResponse.cs" />
     <Compile Include="Server\messages\SignRequest.cs" />
     <Compile Include="Server\messages\SignResponse.cs" />
-    <Compile Include="Server\SessionIdGenerator.cs" />
-    <Compile Include="Server\U2FServer.cs" />
+    <Compile Include="Server\ISessionIdGenerator.cs" />
+    <Compile Include="Server\IU2FServer.cs" />
     <Compile Include="U2FConsts.cs" />
     <Compile Include="U2FException.cs" />
     <Compile Include="U2FTester.cs" />
+    <Compile Include="Utils\DateTimeOffsetExtensions.cs" />
     <Compile Include="WebSafeBase64Converter.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />

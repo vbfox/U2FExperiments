@@ -7,6 +7,9 @@ factor specifications in C#.
 Multiple libraries exists for the client-to-server communication parts but
 there is no good library to communicate with keys connected locally via USB.
 
+Port of the Google Reference code has initially be done using
+[Sharpen][Sharpen] + [Sharpen.Runtime][SharpenRuntime].
+
 Things to try
 -------------
 
@@ -32,3 +35,5 @@ to be. I'm just playing with low level APIs.**
 [HidApi]: http://www.signal11.us/oss/hidapi/
 [HidApiGitHub]: https://github.com/signal11/hidapi
 [Windows10Hid]: https://msdn.microsoft.com/en-us/library/windows/hardware/windows.devices.humaninterfacedevice.aspx
+[Sharpen]: https://github.com/mono/sharpen
+[SharpenRuntime]: https://github.com/hazzik/Sharpen.Runtime

@@ -39,9 +39,7 @@ namespace BlackFox.U2F.Server.data
         /// <returns>
         /// True if both lists are null or if both lists contain the same transport values
         /// </returns>
-        public static bool ContainSameTransports(IList<SecurityKeyDataTransports
-            > transports1, IList<SecurityKeyDataTransports
-                > transports2)
+        public static bool ContainSameTransports(IList<SecurityKeyDataTransports> transports1, IList<SecurityKeyDataTransports> transports2)
         {
             if (transports1 == null && transports2 == null)
             {
@@ -51,8 +49,8 @@ namespace BlackFox.U2F.Server.data
             {
                 return false;
             }
-            return transports1.containsAll(transports2) && transports2.containsAll(transports1
-                );
+
+            return transports1.All(transports2.Contains) && transports2.All(transports1.Contains);
         }
 
         public override string ToString()

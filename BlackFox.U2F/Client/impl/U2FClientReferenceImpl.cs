@@ -1,21 +1,23 @@
+using System;
 using System.Text;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Key;
 using BlackFox.U2F.Key.messages;
 using BlackFox.U2F.Server;
 using BlackFox.U2F.Server.messages;
+using BlackFox.U2F.Utils;
 
 namespace BlackFox.U2F.Client.impl
 {
     public class Iu2FClientReferenceImpl : IU2FClient
     {
-        readonly ICrypto crypto;
-        readonly IOriginVerifier appIdVerifier;
-        readonly IChannelIdProvider channelIdProvider;
-        readonly IU2FServer server;
-        readonly IU2FKey key;
+        private readonly IOriginVerifier appIdVerifier;
+        private readonly IChannelIdProvider channelIdProvider;
+        private readonly IClientCrypto crypto;
+        private readonly IU2FKey key;
+        private readonly IU2FServer server;
 
-        public Iu2FClientReferenceImpl(ICrypto crypto, IOriginVerifier
+        public Iu2FClientReferenceImpl(IClientCrypto crypto, IOriginVerifier
             appIdVerifier, IChannelIdProvider channelIdProvider, IU2FServer
                 server, IU2FKey key)
         {
@@ -26,11 +28,10 @@ namespace BlackFox.U2F.Client.impl
             this.key = key;
         }
 
-        /// <exception cref="U2FException"/>
+        /// <exception cref="U2FException" />
         public void Register(string origin, string accountName)
         {
-            var registrationRequest = server.GetRegistrationRequest
-                (accountName, origin);
+            var registrationRequest = server.GetRegistrationRequest(accountName, origin);
             var version = registrationRequest.Version;
             var serverChallengeBase64 = registrationRequest.Challenge;
             var appId = registrationRequest.AppId;
@@ -41,24 +42,20 @@ namespace BlackFox.U2F.Client.impl
             }
             appIdVerifier.ValidateOrigin(appId, origin);
             var channelIdJson = channelIdProvider.GetJsonChannelId();
-            var clientData = ClientDataCodec.EncodeClientData(ClientDataCodec
-                .RequestTypeRegister, serverChallengeBase64, origin, channelIdJson);
+            var clientData = ClientDataCodec.EncodeClientData(ClientDataCodec.RequestTypeRegister, serverChallengeBase64,
+                origin, channelIdJson);
             var appIdSha256 = crypto.ComputeSha256(appId);
             var clientDataSha256 = crypto.ComputeSha256(clientData);
-            var registerResponse = key.Register(new
-                RegisterRequest(appIdSha256, clientDataSha256));
-            var rawRegisterResponse = RawMessageCodec.EncodeRegisterResponse
-                (registerResponse);
-            var rawRegisterResponseBase64 = WebSafeBase64Converter.ToBase64String
-                (rawRegisterResponse);
-            var clientDataBase64 = WebSafeBase64Converter.ToBase64String
-                (Encoding.UTF8.GetBytes(clientData));
-            server.ProcessRegistrationResponse(new RegistrationResponse
-                (rawRegisterResponseBase64, clientDataBase64, sessionId), Sharpen.Runtime.currentTimeMillis
-                    ());
+            var registerResponse = key.Register(new RegisterRequest(appIdSha256, clientDataSha256));
+            var rawRegisterResponse = RawMessageCodec.EncodeRegisterResponse(registerResponse);
+            var rawRegisterResponseBase64 = WebSafeBase64Converter.ToBase64String(rawRegisterResponse);
+            var clientDataBase64 = WebSafeBase64Converter.ToBase64String(Encoding.UTF8.GetBytes(clientData));
+            server.ProcessRegistrationResponse(
+                new RegistrationResponse(rawRegisterResponseBase64, clientDataBase64, sessionId),
+                DateTimeOffset.UtcNow.ToMillisecondsSinceEpoch());
         }
 
-        /// <exception cref="U2FException"/>
+        /// <exception cref="U2FException" />
         public void Authenticate(string origin, string accountName)
         {
             // the key can be used to sign any of the requests - we're gonna sign the first one.

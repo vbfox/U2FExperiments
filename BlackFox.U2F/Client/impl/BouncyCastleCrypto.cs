@@ -3,7 +3,7 @@ using Org.BouncyCastle.Security;
 
 namespace BlackFox.U2F.Client.impl
 {
-	public class BouncyCastleCrypto : ICrypto
+	public class BouncyCastleCrypto : IClientCrypto
 	{
 		/// <exception cref="U2FException"/>
 		public byte[] ComputeSha256(string message)

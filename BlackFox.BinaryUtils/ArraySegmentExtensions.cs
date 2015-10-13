@@ -181,14 +181,14 @@ namespace BlackFox.BinaryUtils
             return writer.ToString();
         }
 
-        public static string ToHexString(this byte[] array)
+        public static string ToHexString([CanBeNull] this byte[] array)
         {
             var writer = new StringWriter();
             array.WriteHexString(writer);
             return writer.ToString();
         }
 
-        public static string ToHexString(this byte[] array, int offset, int count)
+        public static string ToHexString([CanBeNull] this byte[] array, int offset, int count)
         {
             var writer = new StringWriter();
             array.WriteHexString(writer, offset, count);
@@ -200,16 +200,22 @@ namespace BlackFox.BinaryUtils
             WriteHexString(segment.Array, writer, segment.Offset, segment.Count);
         }
 
-        public static void WriteHexString(this byte[] array, [NotNull] TextWriter writer)
+        public static void WriteHexString([CanBeNull] this byte[] array, [NotNull] TextWriter writer)
         {
-            WriteHexString(array, writer, 0, array.Length);
+            WriteHexString(array, writer, 0, array?.Length ?? 0);
         }
 
-        public static void WriteHexString(this byte[] array, [NotNull] TextWriter writer, int offset, int count)
+        public static void WriteHexString([CanBeNull] this byte[] array, [NotNull] TextWriter writer, int offset, int count)
         {
             if (writer == null)
             {
                 throw new ArgumentNullException(nameof(writer));
+            }
+
+            if (array == null)
+            {
+                writer.Write("null");
+                return;
             }
 
             var end = offset + count;

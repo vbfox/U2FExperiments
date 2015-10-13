@@ -1,15 +1,14 @@
 using BlackFox.U2F.Key.messages;
+using JetBrains.Annotations;
 
 namespace BlackFox.U2F.Key
 {
 	public interface IU2FKey
 	{
-		/// <exception cref="U2FException"/>
-		RegisterResponse Register(RegisterRequest
-			 registerRequest);
+		[NotNull]
+		RegisterResponse Register([NotNull] RegisterRequest registerRequest);
 
-		/// <exception cref="U2FException"/>
-		AuthenticateResponse Authenticate(AuthenticateRequest
-			 authenticateRequest);
+        [NotNull]
+        AuthenticateResponse Authenticate([NotNull] AuthenticateRequest authenticateRequest);
 	}
 }

@@ -1,10 +1,10 @@
 namespace BlackFox.U2F.Key
 {
-	public interface IDataStore
+    public interface IDataStore
 	{
-		void StoreKeyPair(byte[] keyHandle, java.security.KeyPair keyPair);
+		void StoreKeyPair(byte[] keyHandle, ECKeyPair keyPair);
 
-		java.security.KeyPair GetKeyPair(byte[] keyHandle);
+        ECKeyPair GetKeyPair(byte[] keyHandle);
 
 		int IncrementCounter();
 	}

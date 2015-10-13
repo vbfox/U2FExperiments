@@ -2,8 +2,7 @@ namespace BlackFox.U2F.Server.messages
 {
     public class RegistrationRequest
     {
-        public RegistrationRequest(string version, string challenge, string appId, string
-            sessionId)
+        public RegistrationRequest(string version, string challenge, string appId, string sessionId)
         {
             Version = version;
             Challenge = challenge;
