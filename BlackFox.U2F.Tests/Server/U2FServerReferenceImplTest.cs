@@ -157,36 +157,30 @@ namespace BlackFox.U2F.Tests.Server
                 BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
             u2fServer.ProcessRegistrationResponse(registrationResponse, 0L);
 
-            var expectedKeyData = new SecurityKeyData
-                (0L, null, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION, 0);
+            var expectedKeyData = new SecurityKeyData(0L, null, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, TRUSTED_CERTIFICATE_MALFORMED_TRANSPORTS_EXTENSION, 0);
+            mockDataStore.Verify(x => x.AddSecurityKeyData(ACCOUNT_NAME, expectedKeyData));
+        }
+
+        
+		// transports 
+		/// <exception cref="U2FException"/>
+		[Test]
+		public virtual void TestProcessRegistrationResponse2()
+		{
+            mockDataStore.Setup(x => x.GetEnrollSessionData(SESSION_ID))
+                .Returns(new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL));
+            var trustedCertificates = new List<X509Certificate>();
+            trustedCertificates.Add(VENDOR_CERTIFICATE);
+			trustedCertificates.Add(TRUSTED_CERTIFICATE_2);
+            mockDataStore.Setup(x => x.GetTrustedCertificates()).Returns(trustedCertificates);
+            u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto, TRUSTED_DOMAINS);
+            var registrationResponse = new RegistrationResponse(REGISTRATION_DATA_2_BASE64, BROWSER_DATA_2_BASE64, SESSION_ID);
+			u2fServer.ProcessRegistrationResponse(registrationResponse, 0L);
+		    var expectedKeyData = new SecurityKeyData(0L, null, KEY_HANDLE_2, USER_PUBLIC_KEY_2, TRUSTED_CERTIFICATE_2, 0);
             mockDataStore.Verify(x => x.AddSecurityKeyData(ACCOUNT_NAME, expectedKeyData));
         }
 
         /*
-		// transports 
-		/// <exception cref="U2FException"/>
-		[Test]
-		public virtual void testProcessRegistrationResponse2()
-		{
-			org.mockito.Mockito.when(mockDataStore.getEnrollSessionData(SESSION_ID)).thenReturn
-				(new EnrollSessionData(ACCOUNT_NAME, APP_ID_ENROLL, SERVER_CHALLENGE_ENROLL
-				));
-			java.util.HashSet<X509Certificate> trustedCertificates = new java.util.HashSet
-				<X509Certificate>();
-			trustedCertificates.add(VENDOR_CERTIFICATE);
-			trustedCertificates.add(TRUSTED_CERTIFICATE_2);
-			org.mockito.Mockito.when(mockDataStore.getTrustedCertificates()).thenReturn(trustedCertificates
-				);
-			u2fServer = new U2FServerReferenceImpl(mockChallengeGenerator
-				, mockDataStore.Object, crypto, TRUSTED_DOMAINS);
-			RegistrationResponse registrationResponse = new RegistrationResponse
-				(REGISTRATION_DATA_2_BASE64, BROWSER_DATA_2_BASE64, SESSION_ID);
-			u2fServer.processRegistrationResponse(registrationResponse, 0L);
-			org.mockito.Mockito.verify(mockDataStore).addSecurityKeyData(org.mockito.Matchers.eq
-				(ACCOUNT_NAME), org.mockito.Matchers.eq(new SecurityKeyData
-				(0L, null, KEY_HANDLE_2, USER_PUBLIC_KEY_2, TRUSTED_CERTIFICATE_2, 0)));
-		}
-
 		// transports
 		/// <exception cref="U2FException"/>
 		[Test]
