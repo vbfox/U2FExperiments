@@ -1,0 +1,7 @@
+﻿Newtonsoft.Json
+Portable.BouncyCastle
+
+group Tests
+    Moq
+    NUnit
+    NFluent
