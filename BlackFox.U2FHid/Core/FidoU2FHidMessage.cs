@@ -1,5 +1,5 @@
 using System;
-using BlackFox.UsbHid;
+using BlackFox.Binary;
 
 namespace BlackFox.U2FHid.Core
 {

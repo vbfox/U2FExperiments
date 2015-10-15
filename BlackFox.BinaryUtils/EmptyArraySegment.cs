@@ -1,8 +1,8 @@
 using System;
 
-namespace BlackFox.UsbHid
+namespace BlackFox.Binary
 {
-    public static class EmptyArraySegment<T>
+    internal static class EmptyArraySegment<T>
     {
         public static ArraySegment<T> Value { get; } = new ArraySegment<T>(EmptyArray<T>.Value);
     }

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using BlackFox.BinaryUtils;
+using BlackFox.Binary;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Key;
 using BlackFox.U2F.Server.data;
@@ -14,7 +14,6 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Asn1;
 using Org.BouncyCastle.Security.Certificates;
-using Org.BouncyCastle.Utilities.Encoders;
 using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Server.impl

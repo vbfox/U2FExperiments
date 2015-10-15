@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using JetBrains.Annotations;
 
-namespace BlackFox.BinaryUtils
+namespace BlackFox.Binary
 {
     internal static class ArraySegmentExtensions
     {

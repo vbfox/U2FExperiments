@@ -1,5 +1,5 @@
 using System;
-using BlackFox.BinaryUtils;
+using BlackFox.Binary;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Key.messages;
 using Common.Logging;

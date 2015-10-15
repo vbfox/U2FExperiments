@@ -47,6 +47,12 @@
     <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentLoggingExtensions.cs">
       <Link>Utils\ArraySegmentLoggingExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EmptyArray.cs">
+      <Link>Utils\EmptyArray.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EmptyArraySegment.cs">
+      <Link>Utils\EmptyArraySegment.cs</Link>
+    </Compile>
     <Compile Include="..\BlackFox.BinaryUtils\ResharperAnnotations.cs">
       <Link>Utils\ResharperAnnotations.cs</Link>
     </Compile>

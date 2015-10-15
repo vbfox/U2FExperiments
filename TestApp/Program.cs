@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using BlackFox.BinaryUtils;
+using BlackFox.Binary;
 using BlackFox.U2FHid;
 using BlackFox.U2FHid.Core;
 using BlackFox.U2FHid.Core.RawPackets;

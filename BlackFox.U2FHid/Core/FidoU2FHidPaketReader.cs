@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using BlackFox.BinaryUtils;
+using BlackFox.Binary;
 using BlackFox.U2FHid.Core.RawPackets;
 using BlackFox.UsbHid;
 using JetBrains.Annotations;

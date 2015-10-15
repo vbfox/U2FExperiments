@@ -1,7 +1,6 @@
 using System;
 using System.IO;
-using BlackFox.BinaryUtils;
-using BlackFox.UsbHid;
+using BlackFox.Binary;
 using NFluent;
 using NUnit.Framework;
 

@@ -3,7 +3,7 @@ using System.IO;
 using Common.Logging;
 using JetBrains.Annotations;
 
-namespace BlackFox.BinaryUtils
+namespace BlackFox.Binary
 {
     internal static class ArraySegmentLoggingExtensions
     {

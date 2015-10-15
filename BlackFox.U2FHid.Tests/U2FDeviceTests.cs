@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using BlackFox.BinaryUtils;
+using BlackFox.Binary;
 using BlackFox.U2FHid.Core;
 using BlackFox.UsbHid;
 using Moq;
