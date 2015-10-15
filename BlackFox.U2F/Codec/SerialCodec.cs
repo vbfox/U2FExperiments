@@ -1,4 +1,5 @@
 using System.IO;
+using BlackFox.Binary;
 using BlackFox.U2F.Key.messages;
 
 namespace BlackFox.U2F.Codec
@@ -50,7 +51,7 @@ namespace BlackFox.U2F.Codec
             {
                 throw new U2FException("Message is too long to be transmitted over this protocol");
             }
-            using (var dataOutputStream = new BinaryWriter(outputStream))
+            using (var dataOutputStream = new EndianWriter(outputStream, Endianness.BigEndian))
             {
                 dataOutputStream.Write(Version);
                 dataOutputStream.Write(command);
@@ -67,7 +68,7 @@ namespace BlackFox.U2F.Codec
             {
                 throw new U2FException("Message is too long to be transmitted over this protocol");
             }
-            using (var dataOutputStream = new BinaryWriter(outputStream))
+            using (var dataOutputStream = new EndianWriter(outputStream, Endianness.BigEndian))
             {
                 dataOutputStream.Write((short)encodedBytes.Length);
                 dataOutputStream.Write(encodedBytes);
@@ -78,7 +79,7 @@ namespace BlackFox.U2F.Codec
         /// <exception cref="System.IO.IOException"/>
         public static IU2FRequest ParseRequest(Stream inputStream)
         {
-            using (var dataInputStream = new BinaryReader(inputStream))
+            using (var dataInputStream = new EndianReader(inputStream, Endianness.BigEndian))
             {
                 var version = dataInputStream.ReadByte();
                 if (version != Version)
@@ -112,7 +113,7 @@ namespace BlackFox.U2F.Codec
         /// <exception cref="System.IO.IOException"/>
         public static RegisterResponse ParseRegisterResponse(Stream inputStream)
         {
-            using (var dataInputStream = new BinaryReader(inputStream))
+            using (var dataInputStream = new EndianReader(inputStream, Endianness.BigEndian))
             {
                 return RawMessageCodec.DecodeRegisterResponse(ParseMessage(dataInputStream));
             }
@@ -122,14 +123,14 @@ namespace BlackFox.U2F.Codec
         /// <exception cref="System.IO.IOException"/>
         public static AuthenticateResponse ParseAuthenticateResponse(Stream inputStream)
         {
-            using (var dataInputStream = new BinaryReader(inputStream))
+            using (var dataInputStream = new EndianReader(inputStream, Endianness.BigEndian))
             {
                 return RawMessageCodec.DecodeAuthenticateResponse(ParseMessage(dataInputStream));
             }
         }
 
         /// <exception cref="System.IO.IOException"/>
-        static byte[] ParseMessage(BinaryReader dataInputStream)
+        static byte[] ParseMessage(EndianReader dataInputStream)
         {
             var size = dataInputStream.ReadUInt16();
             return dataInputStream.ReadBytes(size);

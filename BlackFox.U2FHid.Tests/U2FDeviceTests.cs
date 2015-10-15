@@ -24,8 +24,8 @@ namespace BlackFox.U2FHid.Tests
         {
             // Setup
             var scenario = HidScenario.Build();
-            scenario.Write(report => AssertWriteInitPacket(report.Data, TEST_CHANNEL, U2FHidCommand.Wink));
-            scenario.Read(() => new HidInputReport(BuildInitPacket(TEST_CHANNEL, U2FHidCommand.Wink)));
+            scenario.Write(report => AssertWriteInitPacket(report.Data, TestChannel, U2FHidCommand.Wink));
+            scenario.Read(() => new HidInputReport(BuildInitPacket(TestChannel, U2FHidCommand.Wink)));
 
             var hid = CreateHidMock();
             var device = new U2FDevice(hid.Object, false);
@@ -52,9 +52,9 @@ namespace BlackFox.U2FHid.Tests
                 var sizeLo = report.Data.Array[report.Data.Offset + 6];
                 var size = (sizeHi << 8) | sizeLo;
                 holder = new BytesHolder(size);
-                AssertWriteInitPacket(report.Data, TEST_CHANNEL, U2FHidCommand.Ping, holder);
+                AssertWriteInitPacket(report.Data, TestChannel, U2FHidCommand.Ping, holder);
             });
-            scenario.Read(() => new HidInputReport(BuildInitPacket(TEST_CHANNEL, U2FHidCommand.Ping, holder)));
+            scenario.Read(() => new HidInputReport(BuildInitPacket(TestChannel, U2FHidCommand.Ping, holder)));
 
             var hid = CreateHidMock();
             var device = new U2FDevice(hid.Object, false);
@@ -75,8 +75,8 @@ namespace BlackFox.U2FHid.Tests
             // Setup
             var pingData = Encoding.UTF8.GetBytes("Testing !");
             var scenario = HidScenario.Build();
-            scenario.Write(report => AssertWriteInitPacket(report.Data, TEST_CHANNEL, U2FHidCommand.Ping, pingData));
-            scenario.Read(() => new HidInputReport(BuildInitPacket(TEST_CHANNEL, U2FHidCommand.Ping, pingData)));
+            scenario.Write(report => AssertWriteInitPacket(report.Data, TestChannel, U2FHidCommand.Ping, pingData));
+            scenario.Read(() => new HidInputReport(BuildInitPacket(TestChannel, U2FHidCommand.Ping, pingData)));
 
             var hid = CreateHidMock();
             var device = new U2FDevice(hid.Object, false);
@@ -102,10 +102,10 @@ namespace BlackFox.U2FHid.Tests
             var writeContData = pingData.Skip(63 - 7).Take(63 - 5).ToArray();
 
             var scenario = HidScenario.Build();
-            scenario.Write(report => AssertWriteInitPacketSized(report.Data, TEST_CHANNEL, U2FHidCommand.Ping, pingData.Length, writeInitData));
-            scenario.Write(report => AssertWriteContinuation(report.Data, TEST_CHANNEL, 0, writeContData));
-            scenario.Read(() => new HidInputReport(BuildInitPacketSized(TEST_CHANNEL, U2FHidCommand.Ping, pingData.Length, writeInitData)));
-            scenario.Read(() => new HidInputReport(BuildContinuationPacket(TEST_CHANNEL, 0, writeContData)));
+            scenario.Write(report => AssertWriteInitPacketSized(report.Data, TestChannel, U2FHidCommand.Ping, pingData.Length, writeInitData));
+            scenario.Write(report => AssertWriteContinuation(report.Data, TestChannel, 0, writeContData));
+            scenario.Read(() => new HidInputReport(BuildInitPacketSized(TestChannel, U2FHidCommand.Ping, pingData.Length, writeInitData)));
+            scenario.Read(() => new HidInputReport(BuildContinuationPacket(TestChannel, 0, writeContData)));
 
             var hid = CreateHidMock();
             var device = new U2FDevice(hid.Object, false);
@@ -141,8 +141,8 @@ namespace BlackFox.U2FHid.Tests
             Check.That(init.Capabilities).IsEqualTo(U2FDeviceCapabilities.Wink);
         }
 
-        const uint TEST_CHANNEL = 0xCAFEBABE;
-        const int PACKET_SIZE = 64;
+        const uint TestChannel = 0xCAFEBABE;
+        const int PacketSize = 64;
 
         static InitResponse InitDevice(Mock<IHidDevice> hid, U2FDevice device)
         {
@@ -154,7 +154,7 @@ namespace BlackFox.U2FHid.Tests
                 0xffffffff,
                 U2FHidCommand.Init,
                 nonce,
-                (uint)TEST_CHANNEL,
+                (uint)TestChannel,
                 (byte)1,
                 (byte)2,
                 (byte)3,
@@ -184,7 +184,7 @@ namespace BlackFox.U2FHid.Tests
 
         static HidOutputReport CreateOutputReport(byte id)
         {
-            return new HidOutputReport(id, new byte[PACKET_SIZE].Segment());
+            return new HidOutputReport(id, new byte[PacketSize].Segment());
         }
 
         static void AssertWriteInitPacketSized(ArraySegment<byte> actual, uint channel, U2FHidCommand command, int size,
@@ -194,7 +194,7 @@ namespace BlackFox.U2FHid.Tests
             var sizeLo = (byte)((size >> 0) & 0xFF);
 
             var expected = new object[] { channel, (byte)command, sizeHi, sizeLo }.Concat(data).ToArray();
-            AssertBinary(actual, expected);
+            AssertBinary(actual, Endianness.BigEndian, expected);
         }
 
         static void AssertWriteInitPacket(ArraySegment<byte> actual, uint channel, U2FHidCommand command,
@@ -216,21 +216,21 @@ namespace BlackFox.U2FHid.Tests
             var sizeLo = (byte)((size >> 0) & 0xFF);
 
             var packet = new object[] { (byte)0, channel, (byte)command, sizeHi, sizeLo }.Concat(data).ToArray();
-            return BuildBinary(packet).Segment();
+            return BuildBinary(Endianness.BigEndian, packet).Segment();
         }
 
         static void AssertWriteContinuation(ArraySegment<byte> actual, uint channel, byte sequence,
             params object[] data)
         {
             var expected = new object[] { channel, (byte)sequence }.Concat(data).ToArray();
-            AssertBinary(actual, expected);
+            AssertBinary(actual, Endianness.BigEndian, expected);
         }
 
         static ArraySegment<byte> BuildContinuationPacket(uint channel, byte sequence, params object[] data)
         {
             var packet = new object[] { (byte)0, channel, (byte)sequence }.Concat(data).ToArray();
-            var realContent = BuildBinary(packet);
-            var result = new byte[PACKET_SIZE];
+            var realContent = BuildBinary(Endianness.BigEndian, packet);
+            var result = new byte[PacketSize];
             Array.Copy(realContent, result, realContent.Length);
             return result.Segment();
         }

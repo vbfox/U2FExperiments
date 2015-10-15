@@ -58,11 +58,11 @@ namespace BlackFox.U2FHid.Tests
             return size;
         }
 
-        public static byte[] BuildBinary(params object[] args)
+        public static byte[] BuildBinary(Endianness endianess, params object[] args)
         {
             using (var stream = new MemoryStream(64))
             {
-                var writer = new BinaryWriter(stream);
+                var writer = new EndianWriter(stream, endianess);
 
                 foreach (var arg in args)
                 {
@@ -100,13 +100,13 @@ namespace BlackFox.U2FHid.Tests
             }
         }
 
-        public static void AssertBinary(ArraySegment<byte> actualBytes, params object[] expectedContent)
+        public static void AssertBinary(ArraySegment<byte> actualBytes, Endianness endianess, params object[] expectedContent)
         {
             var str = SegmentToString(actualBytes);
 
             using (var stream = actualBytes.AsStream())
             {
-                var reader = new BinaryReader(stream);
+                var reader = new EndianReader(stream, endianess);
 
                 foreach (var expectedObject in expectedContent)
                 {

@@ -20,6 +20,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +29,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -42,6 +44,24 @@
   <ItemGroup>
     <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentExtensions.cs">
       <Link>Utils\ArraySegmentExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EmptyArray.cs">
+      <Link>Utils\EmptyArray.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EmptyArraySegment.cs">
+      <Link>Utils\EmptyArraySegment.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EndianessHelpers.cs">
+      <Link>Utils\EndianessHelpers.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\Endianness.cs">
+      <Link>Utils\Endianness.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EndianReader.cs">
+      <Link>Utils\EndianReader.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EndianWriter.cs">
+      <Link>Utils\EndianWriter.cs</Link>
     </Compile>
     <Compile Include="..\BlackFox.BinaryUtils\ResharperAnnotations.cs">
       <Link>Utils\ResharperAnnotations.cs</Link>

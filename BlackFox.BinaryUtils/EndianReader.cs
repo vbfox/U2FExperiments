@@ -10,7 +10,7 @@ using System.Text;
 
 namespace BlackFox.Binary
 {
-    internal class BinaryReader : IDisposable
+    internal class EndianReader : IDisposable
     {
         private const int MaxCharBytesSize = 128;
 
@@ -24,23 +24,23 @@ namespace BlackFox.Binary
         // Performance optimization for Read() w/ Unicode.  Speeds us up by ~40% 
         private readonly bool use2BytesPerChar;
         private readonly bool leaveOpen;
-        Endianness resolvedEndianess;
+        readonly Endianness resolvedEndianess;
         public Endianness Endianness { get; }
         
 
-        public BinaryReader(Stream input) : this(input, Endianness.Native, new UTF8Encoding(), true)
+        public EndianReader(Stream input) : this(input, Endianness.Native, new UTF8Encoding(), true)
         {
         }
 
-        public BinaryReader(Stream input, Encoding encoding) : this(input, Endianness.Native, encoding, true)
+        public EndianReader(Stream input, Encoding encoding) : this(input, Endianness.Native, encoding, true)
         {
         }
 
-        public BinaryReader(Stream input, Endianness endianess) : this(input, endianess, new UTF8Encoding(), true)
+        public EndianReader(Stream input, Endianness endianess) : this(input, endianess, new UTF8Encoding(), true)
         {
         }
 
-        public BinaryReader(Stream input, Endianness endianess, Encoding encoding, bool leaveOpen)
+        public EndianReader(Stream input, Endianness endianess, Encoding encoding, bool leaveOpen)
         {
             if (input == null)
             {
@@ -71,7 +71,7 @@ namespace BlackFox.Binary
             Endianness = endianess;
             resolvedEndianess = EndianessHelper.Resolve(endianess);
 
-            Contract.Assert(decoder != null, "[BinaryReader.ctor]m_decoder!=null");
+            Contract.Assert(decoder != null, "[EndianReader.ctor]m_decoder!=null");
         }
 
         public Stream BaseStream { get; private set; }
@@ -526,7 +526,7 @@ namespace BlackFox.Binary
                     return -1;
                 }
 
-                Contract.Assert(numBytes == 1 || numBytes == 2, "BinaryReader::InternalReadOneChar assumes it's reading one or 2 bytes only.");
+                Contract.Assert(numBytes == 1 || numBytes == 2, "EndianReader::InternalReadOneChar assumes it's reading one or 2 bytes only.");
 
                 try
                 {

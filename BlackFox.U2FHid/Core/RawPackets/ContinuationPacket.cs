@@ -30,7 +30,7 @@ namespace BlackFox.U2FHid.Core.RawPackets
 
             using (var stream = new MemoryStream(segment.Array, segment.Offset, segment.Count))
             {
-                var reader = new BinaryReader(stream);
+                var reader = new EndianReader(stream, Endianness.BigEndian);
                 result.ChannelIdentifier = reader.ReadUInt32();
                 result.PaketSequence = reader.ReadByte();
 
@@ -61,7 +61,7 @@ namespace BlackFox.U2FHid.Core.RawPackets
         {
             if (stream == null) throw new ArgumentNullException(nameof(stream));
 
-            var writer = new BinaryWriter(stream);
+            var writer = new EndianWriter(stream, Endianness.BigEndian);
             writer.Write(ChannelIdentifier);
             writer.Write(PaketSequence);
             stream.Write(Data.Array, Data.Offset, Data.Count);

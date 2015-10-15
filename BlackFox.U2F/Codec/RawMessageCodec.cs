@@ -1,4 +1,5 @@
 using System.IO;
+using BlackFox.Binary;
 using BlackFox.U2F.Key.messages;
 using Org.BouncyCastle.Security.Certificates;
 using Org.BouncyCastle.X509;
@@ -17,7 +18,7 @@ namespace BlackFox.U2F.Codec
             var appIdSha256 = registerRequest.ApplicationSha256;
             var challengeSha256 = registerRequest.ChallengeSha256;
             var result = new byte[appIdSha256.Length + challengeSha256.Length];
-            using (var writer = new BinaryWriter(new MemoryStream(result)))
+            using (var writer = new EndianWriter(new MemoryStream(result), Endianness.BigEndian))
             {
                 writer.Write(challengeSha256);
                 writer.Write(appIdSha256);
@@ -30,7 +31,7 @@ namespace BlackFox.U2F.Codec
         {
             try
             {
-                using (var inputStream = new BinaryReader(new MemoryStream(data)))
+                using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))
                 {
                     var challengeSha256 = inputStream.ReadBytes(32);
                     var appIdSha256 = inputStream.ReadBytes(32);
@@ -71,7 +72,7 @@ namespace BlackFox.U2F.Codec
             }
             var result = new byte[1 + userPublicKey.Length + 1 + keyHandle.Length + attestationCertificateBytes
                 .Length + signature.Length];
-            using (var writer = new BinaryWriter(new MemoryStream(result)))
+            using (var writer = new EndianWriter(new MemoryStream(result), Endianness.BigEndian))
             {
                 writer.Write(RegistrationReservedByteValue);
                 writer.Write(userPublicKey);
@@ -88,7 +89,7 @@ namespace BlackFox.U2F.Codec
         {
             try
             {
-                using (var inputStream = new BinaryReader(new MemoryStream(data)))
+                using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))
                 {
                     var reservedByte = inputStream.ReadByte();
                     var userPublicKey = inputStream.ReadBytes(65);
@@ -131,7 +132,7 @@ namespace BlackFox.U2F.Codec
                 throw new U2FException("keyHandle length cannot be longer than 255 bytes!");
             }
             var result = new byte[1 + appIdSha256.Length + challengeSha256.Length + 1 + keyHandle.Length];
-            using (var writer = new BinaryWriter(new MemoryStream(result)))
+            using (var writer = new EndianWriter(new MemoryStream(result), Endianness.BigEndian))
             {
                 writer.Write(controlByte);
                 writer.Write(challengeSha256);
@@ -148,7 +149,7 @@ namespace BlackFox.U2F.Codec
         {
             try
             {
-                using (var inputStream = new BinaryReader(new MemoryStream(data)))
+                using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))
                 {
                     var controlByte = inputStream.ReadByte();
                     var challengeSha256 = inputStream.ReadBytes(32);
@@ -176,7 +177,7 @@ namespace BlackFox.U2F.Codec
             var counter = authenticateResponse.Counter;
             var signature = authenticateResponse.Signature;
             var result = new byte[1 + 4 + signature.Length];
-            using (var writer = new BinaryWriter(new MemoryStream(result)))
+            using (var writer = new EndianWriter(new MemoryStream(result), Endianness.BigEndian))
             {
                 writer.Write(userPresence);
                 writer.Write(counter);
@@ -190,7 +191,7 @@ namespace BlackFox.U2F.Codec
         {
             try
             {
-                using (var inputStream = new BinaryReader(new MemoryStream(data)))
+                using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))
                 {
                     var userPresence = inputStream.ReadByte();
                     var counter = inputStream.ReadInt32();
@@ -211,7 +212,7 @@ namespace BlackFox.U2F.Codec
             var size = 1 + applicationSha256.Length + challengeSha256.Length + keyHandle.Length + userPublicKey.Length;
             var signedData = new byte[size];
 
-            using (var writer = new BinaryWriter(new MemoryStream(signedData)))
+            using (var writer = new EndianWriter(new MemoryStream(signedData), Endianness.BigEndian))
             {
                 writer.Write(RegistrationSignedReservedByteValue);
                 writer.Write(applicationSha256);
@@ -228,7 +229,7 @@ namespace BlackFox.U2F.Codec
         {
             var size = applicationSha256.Length + 1 + 4 + challengeSha256.Length;
             var signedData = new byte[size];
-            using (var writer = new BinaryWriter(new MemoryStream(signedData)))
+            using (var writer = new EndianWriter(new MemoryStream(signedData), Endianness.BigEndian))
             {
                 writer.Write(applicationSha256);
                 writer.Write(userPresence);

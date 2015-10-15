@@ -106,7 +106,7 @@ namespace BlackFox.U2FHid
             }
 
             var afterNonce = response.Data.Segment(INIT_NONCE_SIZE);
-            using (var reader = new BinaryReader(afterNonce.AsStream()))
+            using (var reader = new EndianReader(afterNonce.AsStream(), Endianness.BigEndian))
             {
                 var channel = reader.ReadUInt32();
                 var protocolVersion = reader.ReadByte();

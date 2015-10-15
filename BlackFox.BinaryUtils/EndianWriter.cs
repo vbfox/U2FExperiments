@@ -505,7 +505,7 @@ namespace BlackFox.Binary
             OutStream.Write(buffer, 0, 4);
         }
 
-        // Writes a length-prefixed string to this stream in the BinaryWriter's
+        // Writes a length-prefixed string to this stream in the EndianWriter's
         // current Encoding. This method first writes the length of the string as 
         // a four-byte unsigned integer, and then writes that many characters 
         // to the stream.
