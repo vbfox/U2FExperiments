@@ -17,9 +17,8 @@ namespace BlackFox.U2FHid.Core
         }
 
         public FidoU2FHidMessage(uint channel, U2FHidCommand command)
-            : this(channel, command, EmptyArraySegment.Of<byte>())
+            : this(channel, command, EmptyArraySegment<byte>.Value)
         {
-
         }
     }
 }

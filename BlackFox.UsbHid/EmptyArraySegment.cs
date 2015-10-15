@@ -2,16 +2,8 @@ using System;
 
 namespace BlackFox.UsbHid
 {
-    public static class EmptyArraySegment
+    public static class EmptyArraySegment<T>
     {
-        private static class Holder<T>
-        {
-            public static readonly ArraySegment<T> Empty = new ArraySegment<T>(EmptyArray.Of<T>());
-        }
-
-        public static ArraySegment<T> Of<T>()
-        {
-            return Holder<T>.Empty;
-        }
+        public static ArraySegment<T> Value { get; } = new ArraySegment<T>(EmptyArray<T>.Value);
     }
 }

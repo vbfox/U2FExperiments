@@ -1,15 +1,7 @@
 namespace BlackFox.UsbHid
 {
-    public static class EmptyArray
+    public static class EmptyArray<T>
     {
-        private static class Holder<T>
-        {
-            public static readonly T[] Empty = new T[0];
-        }
-
-        public static T[] Of<T>()
-        {
-            return Holder<T>.Empty;
-        }
+        public static T[] Value { get; } = new T[0];
     }
 }
