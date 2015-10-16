@@ -7,6 +7,11 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 using BlackFox.Binary;
+using BlackFox.U2F.Client.impl;
+using BlackFox.U2F.Key;
+using BlackFox.U2F.Key.impl;
+using BlackFox.U2F.Server.impl;
+using BlackFox.U2F.Tests;
 using BlackFox.U2FHid;
 using BlackFox.U2FHid.Core;
 using BlackFox.U2FHid.Core.RawPackets;
@@ -17,6 +22,7 @@ using Common.Logging.NLog;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
+using NodaTime;
 
 namespace U2FExperiments
 {
@@ -93,7 +99,44 @@ namespace U2FExperiments
         {
             ConfigureLogging();
 
-            var factory = (IHidDeviceFactory)Win32HidDeviceFactory.Instance;
+            TestSoftwareOnly();
+            //TestHardwareOnly();
+        }
+
+        private static void TestSoftwareOnly()
+        {
+            var key = new U2FKeyReferenceImpl(
+                TestVectors.VENDOR_CERTIFICATE,
+                TestVectors.VENDOR_CERTIFICATE_PRIVATE_KEY,
+                new TestKeyPairGenerator(),
+                new GuidKeyHandleGenerator(),
+                new InMemoryKeyDataStore(),
+                new ConsolePresenceVerifier(),
+                new BouncyCastleCrypto());
+
+            var server = new U2FServerReferenceImpl(
+                new ChallengeGenerator(),
+                new InMemoryServerDataStore(new GuidSessionIdGenerator()),
+                new BouncyCastleServerCrypto(),
+                new [] { "http://example.com", "https://example.com" });
+
+            var client = new U2FClientReferenceImpl(
+                new BouncyCastleClientCrypto(),
+                new SimpleOriginVerifier(new[] {"http://example.com", "https://example.com"}),
+                new ChannelProvider(),
+                server,
+                key,
+                SystemClock.Instance);
+
+            client.Register("http://example.com", "vbfox");
+            client.Authenticate("http://example.com", "vbfox");
+            Console.WriteLine("Done.");
+            Console.ReadLine();
+        }
+
+        private static void TestHardwareOnly()
+        {
+            var factory = (IHidDeviceFactory) Win32HidDeviceFactory.Instance;
             var devices = factory.FindAllAsync().Result;
             var fidoInfo = devices.Where(FidoU2FIdentification.IsFidoU2F).FirstOrDefault();
 
@@ -115,7 +158,7 @@ namespace U2FExperiments
             Console.WriteLine("VID = 0x{0:X4}", fidoInfo.VendorId);
             Console.WriteLine("PID = 0x{0:X4}", fidoInfo.ProductId);
 
-            using (var device = (Win32HidDevice)fidoInfo.OpenDeviceAsync().Result)
+            using (var device = (Win32HidDevice) fidoInfo.OpenDeviceAsync().Result)
             {
                 device.SetNumInputBuffers(64);
                 var caps = device.Information.Capabilities;
@@ -132,7 +175,11 @@ namespace U2FExperiments
                 var pongShort = u2f.Ping(Encoding.UTF8.GetBytes("Pong !!").Segment()).Result;
                 WriteBuffer(pongShort);
 
-                var pong = u2f.Ping(Encoding.UTF8.GetBytes("abcdefgh1-abcdefgh2-abcdefgh3-abcdefgh4-abcdefgh5-abcdefgh6-abcdefgh7-abcdefgh8-").Segment()).Result;
+                var pong =
+                    u2f.Ping(
+                        Encoding.UTF8.GetBytes(
+                            "abcdefgh1-abcdefgh2-abcdefgh3-abcdefgh4-abcdefgh5-abcdefgh6-abcdefgh7-abcdefgh8-").Segment())
+                        .Result;
 
                 WriteBuffer(pong);
 

@@ -15,7 +15,7 @@ namespace BlackFox.U2F.Key.impl
 
         private readonly ECPrivateKeyParameters certificatePrivateKey;
         private readonly IKeyCrypto crypto;
-        private readonly IDataStore dataStore;
+        private readonly IKeyDataStore dataStore;
         private readonly IKeyHandleGenerator keyHandleGenerator;
         private readonly IKeyPairGenerator keyPairGenerator;
         private readonly IUserPresenceVerifier userPresenceVerifier;
@@ -23,7 +23,7 @@ namespace BlackFox.U2F.Key.impl
 
         public U2FKeyReferenceImpl([NotNull] X509Certificate vendorCertificate,
             [NotNull] ECPrivateKeyParameters certificatePrivateKey, [NotNull] IKeyPairGenerator keyPairGenerator,
-            [NotNull] IKeyHandleGenerator keyHandleGenerator, [NotNull] IDataStore dataStore,
+            [NotNull] IKeyHandleGenerator keyHandleGenerator, [NotNull] IKeyDataStore dataStore,
             [NotNull] IUserPresenceVerifier userPresenceVerifier, [NotNull] IKeyCrypto crypto)
         {
             if (vendorCertificate == null)

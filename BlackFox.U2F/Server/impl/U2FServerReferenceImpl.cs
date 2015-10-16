@@ -35,9 +35,9 @@ namespace BlackFox.U2F.Server.impl
 
         private readonly IChallengeGenerator challengeGenerator;
         private readonly IServerCrypto cryto;
-        private readonly IDataStore dataStore;
+        private readonly IServerDataStore dataStore;
 
-        public U2FServerReferenceImpl(IChallengeGenerator challengeGenerator, IDataStore dataStore, IServerCrypto cryto,
+        public U2FServerReferenceImpl(IChallengeGenerator challengeGenerator, IServerDataStore dataStore, IServerCrypto cryto,
             ICollection<string> origins)
         {
             // Object Identifier for the attestation certificate transport extension fidoU2FTransports

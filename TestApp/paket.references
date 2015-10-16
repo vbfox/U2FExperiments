@@ -1,3 +1,6 @@
 ﻿NLog framework: net45
 Common.Logging.Portable framework: net45
 Common.Logging.NLog40 framework: net45
+Portable.BouncyCastle
+NodaTime
+Newtonsoft.Json

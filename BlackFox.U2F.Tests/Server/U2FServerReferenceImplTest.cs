@@ -16,7 +16,7 @@ namespace BlackFox.U2F.Tests.Server
     {
         private IServerCrypto crypto;
         private Mock<IChallengeGenerator> mockChallengeGenerator;
-        private Mock<IDataStore> mockDataStore;
+        private Mock<IServerDataStore> mockDataStore;
         private Mock<ISessionIdGenerator> mockSessionIdGenerator;
 
         [SetUp]
@@ -24,7 +24,7 @@ namespace BlackFox.U2F.Tests.Server
         {
             mockChallengeGenerator = new Mock<IChallengeGenerator>();
             mockSessionIdGenerator = new Mock<ISessionIdGenerator>();
-            mockDataStore = new Mock<IDataStore>();
+            mockDataStore = new Mock<IServerDataStore>();
             crypto = new BouncyCastleServerCrypto();
 
             var trustedCertificates = new List<X509Certificate> {VENDOR_CERTIFICATE};

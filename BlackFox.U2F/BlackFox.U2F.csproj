@@ -75,7 +75,7 @@
     <Compile Include="Codec\SerialCodec.cs" />
     <Compile Include="Key\ECKeyPair.cs" />
     <Compile Include="Key\IKeyCrypto.cs" />
-    <Compile Include="Key\IDataStore.cs" />
+    <Compile Include="Key\IKeyDataStore.cs" />
     <Compile Include="Key\impl\BouncyCastleCrypto.cs" />
     <Compile Include="Key\impl\U2FKeyReferenceImpl.cs" />
     <Compile Include="Key\IKeyHandleGenerator.cs" />
@@ -92,13 +92,13 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\IChallengeGenerator.cs" />
     <Compile Include="Server\IServerCrypto.cs" />
-    <Compile Include="Server\IDataStore.cs" />
+    <Compile Include="Server\IServerDataStore.cs" />
     <Compile Include="Server\data\EnrollSessionData.cs" />
     <Compile Include="Server\data\SecurityKeyData.cs" />
     <Compile Include="Server\data\SecurityKeyDataTransports.cs" />
     <Compile Include="Server\data\SignSessionData.cs" />
     <Compile Include="Server\impl\BouncyCastleServerCrypto.cs" />
-    <Compile Include="Server\impl\MemoryDataStore.cs" />
+    <Compile Include="Server\impl\InMemoryServerDataStore.cs" />
     <Compile Include="Server\impl\U2FServerReferenceImpl.cs" />
     <Compile Include="Server\messages\RegistrationRequest.cs" />
     <Compile Include="Server\messages\RegistrationResponse.cs" />

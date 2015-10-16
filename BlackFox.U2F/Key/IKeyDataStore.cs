@@ -1,6 +1,6 @@
 namespace BlackFox.U2F.Key
 {
-    public interface IDataStore
+    public interface IKeyDataStore
 	{
 		void StoreKeyPair(byte[] keyHandle, ECKeyPair keyPair);
 

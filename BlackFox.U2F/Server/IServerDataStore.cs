@@ -4,7 +4,7 @@ using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Server
 {
-	public interface IDataStore
+	public interface IServerDataStore
 	{
 		// attestation certs and trust
 		void AddTrustedCertificate(X509Certificate certificate);

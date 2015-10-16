@@ -6,7 +6,7 @@ using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Server.impl
 {
-    public class MemoryDataStore : IDataStore
+    public class InMemoryServerDataStore : IServerDataStore
     {
         private readonly Dictionary<string, IList<SecurityKeyData>> securityKeyDataBase =
             new Dictionary<string, IList<SecurityKeyData>>();
@@ -17,7 +17,7 @@ namespace BlackFox.U2F.Server.impl
         private readonly ISessionIdGenerator sessionIdGenerator;
         private readonly List<X509Certificate> trustedCertificateDataBase = new List<X509Certificate>();
 
-        public MemoryDataStore(ISessionIdGenerator sessionIdGenerator)
+        public InMemoryServerDataStore(ISessionIdGenerator sessionIdGenerator)
         {
             if (sessionIdGenerator == null)
             {

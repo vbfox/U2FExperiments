@@ -16,7 +16,7 @@ namespace BlackFox.U2F.Tests.Key
 {
     public class U2FKeyReferenceImplTest
     {
-        private Mock<IDataStore> mockDataStore;
+        private Mock<IKeyDataStore> mockDataStore;
 
         private Mock<IKeyHandleGenerator> mockKeyHandleGenerator;
         private Mock<IKeyPairGenerator> mockKeyPairGenerator;
@@ -30,7 +30,7 @@ namespace BlackFox.U2F.Tests.Key
         {
             mockKeyPairGenerator = new Mock<IKeyPairGenerator>();
             mockKeyHandleGenerator = new Mock<IKeyHandleGenerator>();
-            mockDataStore = new Mock<IDataStore>();
+            mockDataStore = new Mock<IKeyDataStore>();
             mockUserPresenceVerifier = new Mock<IUserPresenceVerifier>();
 
             u2FKey = new U2FKeyReferenceImpl(VENDOR_CERTIFICATE, VENDOR_CERTIFICATE_PRIVATE_KEY,
