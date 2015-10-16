@@ -4,120 +4,101 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+
+using BlackFox.U2F.Codec;
+using BlackFox.U2F.Key;
+using BlackFox.U2F.Key.messages;
+using NUnit.Framework;
+using static BlackFox.U2F.Tests.TestVectors;
+
 namespace BlackFox.U2F.Tests.Codec
-{/*
-	public class SerialCodecTest : com.google.u2f.TestVectors
-	{
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testEncodeRegisterRequest()
-		{
-			com.google.u2f.key.messages.RegisterRequest registerRequest = new com.google.u2f.key.messages.RegisterRequest
-				(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256);
-			byte[] encodedBytes = com.google.u2f.codec.RawMessageCodec.encodeRegisterRequest(
-				registerRequest);
-			NUnit.Framework.Assert.assertArrayEquals(REGISTRATION_REQUEST_DATA, encodedBytes);
-		}
+{
+    public class SerialCodecTest
+    {
+        [Test]
+        public virtual void TestEncodeRegisterRequest()
+        {
+            var registerRequest = new RegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256);
+            var encodedBytes = RawMessageCodec.EncodeRegisterRequest(registerRequest);
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testDecodeRegisterRequest()
-		{
-			com.google.u2f.key.messages.RegisterRequest registerRequest = com.google.u2f.codec.RawMessageCodec
-				.decodeRegisterRequest(REGISTRATION_REQUEST_DATA);
-			NUnit.Framework.Assert.AreEqual(new com.google.u2f.key.messages.RegisterRequest(APP_ID_ENROLL_SHA256
-				, BROWSER_DATA_ENROLL_SHA256), registerRequest);
-		}
+            CollectionAssert.AreEqual(REGISTRATION_REQUEST_DATA, encodedBytes);
+        }
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testEncodeRegisterResponse()
-		{
-			com.google.u2f.key.messages.RegisterResponse registerResponse = new com.google.u2f.key.messages.RegisterResponse
-				(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL);
-			byte[] encodedBytes = com.google.u2f.codec.RawMessageCodec.encodeRegisterResponse
-				(registerResponse);
-			NUnit.Framework.Assert.assertArrayEquals(REGISTRATION_RESPONSE_DATA, encodedBytes
-				);
-		}
+        [Test]
+        public virtual void TestDecodeRegisterRequest()
+        {
+            var registerRequest = RawMessageCodec.DecodeRegisterRequest(REGISTRATION_REQUEST_DATA);
+            Assert.AreEqual(new RegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256), registerRequest);
+        }
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testEncodeRegisterSignedBytes()
-		{
-			byte[] encodedBytes = com.google.u2f.codec.RawMessageCodec.encodeRegistrationSignedBytes
-				(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX
-				);
-			NUnit.Framework.Assert.assertArrayEquals(EXPECTED_REGISTER_SIGNED_BYTES, encodedBytes
-				);
-		}
+        [Test]
+        public virtual void TestEncodeRegisterResponse()
+        {
+            var registerResponse = new RegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE,
+                SIGNATURE_ENROLL);
+            var encodedBytes = RawMessageCodec.EncodeRegisterResponse(registerResponse);
+            CollectionAssert.AreEqual(REGISTRATION_RESPONSE_DATA, encodedBytes);
+        }
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testDecodeRegisterResponse()
-		{
-			com.google.u2f.key.messages.RegisterResponse registerResponse = com.google.u2f.codec.RawMessageCodec
-				.decodeRegisterResponse(REGISTRATION_RESPONSE_DATA);
-			NUnit.Framework.Assert.AreEqual(new com.google.u2f.key.messages.RegisterResponse(
-				USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL), registerResponse
-				);
-		}
+        [Test]
+        public virtual void TestEncodeRegisterSignedBytes()
+        {
+            var encodedBytes = RawMessageCodec.EncodeRegistrationSignedBytes(APP_ID_ENROLL_SHA256,
+                BROWSER_DATA_ENROLL_SHA256, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX);
+            CollectionAssert.AreEqual(EXPECTED_REGISTER_SIGNED_BYTES, encodedBytes);
+        }
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testEncodeAuthenticateRequest()
-		{
-			com.google.u2f.key.messages.AuthenticateRequest authenticateRequest = new com.google.u2f.key.messages.AuthenticateRequest
-				(com.google.u2f.key.messages.AuthenticateRequest.USER_PRESENCE_SIGN, BROWSER_DATA_SIGN_SHA256
-				, APP_ID_SIGN_SHA256, KEY_HANDLE);
-			byte[] encodedBytes = com.google.u2f.codec.RawMessageCodec.encodeAuthenticateRequest
-				(authenticateRequest);
-			NUnit.Framework.Assert.assertArrayEquals(SIGN_REQUEST_DATA, encodedBytes);
-		}
+        [Test]
+        public virtual void TestDecodeRegisterResponse()
+        {
+            var registerResponse = RawMessageCodec.DecodeRegisterResponse(REGISTRATION_RESPONSE_DATA);
+            Assert.AreEqual(
+                new RegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL),
+                registerResponse);
+        }
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testDecodeAuthenticateRequest()
-		{
-			com.google.u2f.key.messages.AuthenticateRequest authenticateRequest = com.google.u2f.codec.RawMessageCodec
-				.decodeAuthenticateRequest(SIGN_REQUEST_DATA);
-			NUnit.Framework.Assert.AreEqual(new com.google.u2f.key.messages.AuthenticateRequest
-				(com.google.u2f.key.messages.AuthenticateRequest.USER_PRESENCE_SIGN, BROWSER_DATA_SIGN_SHA256
-				, APP_ID_SIGN_SHA256, KEY_HANDLE), authenticateRequest);
-		}
+        [Test]
+        public virtual void TestEncodeAuthenticateRequest()
+        {
+            var authenticateRequest = new AuthenticateRequest(AuthenticateRequest.UserPresenceSign,
+                BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE);
+            var encodedBytes = RawMessageCodec.EncodeAuthenticateRequest(authenticateRequest);
+            CollectionAssert.AreEqual(SIGN_REQUEST_DATA, encodedBytes);
+        }
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testEncodeAuthenticateResponse()
-		{
-			com.google.u2f.key.messages.AuthenticateResponse authenticateResponse = new com.google.u2f.key.messages.AuthenticateResponse
-				(com.google.u2f.key.UserPresenceVerifier.USER_PRESENT_FLAG, COUNTER_VALUE, SIGNATURE_AUTHENTICATE
-				);
-			byte[] encodedBytes = com.google.u2f.codec.RawMessageCodec.encodeAuthenticateResponse
-				(authenticateResponse);
-			NUnit.Framework.Assert.assertArrayEquals(SIGN_RESPONSE_DATA, encodedBytes);
-		}
+        [Test]
+        public virtual void TestDecodeAuthenticateRequest()
+        {
+            var authenticateRequest = RawMessageCodec.DecodeAuthenticateRequest(SIGN_REQUEST_DATA);
+            Assert.AreEqual(
+                new AuthenticateRequest(AuthenticateRequest.UserPresenceSign, BROWSER_DATA_SIGN_SHA256,
+                    APP_ID_SIGN_SHA256, KEY_HANDLE), authenticateRequest);
+        }
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testDecodeAuthenticateResponse()
-		{
-			com.google.u2f.key.messages.AuthenticateResponse authenticateResponse = com.google.u2f.codec.RawMessageCodec
-				.decodeAuthenticateResponse(SIGN_RESPONSE_DATA);
-			NUnit.Framework.Assert.AreEqual(new com.google.u2f.key.messages.AuthenticateResponse
-				(com.google.u2f.key.UserPresenceVerifier.USER_PRESENT_FLAG, COUNTER_VALUE, SIGNATURE_AUTHENTICATE
-				), authenticateResponse);
-		}
+        [Test]
+        public virtual void TestEncodeAuthenticateResponse()
+        {
+            var authenticateResponse = new AuthenticateResponse(UserPresenceVerifierConstants.UserPresentFlag,
+                COUNTER_VALUE, SIGNATURE_AUTHENTICATE);
+            var encodedBytes = RawMessageCodec.EncodeAuthenticateResponse(authenticateResponse);
+            CollectionAssert.AreEqual(SIGN_RESPONSE_DATA, encodedBytes);
+        }
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testEncodeAuthenticateSignedBytes()
-		{
-			byte[] encodedBytes = com.google.u2f.codec.RawMessageCodec.encodeAuthenticateSignedBytes
-				(APP_ID_SIGN_SHA256, com.google.u2f.key.UserPresenceVerifier.USER_PRESENT_FLAG, 
-				COUNTER_VALUE, BROWSER_DATA_SIGN_SHA256);
-			NUnit.Framework.Assert.assertArrayEquals(EXPECTED_AUTHENTICATE_SIGNED_BYTES, encodedBytes
-				);
-		}
-	}*/
+        [Test]
+        public virtual void TestDecodeAuthenticateResponse()
+        {
+            var authenticateResponse = RawMessageCodec.DecodeAuthenticateResponse(SIGN_RESPONSE_DATA);
+            Assert.AreEqual(
+                new AuthenticateResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE,
+                    SIGNATURE_AUTHENTICATE), authenticateResponse);
+        }
+
+        [Test]
+        public virtual void TestEncodeAuthenticateSignedBytes()
+        {
+            var encodedBytes = RawMessageCodec.EncodeAuthenticateSignedBytes(APP_ID_SIGN_SHA256,
+                UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, BROWSER_DATA_SIGN_SHA256);
+            CollectionAssert.AreEqual(EXPECTED_AUTHENTICATE_SIGNED_BYTES, encodedBytes);
+        }
+    }
 }
