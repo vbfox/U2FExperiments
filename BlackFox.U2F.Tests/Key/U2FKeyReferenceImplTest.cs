@@ -4,87 +4,83 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+using BlackFox.U2F.Key;
+using BlackFox.U2F.Key.impl;
+using BlackFox.U2F.Key.messages;
+using Moq;
+using NUnit.Framework;
+using Org.BouncyCastle.Security;
+using static BlackFox.U2F.Tests.TestVectors;
+
 namespace BlackFox.U2F.Tests.Key
-{/*
-	public class U2FKeyReferenceImplTest : com.google.u2f.TestVectors
-	{
-		[org.mockito.Mock]
-		internal com.google.u2f.key.KeyPairGenerator mockKeyPairGenerator;
+{
+    public class U2FKeyReferenceImplTest
+    {
+        private Mock<IDataStore> mockDataStore;
 
-		[org.mockito.Mock]
-		internal com.google.u2f.key.KeyHandleGenerator mockKeyHandleGenerator;
+        private Mock<IKeyHandleGenerator> mockKeyHandleGenerator;
+        private Mock<IKeyPairGenerator> mockKeyPairGenerator;
 
-		[org.mockito.Mock]
-		internal com.google.u2f.key.DataStore mockDataStore;
+        private Mock<IUserPresenceVerifier> mockUserPresenceVerifier;
 
-		[org.mockito.Mock]
-		internal com.google.u2f.key.UserPresenceVerifier mockUserPresenceVerifier;
+        private IU2FKey u2FKey;
 
-		private com.google.u2f.key.U2FKey u2fKey;
+        [SetUp]
+        public virtual void Setup()
+        {
+            mockKeyPairGenerator = new Mock<IKeyPairGenerator>();
+            mockKeyHandleGenerator = new Mock<IKeyHandleGenerator>();
+            mockDataStore = new Mock<IDataStore>();
+            mockUserPresenceVerifier = new Mock<IUserPresenceVerifier>();
 
-		[NUnit.Framework.SetUp]
-		public virtual void setup()
-		{
-			org.mockito.MockitoAnnotations.initMocks(this);
-			u2fKey = new com.google.u2f.key.impl.U2FKeyReferenceImpl(VENDOR_CERTIFICATE, VENDOR_CERTIFICATE_PRIVATE_KEY
-				, mockKeyPairGenerator, mockKeyHandleGenerator, mockDataStore, mockUserPresenceVerifier
-				, new com.google.u2f.key.impl.BouncyCastleCrypto());
-			org.mockito.Mockito.when(mockUserPresenceVerifier.verifyUserPresence()).thenReturn
-				(com.google.u2f.key.UserPresenceVerifier.USER_PRESENT_FLAG);
-			org.mockito.Mockito.when(mockKeyPairGenerator.generateKeyPair(APP_ID_ENROLL_SHA256
-				, BROWSER_DATA_ENROLL_SHA256)).thenReturn(USER_KEY_PAIR_ENROLL);
-			org.mockito.Mockito.when(mockKeyPairGenerator.encodePublicKey(USER_PUBLIC_KEY_ENROLL
-				)).thenReturn(USER_PUBLIC_KEY_ENROLL_HEX);
-			org.mockito.Mockito.when(mockKeyHandleGenerator.generateKeyHandle(APP_ID_ENROLL_SHA256
-				, USER_KEY_PAIR_ENROLL)).thenReturn(KEY_HANDLE);
-			org.mockito.Mockito.when(mockDataStore.getKeyPair(KEY_HANDLE)).thenReturn(USER_KEY_PAIR_SIGN
-				);
-			org.mockito.Mockito.when(mockDataStore.incrementCounter()).thenReturn(COUNTER_VALUE
-				);
-		}
+            u2FKey = new U2FKeyReferenceImpl(VENDOR_CERTIFICATE, VENDOR_CERTIFICATE_PRIVATE_KEY,
+                mockKeyPairGenerator.Object, mockKeyHandleGenerator.Object, mockDataStore.Object,
+                mockUserPresenceVerifier.Object, new BouncyCastleCrypto());
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testRegister()
-		{
-			com.google.u2f.key.messages.RegisterRequest registerRequest = new com.google.u2f.key.messages.RegisterRequest
-				(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256);
-			com.google.u2f.key.messages.RegisterResponse registerResponse = u2fKey.register(registerRequest
-				);
-			org.mockito.Mockito.verify(mockDataStore).storeKeyPair(KEY_HANDLE, USER_KEY_PAIR_ENROLL
-				);
-			NUnit.Framework.Assert.assertArrayEquals(USER_PUBLIC_KEY_ENROLL_HEX, registerResponse
-				.getUserPublicKey());
-			NUnit.Framework.Assert.AreEqual(VENDOR_CERTIFICATE, registerResponse.getAttestationCertificate
-				());
-			NUnit.Framework.Assert.assertArrayEquals(KEY_HANDLE, registerResponse.getKeyHandle
-				());
-			java.security.Signature ecdsaSignature = java.security.Signature.getInstance("SHA256withECDSA"
-				);
-			ecdsaSignature.initVerify(VENDOR_CERTIFICATE.getPublicKey());
-			ecdsaSignature.update(EXPECTED_REGISTER_SIGNED_BYTES);
-			NUnit.Framework.Assert.IsTrue(ecdsaSignature.verify(registerResponse.getSignature
-				()));
-		}
+            mockUserPresenceVerifier.Setup(x => x.VerifyUserPresence())
+                .Returns(UserPresenceVerifierConstants.UserPresentFlag);
+            mockKeyPairGenerator.Setup(x => x.GenerateKeyPair(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256))
+                .Returns(USER_KEY_PAIR_ENROLL);
+            mockKeyPairGenerator.Setup(x => x.EncodePublicKey(USER_PUBLIC_KEY_ENROLL))
+                .Returns(USER_PUBLIC_KEY_ENROLL_HEX);
+            mockKeyHandleGenerator.Setup(x => x.GenerateKeyHandle(APP_ID_ENROLL_SHA256, USER_KEY_PAIR_ENROLL))
+                .Returns(KEY_HANDLE);
+            mockDataStore.Setup(x => x.GetKeyPair(KEY_HANDLE)).Returns(USER_KEY_PAIR_SIGN);
+            mockDataStore.Setup(x => x.IncrementCounter()).Returns(COUNTER_VALUE);
+        }
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testAuthenticate()
-		{
-			com.google.u2f.key.messages.AuthenticateRequest authenticateRequest = new com.google.u2f.key.messages.AuthenticateRequest
-				(com.google.u2f.key.messages.AuthenticateRequest.USER_PRESENCE_SIGN, BROWSER_DATA_SIGN_SHA256
-				, APP_ID_SIGN_SHA256, KEY_HANDLE);
-			com.google.u2f.key.messages.AuthenticateResponse authenticateResponse = u2fKey.authenticate
-				(authenticateRequest);
-			NUnit.Framework.Assert.AreEqual(com.google.u2f.key.UserPresenceVerifier.USER_PRESENT_FLAG
-				, authenticateResponse.getUserPresence());
-			NUnit.Framework.Assert.AreEqual(COUNTER_VALUE, authenticateResponse.getCounter());
-			java.security.Signature ecdsaSignature = java.security.Signature.getInstance("SHA256withECDSA"
-				);
-			ecdsaSignature.initVerify(USER_PUBLIC_KEY_SIGN);
-			ecdsaSignature.update(EXPECTED_AUTHENTICATE_SIGNED_BYTES);
-			NUnit.Framework.Assert.IsTrue(ecdsaSignature.verify(authenticateResponse.getSignature
-				()));
-		}
-	}*/
+        /// <exception cref="System.Exception" />
+        [Test]
+        public virtual void TestRegister()
+        {
+            var registerRequest = new RegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256);
+            var registerResponse = u2FKey.Register(registerRequest);
+
+            mockDataStore.Verify(x => x.StoreKeyPair(KEY_HANDLE, USER_KEY_PAIR_ENROLL));
+            CollectionAssert.AreEqual(USER_PUBLIC_KEY_ENROLL_HEX, registerResponse.UserPublicKey);
+            Assert.AreEqual(VENDOR_CERTIFICATE, registerResponse.AttestationCertificate);
+            CollectionAssert.AreEqual(KEY_HANDLE, registerResponse.KeyHandle);
+            var ecdsaSignature = SignerUtilities.GetSigner("SHA-256withECDSA");
+            ecdsaSignature.Init(false, VENDOR_CERTIFICATE.GetPublicKey());
+            ecdsaSignature.BlockUpdate(EXPECTED_REGISTER_SIGNED_BYTES, 0, EXPECTED_REGISTER_SIGNED_BYTES.Length);
+            Assert.IsTrue(ecdsaSignature.VerifySignature(registerResponse.Signature));
+        }
+
+
+        /// <exception cref="System.Exception" />
+        [Test]
+        public virtual void TestAuthenticate()
+        {
+            var authenticateRequest = new AuthenticateRequest(AuthenticateRequest.UserPresenceSign,
+                BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE);
+            var authenticateResponse = u2FKey.Authenticate(authenticateRequest);
+
+            Assert.AreEqual(UserPresenceVerifierConstants.UserPresentFlag, authenticateResponse.UserPresence);
+            Assert.AreEqual(COUNTER_VALUE, authenticateResponse.Counter);
+            var ecdsaSignature = SignerUtilities.GetSigner("SHA-256withECDSA");
+            ecdsaSignature.Init(false, USER_PUBLIC_KEY_SIGN);
+            ecdsaSignature.BlockUpdate(EXPECTED_AUTHENTICATE_SIGNED_BYTES, 0, EXPECTED_AUTHENTICATE_SIGNED_BYTES.Length);
+            Assert.IsTrue(ecdsaSignature.VerifySignature(authenticateResponse.Signature));
+        }
+    }
 }

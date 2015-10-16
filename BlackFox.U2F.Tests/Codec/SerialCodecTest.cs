@@ -4,7 +4,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Key;
 using BlackFox.U2F.Key.messages;
