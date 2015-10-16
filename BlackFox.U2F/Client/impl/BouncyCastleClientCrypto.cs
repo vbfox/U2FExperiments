@@ -5,10 +5,9 @@ namespace BlackFox.U2F.Client.impl
 {
 	public class BouncyCastleClientCrypto : IClientCrypto
 	{
-		/// <exception cref="U2FException"/>
 		public byte[] ComputeSha256(string message)
 		{
-			try
+            try
 			{
                 var bytes = Encoding.UTF8.GetBytes(message);
                 return DigestUtilities.CalculateDigest("SHA-256", bytes);

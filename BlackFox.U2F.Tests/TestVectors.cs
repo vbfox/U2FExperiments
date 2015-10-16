@@ -18,20 +18,17 @@ namespace BlackFox.U2F.Tests
 
 		public const string APP_ID_ENROLL = "http://example.com";
 
-		public static readonly byte[] APP_ID_ENROLL_SHA256 = TestUtils.ComputeSha256
-			(APP_ID_ENROLL);
+		public static readonly byte[] APP_ID_ENROLL_SHA256 = TestUtils.ComputeSha256(APP_ID_ENROLL);
 
 		public const string APP_ID_SIGN = "https://gstatic.com/securitykey/a/example.com";
 
-		public static readonly byte[] APP_ID_SIGN_SHA256 = TestUtils.ComputeSha256
-			(APP_ID_SIGN);
+		public static readonly byte[] APP_ID_SIGN_SHA256 = TestUtils.ComputeSha256(APP_ID_SIGN);
 
 		public const string ORIGIN = "http://example.com";
 
 		public const string SERVER_CHALLENGE_ENROLL_BASE64 = "vqrS6WXDe1JUs5_c3i4-LkKIHRr-3XVb3azuA5TifHo";
 
-	    public static readonly byte[] SERVER_CHALLENGE_ENROLL =
-	        WebSafeBase64Converter.FromBase64String(SERVER_CHALLENGE_ENROLL_BASE64);
+	    public static readonly byte[] SERVER_CHALLENGE_ENROLL = WebSafeBase64Converter.FromBase64String(SERVER_CHALLENGE_ENROLL_BASE64);
 
 		public const string SERVER_CHALLENGE_SIGN_BASE64 = "opsXqUifDriAAmWclinfbS0e-USY0CgyJHe_Otd7z8o";
 

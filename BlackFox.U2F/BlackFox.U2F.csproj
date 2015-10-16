@@ -108,7 +108,6 @@
     <Compile Include="Server\IU2FServer.cs" />
     <Compile Include="U2FConsts.cs" />
     <Compile Include="U2FException.cs" />
-    <Compile Include="U2FTester.cs" />
     <Compile Include="Utils\DateTimeOffsetExtensions.cs" />
     <Compile Include="WebSafeBase64Converter.cs" />
   </ItemGroup>
