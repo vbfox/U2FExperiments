@@ -1,6 +1,8 @@
+using System;
 using System.IO;
 using BlackFox.Binary;
 using BlackFox.U2F.Key.messages;
+using JetBrains.Annotations;
 using Org.BouncyCastle.Security.Certificates;
 using Org.BouncyCastle.X509;
 
@@ -13,8 +15,13 @@ namespace BlackFox.U2F.Codec
 
         public const byte RegistrationSignedReservedByteValue = 0x00;
 
-        public static byte[] EncodeRegisterRequest(RegisterRequest registerRequest)
+        public static byte[] EncodeRegisterRequest([NotNull] RegisterRequest registerRequest)
         {
+            if (registerRequest == null)
+            {
+                throw new ArgumentNullException(nameof(registerRequest));
+            }
+
             var appIdSha256 = registerRequest.ApplicationSha256;
             var challengeSha256 = registerRequest.ChallengeSha256;
             var result = new byte[appIdSha256.Length + challengeSha256.Length];
@@ -27,8 +34,13 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static RegisterRequest DecodeRegisterRequest(byte[] data)
+        public static RegisterRequest DecodeRegisterRequest([NotNull] byte[] data)
         {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             try
             {
                 using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))
@@ -49,9 +61,13 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static byte[] EncodeRegisterResponse(RegisterResponse
-            registerResponse)
+        public static byte[] EncodeRegisterResponse([NotNull] RegisterResponse registerResponse)
         {
+            if (registerResponse == null)
+            {
+                throw new ArgumentNullException(nameof(registerResponse));
+            }
+
             var userPublicKey = registerResponse.UserPublicKey;
             var keyHandle = registerResponse.KeyHandle;
             var attestationCertificate = registerResponse.AttestationCertificate;
@@ -85,8 +101,13 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static RegisterResponse DecodeRegisterResponse(byte[] data)
+        public static RegisterResponse DecodeRegisterResponse([NotNull] byte[] data)
         {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             try
             {
                 using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))
@@ -121,8 +142,13 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static byte[] EncodeAuthenticateRequest(AuthenticateRequest authenticateRequest)
+        public static byte[] EncodeAuthenticateRequest([NotNull] AuthenticateRequest authenticateRequest)
         {
+            if (authenticateRequest == null)
+            {
+                throw new ArgumentNullException(nameof(authenticateRequest));
+            }
+
             var controlByte = authenticateRequest.Control;
             var appIdSha256 = authenticateRequest.ApplicationSha256;
             var challengeSha256 = authenticateRequest.ChallengeSha256;
@@ -144,9 +170,13 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static AuthenticateRequest DecodeAuthenticateRequest
-            (byte[] data)
+        public static AuthenticateRequest DecodeAuthenticateRequest([NotNull] byte[] data)
         {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             try
             {
                 using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))
@@ -170,9 +200,13 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static byte[] EncodeAuthenticateResponse(AuthenticateResponse
-            authenticateResponse)
+        public static byte[] EncodeAuthenticateResponse([NotNull] AuthenticateResponse authenticateResponse)
         {
+            if (authenticateResponse == null)
+            {
+                throw new ArgumentNullException(nameof(authenticateResponse));
+            }
+
             var userPresence = authenticateResponse.UserPresence;
             var counter = authenticateResponse.Counter;
             var signature = authenticateResponse.Signature;
@@ -187,8 +221,13 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static AuthenticateResponse DecodeAuthenticateResponse(byte[] data)
+        public static AuthenticateResponse DecodeAuthenticateResponse([NotNull] byte[] data)
         {
+            if (data == null)
+            {
+                throw new ArgumentNullException(nameof(data));
+            }
+
             try
             {
                 using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))

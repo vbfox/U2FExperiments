@@ -66,7 +66,7 @@
     </Compile>
     <Compile Include="Client\IChannelIdProvider.cs" />
     <Compile Include="Client\IClientCrypto.cs" />
-    <Compile Include="Client\impl\BouncyCastleCrypto.cs" />
+    <Compile Include="Client\impl\BouncyCastleClientCrypto.cs" />
     <Compile Include="Client\impl\U2FClientReferenceImpl.cs" />
     <Compile Include="Client\IOriginVerifier.cs" />
     <Compile Include="Client\IU2FClient.cs" />

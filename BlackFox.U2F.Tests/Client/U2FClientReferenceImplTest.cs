@@ -4,74 +4,73 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+using BlackFox.U2F.Client;
+using BlackFox.U2F.Client.impl;
+using BlackFox.U2F.Server.data;
+using BlackFox.U2F.Server.messages;
+using BlackFox.U2F.Key;
+using BlackFox.U2F.Key.messages;
+using BlackFox.U2F.Server;
+using Moq;
+using NUnit.Framework;
+using static BlackFox.U2F.Tests.TestVectors;
+
 namespace BlackFox.U2F.Tests.Client
-{/*
-	public class U2FClientReferenceImplTest : com.google.u2f.TestVectors
+{
+	public class U2FClientReferenceImplTest
 	{
-		[org.mockito.Mock]
-		internal com.google.u2f.key.U2FKey mockU2fKey;
+        Mock<IU2FKey> mockU2FKey;
 
-		[org.mockito.Mock]
-		internal com.google.u2f.server.U2FServer mockU2fServer;
+		Mock<IU2FServer> mockU2FServer;
 
-		[org.mockito.Mock]
-		internal com.google.u2f.client.OriginVerifier mockOriginVerifier;
+        Mock<IOriginVerifier> mockOriginVerifier;
 
-		[org.mockito.Mock]
-		internal com.google.u2f.client.ChannelIdProvider mockChannelIdProvider;
+        Mock<IChannelIdProvider> mockChannelIdProvider;
 
-		private com.google.u2f.client.impl.U2FClientReferenceImpl u2fClient;
+		private Iu2FClientReferenceImpl u2FClient;
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.SetUp]
-		public virtual void setup()
+		[SetUp]
+		public virtual void Setup()
 		{
-			org.mockito.MockitoAnnotations.initMocks(this);
-			u2fClient = new com.google.u2f.client.impl.U2FClientReferenceImpl(new com.google.u2f.client.impl.CryptoImpl
-				(), mockOriginVerifier, mockChannelIdProvider, mockU2fServer, mockU2fKey);
-			org.mockito.Mockito.when(mockChannelIdProvider.getJsonChannelId()).thenReturn(CHANNEL_ID_JSON
-				);
+		    mockU2FKey = new Mock<IU2FKey>(MockBehavior.Strict);
+		    mockU2FServer = new Mock<IU2FServer>(MockBehavior.Strict);
+		    mockOriginVerifier = new Mock<IOriginVerifier>(MockBehavior.Strict);
+		    mockChannelIdProvider = new Mock<IChannelIdProvider>(MockBehavior.Strict);
+
+            u2FClient = new Iu2FClientReferenceImpl(new BouncyCastleClientCrypto(), mockOriginVerifier.Object, mockChannelIdProvider.Object, mockU2FServer.Object, mockU2FKey.Object);
+
+		    mockChannelIdProvider.Setup(x => x.GetJsonChannelId()).Returns(CHANNEL_ID_JSON);
 		}
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testRegister()
+		[Test]
+		public virtual void TestRegister()
 		{
-			org.mockito.Mockito.when(mockU2fServer.getRegistrationRequest(ACCOUNT_NAME, APP_ID_ENROLL
-				)).thenReturn(new RegistrationRequest(com.google.u2f.U2FConsts
-				.U2F_V2, SERVER_CHALLENGE_ENROLL_BASE64, APP_ID_ENROLL, SESSION_ID));
-			org.mockito.Mockito.doNothing().when(mockOriginVerifier).validateOrigin(APP_ID_ENROLL
-				, ORIGIN);
-			org.mockito.Mockito.when(mockU2fKey.register(new com.google.u2f.key.messages.RegisterRequest
-				(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256))).thenReturn(new com.google.u2f.key.messages.RegisterResponse
-				(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL));
-			org.mockito.Mockito.when(mockU2fServer.processRegistrationResponse(new RegistrationResponse
-				(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID), 0L)).thenReturn
-				(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX
-				, VENDOR_CERTIFICATE, 0));
-			u2fClient.register(ORIGIN, ACCOUNT_NAME);
-		}
+		    mockU2FServer.Setup(x => x.GetRegistrationRequest(ACCOUNT_NAME, APP_ID_ENROLL))
+		        .Returns(new RegistrationRequest(U2FConsts.U2Fv2, SERVER_CHALLENGE_ENROLL_BASE64, APP_ID_ENROLL, SESSION_ID));
 
-		/// <exception cref="System.Exception"/>
-		[NUnit.Framework.Test]
-		public virtual void testAuthenticate()
+		    mockOriginVerifier.Setup(x => x.ValidateOrigin(APP_ID_ENROLL, ORIGIN));
+		    mockU2FKey.Setup(x => x.Register(new RegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256)))
+		        .Returns(new RegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL));
+            mockU2FServer.Setup(x => x.ProcessRegistrationResponse(new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID), 0L))
+                .Returns(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0));
+			u2FClient.Register(ORIGIN, ACCOUNT_NAME);
+		}
+        
+		[Test]
+		public virtual void TestAuthenticate()
 		{
-			org.mockito.Mockito.when(mockU2fServer.getSignRequest(ACCOUNT_NAME, ORIGIN)).thenReturn
-				(com.google.common.collect.ImmutableList.of(new SignRequest
-				(com.google.u2f.U2FConsts.U2F_V2, SERVER_CHALLENGE_SIGN_BASE64, APP_ID_SIGN, KEY_HANDLE_BASE64
-				, SESSION_ID)));
-			org.mockito.Mockito.doNothing().when(mockOriginVerifier).validateOrigin(APP_ID_SIGN
-				, ORIGIN);
-			org.mockito.Mockito.when(mockU2fKey.authenticate(new com.google.u2f.key.messages.AuthenticateRequest
-				(com.google.u2f.key.UserPresenceVerifier.USER_PRESENT_FLAG, BROWSER_DATA_SIGN_SHA256
-				, APP_ID_SIGN_SHA256, KEY_HANDLE))).thenReturn(new com.google.u2f.key.messages.AuthenticateResponse
-				(com.google.u2f.key.UserPresenceVerifier.USER_PRESENT_FLAG, COUNTER_VALUE, SIGNATURE_AUTHENTICATE
-				));
-			org.mockito.Mockito.when(mockU2fServer.processSignResponse(new SignResponse
-				(BROWSER_DATA_SIGN_BASE64, SIGN_RESPONSE_DATA_BASE64, SERVER_CHALLENGE_SIGN_BASE64
-				, SESSION_ID, APP_ID_SIGN))).thenReturn(new SecurityKeyData
+		    var signRequest = new SignRequest(U2FConsts.U2Fv2, SERVER_CHALLENGE_SIGN_BASE64, APP_ID_SIGN, KEY_HANDLE_BASE64, SESSION_ID);
+		    mockU2FServer.Setup(x => x.GetSignRequest(ACCOUNT_NAME, ORIGIN))
+		        .Returns(new[] { signRequest });
+		    mockOriginVerifier.Setup(x => x.ValidateOrigin(APP_ID_SIGN, ORIGIN));
+            mockU2FKey.Setup(x => x.Authenticate(new AuthenticateRequest(UserPresenceVerifierConstants.UserPresentFlag, BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE)))
+                .Returns(new AuthenticateResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE));
+            mockU2FServer.Setup(x => x.ProcessSignResponse(new SignResponse
+                (BROWSER_DATA_SIGN_BASE64, SIGN_RESPONSE_DATA_BASE64, SERVER_CHALLENGE_SIGN_BASE64
+                , SESSION_ID, APP_ID_SIGN))).Returns(new SecurityKeyData
 				(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0));
-			u2fClient.authenticate(ORIGIN, ACCOUNT_NAME);
+
+			u2FClient.Authenticate(ORIGIN, ACCOUNT_NAME);
 		}
-	}*/
+    }
 }
