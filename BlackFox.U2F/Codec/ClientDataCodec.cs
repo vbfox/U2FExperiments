@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 
 namespace BlackFox.U2F.Codec
@@ -29,7 +30,7 @@ namespace BlackFox.U2F.Codec
                 { JsonPropertyChannelId, jsonChannelId },
                 { JsonPropertyServerOrigin, origin }
             };
-            return browserData.ToString();
+            return browserData.ToString(Formatting.None);
         }
     }
 }
