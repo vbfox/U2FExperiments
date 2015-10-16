@@ -12,6 +12,7 @@ using BlackFox.U2F.Key;
 using BlackFox.U2F.Key.messages;
 using BlackFox.U2F.Server;
 using Moq;
+using NodaTime;
 using NUnit.Framework;
 using static BlackFox.U2F.Tests.TestVectors;
 
@@ -27,7 +28,7 @@ namespace BlackFox.U2F.Tests.Client
 
         Mock<IChannelIdProvider> mockChannelIdProvider;
 
-		private Iu2FClientReferenceImpl u2FClient;
+		private U2FClientReferenceImpl u2FClient;
 
 		[SetUp]
 		public virtual void Setup()
@@ -37,7 +38,10 @@ namespace BlackFox.U2F.Tests.Client
 		    mockOriginVerifier = new Mock<IOriginVerifier>(MockBehavior.Strict);
 		    mockChannelIdProvider = new Mock<IChannelIdProvider>(MockBehavior.Strict);
 
-            u2FClient = new Iu2FClientReferenceImpl(new BouncyCastleClientCrypto(), mockOriginVerifier.Object, mockChannelIdProvider.Object, mockU2FServer.Object, mockU2FKey.Object);
+		    var mockClock = new Mock<IClock>(MockBehavior.Strict);
+		    mockClock.Setup(x => x.Now).Returns(Instant.FromMillisecondsSinceUnixEpoch(0));
+            u2FClient = new U2FClientReferenceImpl(new BouncyCastleClientCrypto(), mockOriginVerifier.Object,
+                mockChannelIdProvider.Object, mockU2FServer.Object, mockU2FKey.Object, mockClock.Object);
 
 		    mockChannelIdProvider.Setup(x => x.GetJsonChannelId()).Returns(CHANNEL_ID_JSON);
 		}

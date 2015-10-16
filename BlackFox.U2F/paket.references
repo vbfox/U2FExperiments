@@ -2,3 +2,4 @@
 Microsoft.Bcl.Async
 Newtonsoft.Json
 Portable.BouncyCastle
+NodaTime

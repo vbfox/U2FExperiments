@@ -6,26 +6,28 @@ using BlackFox.U2F.Key.messages;
 using BlackFox.U2F.Server;
 using BlackFox.U2F.Server.messages;
 using BlackFox.U2F.Utils;
+using NodaTime;
 
 namespace BlackFox.U2F.Client.impl
 {
-    public class Iu2FClientReferenceImpl : IU2FClient
+    public class U2FClientReferenceImpl : IU2FClient
     {
         private readonly IOriginVerifier appIdVerifier;
         private readonly IChannelIdProvider channelIdProvider;
+        private readonly IClock clock;
         private readonly IClientCrypto crypto;
         private readonly IU2FKey key;
         private readonly IU2FServer server;
 
-        public Iu2FClientReferenceImpl(IClientCrypto crypto, IOriginVerifier
-            appIdVerifier, IChannelIdProvider channelIdProvider, IU2FServer
-                server, IU2FKey key)
+        public U2FClientReferenceImpl(IClientCrypto crypto, IOriginVerifier appIdVerifier,
+            IChannelIdProvider channelIdProvider, IU2FServer server, IU2FKey key, IClock clock)
         {
             this.crypto = crypto;
             this.appIdVerifier = appIdVerifier;
             this.channelIdProvider = channelIdProvider;
             this.server = server;
             this.key = key;
+            this.clock = clock;
         }
 
         /// <exception cref="U2FException" />
@@ -52,7 +54,7 @@ namespace BlackFox.U2F.Client.impl
             var clientDataBase64 = WebSafeBase64Converter.ToBase64String(Encoding.UTF8.GetBytes(clientData));
             server.ProcessRegistrationResponse(
                 new RegistrationResponse(rawRegisterResponseBase64, clientDataBase64, sessionId),
-                DateTimeOffset.UtcNow.ToMillisecondsSinceEpoch());
+                clock.Now.ToUnixTimeMilliseconds());
         }
 
         /// <exception cref="U2FException" />

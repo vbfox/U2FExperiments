@@ -1,5 +1,6 @@
 ﻿Newtonsoft.Json
 Portable.BouncyCastle
+NodaTime
 
 group Tests
     Moq

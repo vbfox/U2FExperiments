@@ -8,6 +8,7 @@ group Main
 	nuget Microsoft.Bcl.Async
     nuget Newtonsoft.Json
     nuget Portable.BouncyCastle
+	nuget NodaTime
 
 group Tests
     source https://nuget.org/api/v2
