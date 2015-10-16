@@ -51,6 +51,24 @@
     <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentExtensions.cs">
       <Link>Utils\ArraySegmentExtensions.cs</Link>
     </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EmptyArray.cs">
+      <Link>Utils\EmptyArray.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EmptyArraySegment.cs">
+      <Link>Utils\EmptyArraySegment.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EndianessHelpers.cs">
+      <Link>Utils\EndianessHelpers.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\Endianness.cs">
+      <Link>Utils\Endianness.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EndianReader.cs">
+      <Link>Utils\EndianReader.cs</Link>
+    </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EndianWriter.cs">
+      <Link>Utils\EndianWriter.cs</Link>
+    </Compile>
     <Compile Include="ChallengeGenerator.cs" />
     <Compile Include="ChannelProvider.cs" />
     <Compile Include="ConsolePresenceVerifier.cs" />
@@ -62,6 +80,7 @@
     <Compile Include="ResharperAnnotations.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="U2FDeviceKey.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

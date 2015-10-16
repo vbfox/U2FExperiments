@@ -95,6 +95,13 @@ namespace BlackFox.Binary
             return new MemoryStream(segment.Array, segment.Offset, segment.Count);
         }
 
+        public static T[] ToNewArray<T>(this ArraySegment<T> segment)
+        {
+            var result = new T[segment.Count];
+            Array.Copy(segment.Array, segment.Offset, result, 0, segment.Count);
+            return result;
+        }
+
         /// <summary>
         /// Wrap the segment in a <see cref="Stream"/> instance.
         /// </summary>

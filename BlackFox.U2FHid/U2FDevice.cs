@@ -68,7 +68,7 @@ namespace BlackFox.U2FHid
         [ItemNotNull]
         public async Task<ArraySegment<byte>> SendU2FMessage(ArraySegment<byte> message)
         {
-            var fidoMessage = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Message);
+            var fidoMessage = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Message, message);
             var response = await Query(fidoMessage);
             return response.Data;
         }

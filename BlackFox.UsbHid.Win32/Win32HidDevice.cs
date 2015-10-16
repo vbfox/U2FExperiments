@@ -50,6 +50,7 @@ namespace BlackFox.UsbHid.Win32
             if (report == null) throw new ArgumentNullException(nameof(report));
 
             var outputBuffer = report.GetOutputBuffer();
+            log.Trace("Sending output report:\r\n\r\n " + outputBuffer.ToHexString());
             log.Trace(outputBuffer.ToLoggableAsHex("Sending output report:"));
 
             return Kernel32Dll.WriteFileAsync(Handle, outputBuffer)

@@ -99,8 +99,41 @@ namespace U2FExperiments
         {
             ConfigureLogging();
 
-            TestSoftwareOnly();
+            TestDual();
+            //TestSoftwareOnly();
             //TestHardwareOnly();
+        }
+
+        private static void TestDual()
+        {
+            var factory = (IHidDeviceFactory)Win32HidDeviceFactory.Instance;
+            var devices = factory.FindAllAsync().Result;
+            var fidoInfo = devices.Where(FidoU2FIdentification.IsFidoU2F).First();
+            using (var device = fidoInfo.OpenDeviceAsync().Result)
+            {
+                var u2f = U2FDevice.OpenAsync(device, false).Result;
+                var key = new U2FDeviceKey(u2f);
+
+                var server = new U2FServerReferenceImpl(
+                    new ChallengeGenerator(),
+                    new InMemoryServerDataStore(new GuidSessionIdGenerator()),
+                    new BouncyCastleServerCrypto(),
+                    new[] {"http://example.com", "https://example.com"});
+
+                var client = new U2FClientReferenceImpl(
+                    new BouncyCastleClientCrypto(),
+                    new SimpleOriginVerifier(new[] {"http://example.com", "https://example.com"}),
+                    new ChannelProvider(),
+                    server,
+                    key,
+                    SystemClock.Instance);
+
+                client.Register("http://example.com", "vbfox");
+                client.Authenticate("http://example.com", "vbfox");
+            }
+
+            Console.WriteLine("Done.");
+            Console.ReadLine();
         }
 
         private static void TestSoftwareOnly()
