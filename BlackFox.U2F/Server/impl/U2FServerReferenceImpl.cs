@@ -94,7 +94,7 @@ namespace BlackFox.U2F.Server.impl
             log.Info("  browserData: " + browserData);
             log.Info("  rawRegistrationData: " + rawRegistrationData.ToHexString());
 
-            var registerResponse = RawMessageCodec.DecodeRegisterResponse(rawRegistrationData);
+            var registerResponse = RawMessageCodec.DecodeRegisterResponse(rawRegistrationData.Segment());
             var userPublicKey = registerResponse.UserPublicKey;
             var keyHandle = registerResponse.KeyHandle;
             var attestationCertificate = registerResponse.AttestationCertificate;
@@ -206,7 +206,7 @@ namespace BlackFox.U2F.Server.impl
             log.Info("  rawSignData: " + rawSignData.ToHexString());
 
             VerifyBrowserData(browserData, "navigator.id.getAssertion", sessionData);
-            var authenticateResponse = RawMessageCodec.DecodeAuthenticateResponse(rawSignData);
+            var authenticateResponse = RawMessageCodec.DecodeAuthenticateResponse(rawSignData.Segment());
             var userPresence = authenticateResponse.UserPresence;
             var counter = authenticateResponse.Counter;
             var signature = authenticateResponse.Signature;

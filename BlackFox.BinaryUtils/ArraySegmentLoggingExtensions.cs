@@ -19,7 +19,7 @@ namespace BlackFox.Binary
                     writer.WriteLine();
                 }
                 segment.WriteAsHexTo(writer, includeAscii, includeStartAddresses);
-                m(writer.ToString());
+                m("{0}", writer.ToString());
             };
         }
     }

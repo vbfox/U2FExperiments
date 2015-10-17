@@ -70,6 +70,10 @@
     <Compile Include="Client\impl\U2FClientReferenceImpl.cs" />
     <Compile Include="Client\IOriginVerifier.cs" />
     <Compile Include="Client\IU2FClient.cs" />
+    <Compile Include="Codec\ApduCodec.cs" />
+    <Compile Include="Codec\ApduRequest.cs" />
+    <Compile Include="Codec\ApduResponse.cs" />
+    <Compile Include="Codec\ApduResponseStatus.cs" />
     <Compile Include="Codec\ClientDataCodec.cs" />
     <Compile Include="Codec\RawMessageCodec.cs" />
     <Compile Include="Codec\SerialCodec.cs" />

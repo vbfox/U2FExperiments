@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Key;

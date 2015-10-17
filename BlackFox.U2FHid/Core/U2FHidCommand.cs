@@ -8,6 +8,11 @@ namespace BlackFox.U2FHid.Core
         Ping = 0x80 | 0x01,
 
         /// <summary>
+        /// Perform reset action and read ATR string
+        /// </summary>
+        ResetAndAtr = 0x80 | 0x02,
+
+        /// <summary>
         /// Send U2F message frame
         /// </summary>
         Message = 0x80 | 0x03,
@@ -18,14 +23,34 @@ namespace BlackFox.U2FHid.Core
         Lock = 0x80 | 0x04,
 
         /// <summary>
+        /// Obtain system information record
+        /// </summary>
+        SysInfo = 0x80 | 0x05,
+
+        /// <summary>
         /// Channel initialization
         /// </summary>
         Init = 0x80 | 0x06,
 
         /// <summary>
+        /// Control prompt flashing
+        /// </summary>
+        Prompt = 0x80 | 0x07,
+
+        /// <summary>
         /// Send device identification wink
         /// </summary>
         Wink = 0x80 | 0x08,
+
+        /// <summary>
+        /// USB test
+        /// </summary>
+        UsbTest = 0x80 | 0x39,
+
+        /// <summary>
+        /// Device Firmware Upgrade
+        /// </summary>
+        Dfu = 0x80 | 0x3a,
 
         /// <summary>
         /// Protocol resync command

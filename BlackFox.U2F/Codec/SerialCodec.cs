@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using BlackFox.Binary;
 using BlackFox.U2F.Key.messages;
@@ -115,7 +116,7 @@ namespace BlackFox.U2F.Codec
         {
             using (var dataInputStream = new EndianReader(inputStream, Endianness.BigEndian))
             {
-                return RawMessageCodec.DecodeRegisterResponse(ParseMessage(dataInputStream));
+                return RawMessageCodec.DecodeRegisterResponse(ParseMessage(dataInputStream).Segment());
             }
         }
 
@@ -125,7 +126,7 @@ namespace BlackFox.U2F.Codec
         {
             using (var dataInputStream = new EndianReader(inputStream, Endianness.BigEndian))
             {
-                return RawMessageCodec.DecodeAuthenticateResponse(ParseMessage(dataInputStream));
+                return RawMessageCodec.DecodeAuthenticateResponse(ParseMessage(dataInputStream).Segment());
             }
         }
 

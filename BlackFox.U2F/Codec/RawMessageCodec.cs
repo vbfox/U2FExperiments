@@ -101,16 +101,12 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static RegisterResponse DecodeRegisterResponse([NotNull] byte[] data)
+        public static RegisterResponse DecodeRegisterResponse(ArraySegment<byte> data)
         {
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-
             try
             {
-                using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))
+                using (var stream = data.AsStream())
+                using (var inputStream = new EndianReader(stream, Endianness.BigEndian))
                 {
                     var reservedByte = inputStream.ReadByte();
                     var userPublicKey = inputStream.ReadBytes(65);
@@ -120,7 +116,7 @@ namespace BlackFox.U2F.Codec
                     var parser = new X509CertificateParser();
                     var attestationCertificate = parser.ReadCertificate(inputStream.BaseStream);
 
-                    var signatureSize = (int) (inputStream.BaseStream.Length - inputStream.BaseStream.Position);
+                    var signatureSize = (int)(inputStream.BaseStream.Length - inputStream.BaseStream.Position);
                     var signature = inputStream.ReadBytes(signatureSize);
                     if (reservedByte != RegistrationReservedByteValue)
                     {
@@ -221,16 +217,12 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static AuthenticateResponse DecodeAuthenticateResponse([NotNull] byte[] data)
+        public static AuthenticateResponse DecodeAuthenticateResponse(ArraySegment<byte> data)
         {
-            if (data == null)
-            {
-                throw new ArgumentNullException(nameof(data));
-            }
-
             try
             {
-                using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))
+                using (var stream = data.AsStream())
+                using (var inputStream = new EndianReader(stream, Endianness.BigEndian))
                 {
                     var userPresence = inputStream.ReadByte();
                     var counter = inputStream.ReadInt32();

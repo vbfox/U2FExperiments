@@ -4,6 +4,7 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+using BlackFox.Binary;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Key;
 using BlackFox.U2F.Key.messages;
@@ -50,7 +51,7 @@ namespace BlackFox.U2F.Tests.Codec
         [Test]
         public virtual void TestDecodeRegisterResponse()
         {
-            var registerResponse = RawMessageCodec.DecodeRegisterResponse(REGISTRATION_RESPONSE_DATA);
+            var registerResponse = RawMessageCodec.DecodeRegisterResponse(REGISTRATION_RESPONSE_DATA.Segment());
             Assert.AreEqual(
                 new RegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL),
                 registerResponse);
@@ -86,7 +87,7 @@ namespace BlackFox.U2F.Tests.Codec
         [Test]
         public virtual void TestDecodeAuthenticateResponse()
         {
-            var authenticateResponse = RawMessageCodec.DecodeAuthenticateResponse(SIGN_RESPONSE_DATA);
+            var authenticateResponse = RawMessageCodec.DecodeAuthenticateResponse(SIGN_RESPONSE_DATA.Segment());
             Assert.AreEqual(
                 new AuthenticateResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE,
                     SIGNATURE_AUTHENTICATE), authenticateResponse);
