@@ -3,7 +3,9 @@ extern alias LoggingNet4x;
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using BlackFox.Binary;
@@ -104,6 +106,16 @@ namespace U2FExperiments
             //TestHardwareOnly();
         }
 
+        static readonly string dataStorePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "dataStore.json");
+
+        static void SaveDataStore(InMemoryServerDataStore dataStore)
+        {
+            using (var stream = File.OpenWrite(dataStorePath))
+            {
+                dataStore.SaveToStream(stream);
+            }
+        }
+
         private static void TestDual()
         {
             var factory = (IHidDeviceFactory)Win32HidDeviceFactory.Instance;
@@ -114,9 +126,10 @@ namespace U2FExperiments
                 var u2f = U2FDevice.OpenAsync(device, false).Result;
                 var key = new U2FDeviceKey(u2f);
 
+                var dataStore = new InMemoryServerDataStore(new GuidSessionIdGenerator());
                 var server = new U2FServerReferenceImpl(
                     new ChallengeGenerator(),
-                    new InMemoryServerDataStore(new GuidSessionIdGenerator()),
+                    dataStore,
                     new BouncyCastleServerCrypto(),
                     new[] {"http://example.com", "https://example.com"});
 
@@ -129,7 +142,10 @@ namespace U2FExperiments
                     SystemClock.Instance);
 
                 client.Register("http://example.com", "vbfox");
+                SaveDataStore(dataStore);
+
                 client.Authenticate("http://example.com", "vbfox");
+                SaveDataStore(dataStore);
             }
 
             Console.WriteLine("Done.");

@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using BlackFox.U2F.Server.data;
+using JetBrains.Annotations;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Server.impl
@@ -28,7 +32,7 @@ namespace BlackFox.U2F.Server.impl
 
         public string StoreSessionData(EnrollSessionData sessionData)
         {
-            var sessionId = sessionIdGenerator.GenerateSessionId(sessionData.GetAccountName());
+            var sessionId = sessionIdGenerator.GenerateSessionId(sessionData.AccountName);
             sessionDataBase[sessionId] = sessionData;
             return sessionId;
         }
@@ -84,6 +88,48 @@ namespace BlackFox.U2F.Server.impl
             if (token != null)
             {
                 token.Counter = newCounterValue;
+            }
+        }
+
+        public JObject SaveToJson()
+        {
+            var result = new JObject();
+
+            var keys = new JObject();
+            foreach (var key in securityKeyDataBase)
+            {
+                var keyDatas = new JArray();
+                foreach (var keyData in key.Value)
+                {
+                    var attestationCert = keyData.AttestationCertificate.GetEncoded();
+                    var keyDataJson = new JObject
+                    {
+                        ["enrollmentTime"] = keyData.EnrollmentTime,
+                        ["keyHandle"] = WebSafeBase64Converter.ToBase64String(keyData.KeyHandle),
+                        ["publicKey"] = WebSafeBase64Converter.ToBase64String(keyData.PublicKey),
+                        ["attestationCert"] = WebSafeBase64Converter.ToBase64String(attestationCert),
+                        ["counter"] = keyData.Counter
+                    };
+                    keyDatas.Add(keyDataJson);
+                }
+                keys[key.Key] = keyDatas;
+            }
+            result["keys"] = keys;
+
+            return result;
+        }
+
+        public void SaveToStream([NotNull] Stream stream)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            using (var writer = new JsonTextWriter(new StreamWriter(stream)))
+            {
+                writer.Formatting = Formatting.Indented;
+                SaveToJson().WriteTo(writer);
             }
         }
     }

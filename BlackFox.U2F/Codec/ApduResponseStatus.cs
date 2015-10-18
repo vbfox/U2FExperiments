@@ -45,8 +45,7 @@ namespace BlackFox.U2F.Codec
         /// <summary>
         /// Applet selection failed
         /// </summary>
-        AppletSelectFailed =
-            0x6999,
+        AppletSelectFailed = 0x6999,
 
         /// <summary>
         /// Wrong data

@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Binary;
@@ -91,7 +92,8 @@ namespace U2FExperiments
     static class KeyProtocolCodec
     {
         const byte RegisterCommand = 0x01;
-        const byte AuthenticateCommand = 0x01;
+        const byte AuthenticateCommand = 0x02;
+        const byte VersionCommand = 0x03;
 
         public static ArraySegment<byte> EncodeRegisterRequest(KeyRegisterRequest request)
         {
@@ -132,6 +134,22 @@ namespace U2FExperiments
             var requestBytes = RawMessageCodec.EncodeAuthenticateRequest(request.Request);
             var apdu = new ApduRequest(AuthenticateCommand, (byte)request.Mode, 0x00, requestBytes.Segment());
             return ApduCodec.EncodeRequest(apdu);
+        }
+
+        public static ArraySegment<byte> EncodeVersionRequest()
+        {
+            var apdu = new ApduRequest(VersionCommand, 0x00, 0x00, EmptyArraySegment<byte>.Value);
+            return ApduCodec.EncodeRequest(apdu);
+        }
+
+        public static string DecodeVersionResponse(ArraySegment<byte> bytes)
+        {
+            var adpu = ApduCodec.DecodeResponse(bytes);
+            if (adpu.Status == ApduResponseStatus.InsNotSupported)
+            {
+                return U2FConsts.U2Fv1;
+            }
+            return Encoding.ASCII.GetString(adpu.ResponseData.Array, adpu.ResponseData.Offset, adpu.ResponseData.Count);
         }
 
         static KeyAuthenticateResponseStatus ParseKeyAuthenticateReponseStatus(ApduResponseStatus raw)
@@ -188,9 +206,18 @@ namespace U2FExperiments
 
         public async Task<KeyAuthenticateResponse> AuthenticateAsync(AuthenticateRequest request, AuthenticateMode mode)
         {
+            var version = await GetVersionAsync();
+
             var message = KeyProtocolCodec.EncodeAuthenticateRequest(new KeyAuthenticateRequest(request, mode));
             var response = await device.SendU2FMessage(message);
             return KeyProtocolCodec.DecodeAuthenticateReponse(response);
+        }
+
+        public async Task<string> GetVersionAsync()
+        {
+            var message = KeyProtocolCodec.EncodeVersionRequest();
+            var response = await device.SendU2FMessage(message);
+            return KeyProtocolCodec.DecodeVersionResponse(response);
         }
     }
 

@@ -82,15 +82,15 @@ namespace BlackFox.U2F.Server.impl
             {
                 throw new U2FException("Unknown session_id");
             }
-            var appId = sessionData.GetAppId();
+            var appId = sessionData.AppId;
             var rawBrowserData = WebSafeBase64Converter.FromBase64String(browserDataBase64);
             var browserData = Encoding.UTF8.GetString(rawBrowserData, 0, rawBrowserData.Length);
             var rawRegistrationData = WebSafeBase64Converter.FromBase64String(rawRegistrationDataBase64);
 
             log.Info("-- Input --");
             log.Info("  sessionId: " + sessionId);
-            log.Info("  challenge: " + sessionData.GetChallenge().ToHexString());
-            log.Info("  accountName: " + sessionData.GetAccountName());
+            log.Info("  challenge: " + sessionData.Challenge.ToHexString());
+            log.Info("  accountName: " + sessionData.AccountName);
             log.Info("  browserData: " + browserData);
             log.Info("  rawRegistrationData: " + rawRegistrationData.ToHexString());
 
@@ -142,7 +142,7 @@ namespace BlackFox.U2F.Server.impl
                 attestationCertificate, 0);
 
             /* initial counter value */
-            dataStore.AddSecurityKeyData(sessionData.GetAccountName(), securityKeyData);
+            dataStore.AddSecurityKeyData(sessionData.AccountName, securityKeyData);
             log.Info("<< processRegistrationResponse");
             return securityKeyData;
         }
@@ -184,9 +184,9 @@ namespace BlackFox.U2F.Server.impl
                 throw new U2FException("Unknown session_id");
             }
 
-            var appId = sessionData.GetAppId();
+            var appId = sessionData.AppId;
             var securityKeyData = dataStore
-                .GetSecurityKeyData(sessionData.GetAccountName())
+                .GetSecurityKeyData(sessionData.AccountName)
                 .FirstOrDefault(k => sessionData.GetPublicKey().SequenceEqual(k.PublicKey));
             if (securityKeyData == null)
             {
@@ -200,8 +200,8 @@ namespace BlackFox.U2F.Server.impl
             log.Info("-- Input --");
             log.Info("  sessionId: " + sessionId);
             log.Info("  publicKey: " + securityKeyData.PublicKey.ToHexString());
-            log.Info("  challenge: " + sessionData.GetChallenge().ToHexString());
-            log.Info("  accountName: " + sessionData.GetAccountName());
+            log.Info("  challenge: " + sessionData.Challenge.ToHexString());
+            log.Info("  accountName: " + sessionData.AccountName);
             log.Info("  browserData: " + browserData);
             log.Info("  rawSignData: " + rawSignData.ToHexString());
 
@@ -234,7 +234,7 @@ namespace BlackFox.U2F.Server.impl
             {
                 throw new U2FException("Signature is invalid");
             }
-            dataStore.UpdateSecurityKeyCounter(sessionData.GetAccountName(), securityKeyData.PublicKey, counter);
+            dataStore.UpdateSecurityKeyCounter(sessionData.AccountName, securityKeyData.PublicKey, counter);
             log.Info("<< processSignResponse");
             return securityKeyData;
         }
@@ -383,7 +383,7 @@ namespace BlackFox.U2F.Server.impl
                 throw new U2FException($"bad browserdata: missing '{CHALLENGE_PARAM}' param");
             }
             var challengeFromBrowserData = WebSafeBase64Converter.FromBase64String(challengeProperty.Value.ToString());
-            if (!challengeFromBrowserData.SequenceEqual(sessionData.GetChallenge()))
+            if (!challengeFromBrowserData.SequenceEqual(sessionData.Challenge))
             {
                 throw new U2FException("wrong challenge signed in browserdata");
             }

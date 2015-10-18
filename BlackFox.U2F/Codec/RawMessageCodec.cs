@@ -145,7 +145,7 @@ namespace BlackFox.U2F.Codec
                 throw new ArgumentNullException(nameof(authenticateRequest));
             }
 
-            var controlByte = authenticateRequest.Control;
+            //var controlByte = authenticateRequest.Control;
             var appIdSha256 = authenticateRequest.ApplicationSha256;
             var challengeSha256 = authenticateRequest.ChallengeSha256;
             var keyHandle = authenticateRequest.KeyHandle;
@@ -153,10 +153,10 @@ namespace BlackFox.U2F.Codec
             {
                 throw new U2FException("keyHandle length cannot be longer than 255 bytes!");
             }
-            var result = new byte[1 + appIdSha256.Length + challengeSha256.Length + 1 + keyHandle.Length];
+            var result = new byte[1 + appIdSha256.Length + challengeSha256.Length + keyHandle.Length];
             using (var writer = new EndianWriter(new MemoryStream(result), Endianness.BigEndian))
             {
-                writer.Write(controlByte);
+                //writer.Write(controlByte);
                 writer.Write(challengeSha256);
                 writer.Write(appIdSha256);
                 writer.Write((byte)keyHandle.Length);

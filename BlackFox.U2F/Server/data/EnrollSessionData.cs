@@ -2,34 +2,17 @@ namespace BlackFox.U2F.Server.data
 {
 	public class EnrollSessionData
 	{
-		private const long SERIAL_VERSION_UID = 1750990095756334568L;
-
-		private readonly string accountName;
-
-		private readonly byte[] challenge;
-
-		private readonly string appId;
-
-		public EnrollSessionData(string accountName, string appId, byte[] challenge)
+	    public EnrollSessionData(string accountName, string appId, byte[] challenge)
 		{
-			this.accountName = accountName;
-			this.challenge = challenge;
-			this.appId = appId;
+			AccountName = accountName;
+			Challenge = challenge;
+			AppId = appId;
 		}
 
-		public string GetAccountName()
-		{
-			return accountName;
-		}
+	    public string AccountName { get; }
 
-		public byte[] GetChallenge()
-		{
-			return challenge;
-		}
+	    public byte[] Challenge { get; }
 
-		public string GetAppId()
-		{
-			return appId;
-		}
+	    public string AppId { get; }
 	}
 }
