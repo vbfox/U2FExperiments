@@ -42,7 +42,6 @@
     <Compile Include="IHidDeviceInformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResharperAnnotations.cs" />
-    <Compile Include="TaskLoggingExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.references" />
