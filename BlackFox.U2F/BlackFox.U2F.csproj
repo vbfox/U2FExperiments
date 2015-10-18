@@ -77,6 +77,7 @@
     <Compile Include="Codec\ClientDataCodec.cs" />
     <Compile Include="Codec\RawMessageCodec.cs" />
     <Compile Include="Codec\SerialCodec.cs" />
+    <Compile Include="Codec\VersionCodec.cs" />
     <Compile Include="Key\ECKeyPair.cs" />
     <Compile Include="Key\IKeyCrypto.cs" />
     <Compile Include="Key\IKeyDataStore.cs" />
@@ -112,6 +113,7 @@
     <Compile Include="Server\IU2FServer.cs" />
     <Compile Include="U2FConsts.cs" />
     <Compile Include="U2FException.cs" />
+    <Compile Include="U2FVersion.cs" />
     <Compile Include="Utils\NodaTimeExtensions.cs" />
     <Compile Include="WebSafeBase64Converter.cs" />
   </ItemGroup>

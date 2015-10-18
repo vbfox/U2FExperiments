@@ -138,7 +138,7 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static byte[] EncodeAuthenticateRequest([NotNull] AuthenticateRequest authenticateRequest)
+        public static byte[] EncodeAuthenticateRequest([NotNull] AuthenticateRequest authenticateRequest, U2FVersion version)
         {
             if (authenticateRequest == null)
             {
@@ -153,13 +153,30 @@ namespace BlackFox.U2F.Codec
             {
                 throw new U2FException("keyHandle length cannot be longer than 255 bytes!");
             }
-            var result = new byte[1 + appIdSha256.Length + challengeSha256.Length + keyHandle.Length];
+
+            int size;
+            switch (version)
+            {
+                case U2FVersion.V1:
+                    size = appIdSha256.Length + challengeSha256.Length + keyHandle.Length;
+                    break;
+                case U2FVersion.V2:
+                    size = appIdSha256.Length + challengeSha256.Length + keyHandle.Length + 1;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(version), version, null);
+            }
+
+            var result = new byte[size];
             using (var writer = new EndianWriter(new MemoryStream(result), Endianness.BigEndian))
             {
                 //writer.Write(controlByte);
                 writer.Write(challengeSha256);
                 writer.Write(appIdSha256);
-                writer.Write((byte)keyHandle.Length);
+                if (version == U2FVersion.V2)
+                {
+                    writer.Write((byte)keyHandle.Length);
+                }
                 writer.Write(keyHandle);
             }
             return result;
@@ -222,14 +239,16 @@ namespace BlackFox.U2F.Codec
             try
             {
                 using (var stream = data.AsStream())
-                using (var inputStream = new EndianReader(stream, Endianness.BigEndian))
                 {
-                    var userPresence = inputStream.ReadByte();
-                    var counter = inputStream.ReadInt32();
-                    var signatureSize = (int)(inputStream.BaseStream.Length - inputStream.BaseStream.Position);
-                    var signature = inputStream.ReadBytes(signatureSize);
+                    using (var inputStream = new EndianReader(stream, Endianness.BigEndian))
+                    {
+                        var userPresence = inputStream.ReadByte();
+                        var counter = inputStream.ReadInt32();
+                        var signatureSize = (int)(inputStream.BaseStream.Length - inputStream.BaseStream.Position);
+                        var signature = inputStream.ReadBytes(signatureSize);
 
-                    return new AuthenticateResponse(userPresence, counter, signature);
+                        return new AuthenticateResponse(userPresence, counter, signature);
+                    }
                 }
             }
             catch (IOException e)

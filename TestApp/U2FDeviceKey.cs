@@ -129,9 +129,9 @@ namespace U2FExperiments
             return new KeyRegisterResponse(adpu, response, status);
         }
 
-        public static ArraySegment<byte> EncodeAuthenticateRequest(KeyAuthenticateRequest request)
+        public static ArraySegment<byte> EncodeAuthenticateRequest(KeyAuthenticateRequest request, U2FVersion version)
         {
-            var requestBytes = RawMessageCodec.EncodeAuthenticateRequest(request.Request);
+            var requestBytes = RawMessageCodec.EncodeAuthenticateRequest(request.Request, version);
             var apdu = new ApduRequest(AuthenticateCommand, (byte)request.Mode, 0x00, requestBytes.Segment());
             return ApduCodec.EncodeRequest(apdu);
         }
@@ -207,13 +207,18 @@ namespace U2FExperiments
         public async Task<KeyAuthenticateResponse> AuthenticateAsync(AuthenticateRequest request, AuthenticateMode mode)
         {
             var version = await GetVersionAsync();
-
-            var message = KeyProtocolCodec.EncodeAuthenticateRequest(new KeyAuthenticateRequest(request, mode));
+            var message = KeyProtocolCodec.EncodeAuthenticateRequest(new KeyAuthenticateRequest(request, mode), version);
             var response = await device.SendU2FMessage(message);
             return KeyProtocolCodec.DecodeAuthenticateReponse(response);
         }
 
-        public async Task<string> GetVersionAsync()
+        public async Task<U2FVersion> GetVersionAsync()
+        {
+            var version = await GetVersionStringAsync();
+            return VersionCodec.DecodeVersion(version);
+        }
+
+        public async Task<string> GetVersionStringAsync()
         {
             var message = KeyProtocolCodec.EncodeVersionRequest();
             var response = await device.SendU2FMessage(message);
