@@ -1,6 +1,5 @@
 using System;
 using System.ComponentModel;
-using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -266,16 +265,14 @@ namespace BlackFox.Win32.Kernel32
             }, cancellationToken);
         }
 
-        public static Task<int> WriteFileAsync<T>(SafeFileHandle handle, ArraySegment<T> arraySegment,
+        public static async Task<int> WriteFileAsync<T>(SafeFileHandle handle, ArraySegment<T> arraySegment,
             CancellationToken cancellationToken = default(CancellationToken))
             where T : struct
         {
-            var asFixed = new FixedArraySegment<T>(arraySegment);
-
-            var write = WriteFileAsync(handle, asFixed.Pointer, asFixed.SizeInBytes, cancellationToken);
-            // ReSharper disable once MethodSupportsCancellation
-            write.ContinueWith(task => asFixed.Dispose());
-            return write;
+            using (var asFixed = new FixedArraySegment<T>(arraySegment))
+            {
+                return await WriteFileAsync(handle, asFixed.Pointer, asFixed.SizeInBytes, cancellationToken);
+            }
         }
 
         public static Task<int> ReadFileAsync(SafeFileHandle handle, IntPtr buffer, int numberOfBytesToRead,
@@ -289,24 +286,20 @@ namespace BlackFox.Win32.Kernel32
             }, cancellationToken);
         }
 
-        public static Task<ArraySegment<T>> ReadFileAsync<T>(SafeFileHandle handle, int numberOfElementsToRead,
+        public static async Task<ArraySegment<T>> ReadFileAsync<T>(SafeFileHandle handle, int numberOfElementsToRead,
             CancellationToken cancellationToken = default(CancellationToken))
             where T : struct
         {
             var buffer = new T[numberOfElementsToRead];
             var segment = new ArraySegment<T>(buffer);
-            var asFixed = new FixedArraySegment<T>(segment);
-
-            var read = ReadFileAsync(handle, asFixed.Pointer, asFixed.SizeInBytes, cancellationToken);
-            // ReSharper disable once MethodSupportsCancellation
-            read.ContinueWith(task => asFixed.Dispose());
-
-            return read.ContinueWith(readTask =>
+            using (var asFixed = new FixedArraySegment<T>(segment))
             {
-                var elementsRead = readTask.Result / asFixed.ElementSize;
+
+                var bytesRead = await ReadFileAsync(handle, asFixed.Pointer, asFixed.SizeInBytes, cancellationToken);
+                var elementsRead = bytesRead / asFixed.ElementSize;
 
                 return new ArraySegment<T>(buffer, 0, elementsRead);
-            }, TaskContinuationOptions.OnlyOnRanToCompletion);
+            }
         }
     }
 }

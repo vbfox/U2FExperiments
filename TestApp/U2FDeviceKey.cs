@@ -249,7 +249,7 @@ namespace U2FExperiments
                         Thread.Sleep(100);
                         continue;
                     case KeyAuthenticateResponseStatus.Failure:
-                        throw new U2FException("Failure");
+                        throw new U2FException("Failure: " + result.Raw.Status);
                     case KeyAuthenticateResponseStatus.BadKeyHandle:
                         throw new U2FException("Bad key handle");
                     default:

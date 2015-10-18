@@ -6,6 +6,7 @@ group Main
     nuget Common.Logging.Portable
     nuget Common.Logging.NLog40
 	nuget Microsoft.Bcl.Async
+    nuget Microsoft.Bcl.Build
     nuget Newtonsoft.Json
     nuget Portable.BouncyCastle
 	nuget NodaTime
