@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.UsbHid;
 using Moq;
@@ -34,14 +35,14 @@ namespace BlackFox.U2FHid.Tests
 
             public override void Poison(Mock<IHidDevice> device, Action callback)
             {
-                device.Setup(h => h.GetInputReportAsync())
+                device.Setup(h => h.GetInputReportAsync(It.IsAny<CancellationToken>()))
                     .Callback(callback);
             }
 
             public override void Setup(Mock<IHidDevice> device, Action successContinuation)
             {
-                device.Setup(h => h.GetInputReportAsync())
-                    .Returns(() =>
+                device.Setup(h => h.GetInputReportAsync(It.IsAny<CancellationToken>()))
+                    .Returns<CancellationToken>(_ =>
                     {
                         var result = func();
                         successContinuation();
@@ -63,14 +64,14 @@ namespace BlackFox.U2FHid.Tests
 
             public override void Poison(Mock<IHidDevice> device, Action callback)
             {
-                device.Setup(h => h.SendOutputReportAsync(It.IsAny<HidOutputReport>()))
+                device.Setup(h => h.SendOutputReportAsync(It.IsAny<HidOutputReport>(), It.IsAny<CancellationToken>()))
                     .Callback(callback);
             }
 
             public override void Setup(Mock<IHidDevice> device, Action successContinuation)
             {
-                device.Setup(h => h.SendOutputReportAsync(It.IsAny<HidOutputReport>()))
-                    .Returns<HidOutputReport>(report =>
+                device.Setup(h => h.SendOutputReportAsync(It.IsAny<HidOutputReport>(), It.IsAny<CancellationToken>()))
+                    .Returns<HidOutputReport, CancellationToken>((report, _) =>
                     {
                         var result = func(report);
                         successContinuation();

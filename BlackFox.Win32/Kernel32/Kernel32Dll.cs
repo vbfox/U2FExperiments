@@ -1,5 +1,6 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -83,7 +84,7 @@ namespace BlackFox.Win32.Kernel32
                 out pBytesReturned, null);
         }
 
-        const int ERROR_IO_PENDING = 997;
+        const int ErrorIoPending = 997;
 
         static void ThrowLastWin32Exception()
         {
@@ -102,63 +103,136 @@ namespace BlackFox.Win32.Kernel32
             }
         }
 
-        static Task<int> OverlappedAsync(SafeFileHandle handle, Func< IntPtr, bool> nativeMethod)
+        static Task<int> OverlappedAsync(SafeFileHandle handle, Func<IntPtr, bool> nativeMethod,
+            CancellationToken cancellationToken)
         {
-            var evt = new ManualResetEvent(false);
+            var finishedEvent = new ManualResetEvent(false);
             var overlapped = new NativeOverlapped
             {
-                EventHandle = evt.SafeWaitHandle.DangerousGetHandle()
+                EventHandle = finishedEvent.SafeWaitHandle.DangerousGetHandle()
             }.ToPtr();
-
             
             var result = nativeMethod(overlapped.Pointer);
-
             var completionSource = new TaskCompletionSource<int>();
 
-            if (result)
+            var finishedSynchronously = FinishOverlappedSynchronously(handle, cancellationToken, overlapped,
+                completionSource, result);
+
+            if (finishedSynchronously)
             {
-                int pBytesReturned;
-                NativeMethods.GetOverlappedResult(handle, overlapped.Pointer, out pBytesReturned, false);
-                completionSource.SetResult(pBytesReturned);
                 overlapped.Dispose();
-                evt.Dispose();
+                finishedEvent.Dispose();
             }
             else
             {
-                var error = Marshal.GetLastWin32Error();
-                if (error != ERROR_IO_PENDING)
+                FinishOverlappedAsynchronously(handle, cancellationToken, overlapped, finishedEvent, completionSource);
+            }
+
+            return completionSource.Task;
+        }
+
+        static void FinishOverlappedAsynchronously(SafeFileHandle handle, CancellationToken cancellationToken,
+            NullableStructPtr<NativeOverlapped> overlapped, ManualResetEvent finishedEvent, TaskCompletionSource<int> completionSource)
+        {
+            var alreadyFinished = false;
+            var lockObject = new object();
+            RegisteredWaitHandle finishedWait = null;
+            RegisteredWaitHandle cancelledWait = null;
+            WaitOrTimerCallback finishedCallback = (state, timedOut) =>
+            {
+                var isCancellation = !(bool)state;
+                lock (lockObject)
                 {
-                    SetFromLastWin32Exception(completionSource);
-                    overlapped.Dispose();
-                    evt.Dispose();
-                }
-                else
-                {
-                    WaitOrTimerCallback callback = (state, timedOut) =>
+                    if (alreadyFinished)
                     {
-                        int pBytesReturned;
+                        return;
+                    }
+
+                    // ReSharper disable AccessToModifiedClosure
+                    finishedWait?.Unregister(finishedEvent);
+                    cancelledWait?.Unregister(cancellationToken.WaitHandle);
+                    // ReSharper restore AccessToModifiedClosure
+
+                    if (isCancellation)
+                    {
+                        NativeMethods.CancelIoEx(handle, overlapped.Pointer);
+                    }
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        completionSource.SetCanceled();
+                    }
+                    else
+                    {
+                        int bytesReturned;
                         var overlappedResult = NativeMethods.GetOverlappedResult(handle, overlapped.Pointer,
-                            out pBytesReturned, false);
+                            out bytesReturned, false);
 
                         overlapped.Dispose();
-                        evt.Dispose();
+                        finishedEvent.Dispose();
 
                         if (overlappedResult)
                         {
-                            completionSource.SetResult(pBytesReturned);
-                            
+                            completionSource.SetResult(bytesReturned);
                         }
                         else
                         {
                             SetFromLastWin32Exception(completionSource);
                         }
-                    };
+                    }
 
-                    ThreadPool.RegisterWaitForSingleObject(evt, callback, null, -1, true);
+                    alreadyFinished = true;
+                }
+            };
+
+            lock (lockObject)
+            {
+                finishedWait = ThreadPool.RegisterWaitForSingleObject(finishedEvent, finishedCallback, true, -1, true);
+                if (cancellationToken != CancellationToken.None)
+                {
+                    cancelledWait = ThreadPool.RegisterWaitForSingleObject(cancellationToken.WaitHandle,
+                        finishedCallback,
+                        false, -1, true);
                 }
             }
+        }
 
-            return completionSource.Task;
+        static bool FinishOverlappedSynchronously(SafeFileHandle handle, CancellationToken cancellationToken,
+            NullableStructPtr<NativeOverlapped> overlapped, TaskCompletionSource<int> completionSource,
+            bool nativeMethodResult)
+        {
+            if (!nativeMethodResult)
+            {
+                var error = Marshal.GetLastWin32Error();
+                if (error != ErrorIoPending)
+                {
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        completionSource.SetCanceled();
+                    }
+                    else
+                    {
+                        SetFromLastWin32Exception(completionSource);
+                    }
+
+                    return true;
+                }
+
+                // Async IO in progress
+                return false;
+            }
+
+            int pBytesReturned;
+            NativeMethods.GetOverlappedResult(handle, overlapped.Pointer, out pBytesReturned, false);
+            if (cancellationToken.IsCancellationRequested)
+            {
+                completionSource.SetCanceled();
+            }
+            else
+            {
+                completionSource.SetResult(pBytesReturned);
+            }
+
+            return true;
         }
 
         public static Task<int> DeviceIoControlAsync(
@@ -167,57 +241,64 @@ namespace BlackFox.Win32.Kernel32
             IntPtr inBuffer,
             int nInBufferSize,
             IntPtr outBuffer,
-            int nOutBufferSize)
+            int nOutBufferSize,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             return OverlappedAsync(hDevice, lpOverlapped =>
             {
                 int pBytesReturned;
                 return NativeMethods.DeviceIoControl(hDevice, dwIoControlCode, inBuffer, nInBufferSize, outBuffer,
                     nOutBufferSize, out pBytesReturned, lpOverlapped);
-            });
+            }, cancellationToken);
         }
 
         public static Task<int> WriteFileAsync(
             SafeFileHandle handle,
             IntPtr buffer,
-            int numberOfBytesToWrite)
+            int numberOfBytesToWrite,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             return OverlappedAsync(handle, lpOverlapped =>
             {
                 int numberOfBytesWritten;
                 return NativeMethods.WriteFile(handle, buffer, numberOfBytesToWrite, out numberOfBytesWritten,
                     lpOverlapped);
-            });
+            }, cancellationToken);
         }
 
-        public static Task<int> WriteFileAsync<T>(SafeFileHandle handle, ArraySegment<T> arraySegment)
+        public static Task<int> WriteFileAsync<T>(SafeFileHandle handle, ArraySegment<T> arraySegment,
+            CancellationToken cancellationToken = default(CancellationToken))
             where T : struct
         {
             var asFixed = new FixedArraySegment<T>(arraySegment);
 
-            var write = WriteFileAsync(handle, asFixed.Pointer, asFixed.SizeInBytes);
+            var write = WriteFileAsync(handle, asFixed.Pointer, asFixed.SizeInBytes, cancellationToken);
+            // ReSharper disable once MethodSupportsCancellation
             write.ContinueWith(task => asFixed.Dispose());
             return write;
         }
 
-        public static Task<int> ReadFileAsync(SafeFileHandle handle, IntPtr buffer, int numberOfBytesToRead)
+        public static Task<int> ReadFileAsync(SafeFileHandle handle, IntPtr buffer, int numberOfBytesToRead,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             return OverlappedAsync(handle, lpOverlapped =>
             {
                 int numberOfBytesRead;
                 return NativeMethods.ReadFile(handle, buffer, numberOfBytesToRead, out numberOfBytesRead,
                     lpOverlapped);
-            });
+            }, cancellationToken);
         }
 
-        public static Task<ArraySegment<T>> ReadFileAsync<T>(SafeFileHandle handle, int numberOfElementsToRead)
+        public static Task<ArraySegment<T>> ReadFileAsync<T>(SafeFileHandle handle, int numberOfElementsToRead,
+            CancellationToken cancellationToken = default(CancellationToken))
             where T : struct
         {
             var buffer = new T[numberOfElementsToRead];
             var segment = new ArraySegment<T>(buffer);
             var asFixed = new FixedArraySegment<T>(segment);
 
-            var read = ReadFileAsync(handle, asFixed.Pointer, asFixed.SizeInBytes);
+            var read = ReadFileAsync(handle, asFixed.Pointer, asFixed.SizeInBytes, cancellationToken);
+            // ReSharper disable once MethodSupportsCancellation
             read.ContinueWith(task => asFixed.Dispose());
 
             return read.ContinueWith(readTask =>

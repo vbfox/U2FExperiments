@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Binary;
 using BlackFox.Win32.Hid;
@@ -45,7 +46,8 @@ namespace BlackFox.UsbHid.Win32
             return new HidOutputReport(id, new ArraySegment<byte>(buffer));
         }
 
-        public Task<int> SendOutputReportAsync(HidOutputReport report)
+        public Task<int> SendOutputReportAsync(HidOutputReport report,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             if (report == null) throw new ArgumentNullException(nameof(report));
 
@@ -53,13 +55,14 @@ namespace BlackFox.UsbHid.Win32
             log.Trace("Sending output report:\r\n\r\n " + outputBuffer.ToHexString());
             log.Trace(outputBuffer.ToLoggableAsHex("Sending output report:"));
 
-            return Kernel32Dll.WriteFileAsync(Handle, outputBuffer)
+            return Kernel32Dll.WriteFileAsync(Handle, outputBuffer, cancellationToken)
                 .LogFaulted(log, "Sending output report failed");
         }
 
-        public Task<HidInputReport> GetInputReportAsync()
+        public Task<HidInputReport> GetInputReportAsync(
+            CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Kernel32Dll.ReadFileAsync<byte>(Handle, Information.Capabilities.InputReportByteLength)
+            return Kernel32Dll.ReadFileAsync<byte>(Handle, Information.Capabilities.InputReportByteLength, cancellationToken)
                 .ContinueWith(task => OnInputReportRead(task), TaskContinuationOptions.OnlyOnRanToCompletion)
                 .LogFaulted(log, "Receiving input report failed");
         }

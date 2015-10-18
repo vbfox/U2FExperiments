@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using JetBrains.Annotations;
 
@@ -11,10 +12,14 @@ namespace BlackFox.UsbHid
 
         [NotNull]
         HidOutputReport CreateOutputReport(byte id = 0);
-        Task<int> SendOutputReportAsync([NotNull] HidOutputReport report);
+
+        [NotNull]
+        Task<int> SendOutputReportAsync([NotNull] HidOutputReport report,
+            CancellationToken cancellationToken = default(CancellationToken));
 
         [NotNull]
         [ItemNotNull]
-        Task<HidInputReport> GetInputReportAsync();
+        Task<HidInputReport> GetInputReportAsync(
+            CancellationToken cancellationToken = default(CancellationToken));
     }
 }

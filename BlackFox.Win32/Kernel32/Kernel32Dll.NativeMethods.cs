@@ -55,6 +55,15 @@ namespace BlackFox.Win32.Kernel32
                 int nNumberOfBytesToRead,
                 out int lpNumberOfBytesRead,
                 IntPtr lpOverlapped);
+
+            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern bool CancelIo(
+                SafeFileHandle hFile);
+
+            [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+            public static extern bool CancelIoEx(
+                SafeFileHandle hFile,
+                IntPtr lpOverlapped);
         }
     }
 }
