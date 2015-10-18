@@ -46,7 +46,7 @@ namespace BlackFox.UsbHid.Win32
             return new HidOutputReport(id, new ArraySegment<byte>(buffer));
         }
 
-        public Task<int> SendOutputReportAsync(HidOutputReport report,
+        public async Task<int> SendOutputReportAsync(HidOutputReport report,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             if (report == null) throw new ArgumentNullException(nameof(report));
@@ -54,23 +54,33 @@ namespace BlackFox.UsbHid.Win32
             var outputBuffer = report.GetOutputBuffer();
             log.Trace("Sending output report:\r\n\r\n " + outputBuffer.ToHexString());
             log.Trace(outputBuffer.ToLoggableAsHex("Sending output report:"));
-
-            return Kernel32Dll.WriteFileAsync(Handle, outputBuffer, cancellationToken)
-                .LogFaulted(log, "Sending output report failed");
+            try
+            {
+                return await Kernel32Dll.WriteFileAsync(Handle, outputBuffer, cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                log.Error("Sending output report failed", exception);
+                throw;
+            }
         }
 
-        public Task<HidInputReport> GetInputReportAsync(
+        public async Task<HidInputReport> GetInputReportAsync(
             CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Kernel32Dll.ReadFileAsync<byte>(Handle, Information.Capabilities.InputReportByteLength, cancellationToken)
-                .ContinueWith(task => OnInputReportRead(task), TaskContinuationOptions.OnlyOnRanToCompletion)
-                .LogFaulted(log, "Receiving input report failed");
-        }
+            try
+            {
+                var bytes = await Kernel32Dll.ReadFileAsync<byte>(Handle,
+                    Information.Capabilities.InputReportByteLength, cancellationToken);
 
-        static HidInputReport OnInputReportRead(Task<ArraySegment<byte>> task)
-        {
-            log.Trace(task.Result.ToLoggableAsHex("Received input report:"));
-            return new HidInputReport(task.Result);
+                log.Trace(bytes.ToLoggableAsHex("Received input report:"));
+                return new HidInputReport(bytes);
+            }
+            catch (Exception exception)
+            {
+                log.Error("Receiving input report failed", exception);
+                throw;
+            }
         }
 
         public void SetNumInputBuffers(uint numberBuffers)
