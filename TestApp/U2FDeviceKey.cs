@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Binary;
 using BlackFox.U2F;
@@ -185,7 +186,7 @@ namespace U2FExperiments
             return KeyProtocolCodec.DecodeRegisterReponse(response);
         }
 
-        public async Task<KeyAuthenticateResponse> RegisterAsync(AuthenticateRequest request, AuthenticateMode mode)
+        public async Task<KeyAuthenticateResponse> AuthenticateAsync(AuthenticateRequest request, AuthenticateMode mode)
         {
             var message = KeyProtocolCodec.EncodeAuthenticateRequest(new KeyAuthenticateRequest(request, mode));
             var response = await device.SendU2FMessage(message);
@@ -211,27 +212,50 @@ namespace U2FExperiments
 
         public RegisterResponse Register(RegisterRequest registerRequest)
         {
-            var result = niceDevice.RegisterAsync(registerRequest).Result;
-
-            switch (result.Status)
+            while (true)
             {
-                case KeyRegisterReponseStatus.Success:
-                    Debug.Assert(result.Data != null, "no data for success");
-                    return result.Data;
-                case KeyRegisterReponseStatus.TestOfuserPresenceRequired:
-                    throw new U2FException("Test of user presence required");
-                case KeyRegisterReponseStatus.Failure:
-                    throw new U2FException("Failure");
-                default:
-                    throw new ArgumentOutOfRangeException();
+                var result = niceDevice.RegisterAsync(registerRequest).Result;
+
+                switch (result.Status)
+                {
+                    case KeyRegisterReponseStatus.Success:
+                        Debug.Assert(result.Data != null, "no data for success");
+                        return result.Data;
+                    case KeyRegisterReponseStatus.TestOfuserPresenceRequired:
+                        Console.WriteLine("User presence required");
+                        Thread.Sleep(100);
+                        continue;
+                    case KeyRegisterReponseStatus.Failure:
+                        throw new U2FException("Failure");
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
             }
         }
 
         public AuthenticateResponse Authenticate(AuthenticateRequest authenticateRequest)
         {
-            var requestBytes = RawMessageCodec.EncodeAuthenticateRequest(authenticateRequest);
-            var response = device.SendU2FMessage(requestBytes.Segment()).Result;
-            return RawMessageCodec.DecodeAuthenticateResponse(response);
+            while (true)
+            {
+                var result = niceDevice.AuthenticateAsync(authenticateRequest, AuthenticateMode.EnforseUserPresenceAndSign).Result;
+
+                switch (result.Status)
+                {
+                    case KeyAuthenticateResponseStatus.Success:
+                        Debug.Assert(result.Data != null, "no data for success");
+                        return result.Data;
+                    case KeyAuthenticateResponseStatus.TestOfuserPresenceRequired:
+                        Console.WriteLine("User presence required");
+                        Thread.Sleep(100);
+                        continue;
+                    case KeyAuthenticateResponseStatus.Failure:
+                        throw new U2FException("Failure");
+                    case KeyAuthenticateResponseStatus.BadKeyHandle:
+                        throw new U2FException("Bad key handle");
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+            }
         }
     }
 }
