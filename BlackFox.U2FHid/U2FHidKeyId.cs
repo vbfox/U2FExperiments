@@ -7,9 +7,11 @@ using JetBrains.Annotations;
 
 namespace BlackFox.U2FHid
 {
-    public class U2FHidKeyId : IKeyId
+    public class U2FHidKeyId : IKeyId, IEquatable<U2FHidKeyId>
     {
+        [NotNull]
         public IHidDeviceInformation HidDeviceInformation { get; }
+
         public string Product => HidDeviceInformation.Product;
         public string Manufacturer => HidDeviceInformation.Manufacturer;
 
@@ -31,7 +33,48 @@ namespace BlackFox.U2FHid
         public async Task<U2FHidKey> OpenAsync(CancellationToken cancellationToken = new CancellationToken())
         {
             var device = await HidDeviceInformation.OpenDeviceAsync();
-            return new U2FHidKey(device, true);
+            return await U2FHidKey.OpenAsync(device);
+        }
+
+        public bool Equals(IKeyId other)
+        {
+            var u2FHidKeyId = other as U2FHidKeyId;
+            return u2FHidKeyId != null && Equals(u2FHidKeyId);
+        }
+
+        public bool Equals(U2FHidKeyId other)
+        {
+            if (ReferenceEquals(null, other))
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, other))
+            {
+                return true;
+            }
+            return Equals(HidDeviceInformation.Id, other.HidDeviceInformation.Id);
+        }
+
+        public override bool Equals(object obj)
+        {
+            if (ReferenceEquals(null, obj))
+            {
+                return false;
+            }
+            if (ReferenceEquals(this, obj))
+            {
+                return true;
+            }
+            if (obj.GetType() != GetType())
+            {
+                return false;
+            }
+            return Equals((U2FHidKeyId) obj);
+        }
+
+        public override int GetHashCode()
+        {
+            return HidDeviceInformation.Id.GetHashCode();
         }
 
         public override string ToString()

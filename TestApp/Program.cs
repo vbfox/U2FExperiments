@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 using BlackFox.Binary;
 using BlackFox.U2F.Client.impl;
 using BlackFox.U2F.Key;
@@ -102,7 +103,7 @@ namespace U2FExperiments
         {
             ConfigureLogging();
 
-            TestDual();
+            TestDual().Wait();
             //TestSoftwareOnly();
             //TestHardwareOnly();
         }
@@ -117,14 +118,14 @@ namespace U2FExperiments
             }
         }
 
-        private static void TestDual()
+        private static async Task TestDual()
         {
-            var factory = (IHidDeviceFactory)Win32HidDeviceFactory.Instance;
-            var devices = factory.FindAllAsync().Result;
-            var fidoInfo = devices.Where(FidoU2FIdentification.IsFidoU2F).First();
-            using (var device = fidoInfo.OpenDeviceAsync().Result)
+            var hidFactory = Win32HidDeviceFactory.Instance;
+            var keyFactory = new U2FHidKeyFactory(hidFactory);
+            var keyIds = await keyFactory.FindAllAsync();
+            var keyId = keyIds.First();
+            using (var u2f = await keyId.OpenAsync())
             {
-                var u2f = U2FHidKey.OpenAsync(device, false).Result;
                 var key = new U2FDeviceKey(u2f);
 
                 var dataStore = new InMemoryServerDataStore(new GuidSessionIdGenerator());
