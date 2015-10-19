@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Binary;
 using BlackFox.U2FHid.Core;
@@ -10,41 +10,15 @@ using BlackFox.U2FHid.Utils;
 using BlackFox.UsbHid;
 using Common.Logging;
 using JetBrains.Annotations;
+using static BlackFox.U2FHid.Core.U2FHidConsts;
 
 namespace BlackFox.U2FHid
 {
-    public class InitResponse
-    {
-        public uint Channel { get; }
-        public byte ProtocolVersion { get; }
-        public byte MajorVersionNumber { get; }
-        public byte MinorVersionNumber { get; }
-        public byte BuildVersionNumber { get; }
-        public U2FDeviceCapabilities Capabilities { get; }
-
-        public InitResponse(uint channel, byte protocolVersion, byte majorVersionNumber, byte minorVersionNumber,
-            byte buildVersionNumber, U2FDeviceCapabilities capabilities)
-        {
-            Channel = channel;
-            ProtocolVersion = protocolVersion;
-            MajorVersionNumber = majorVersionNumber;
-            MinorVersionNumber = minorVersionNumber;
-            BuildVersionNumber = buildVersionNumber;
-            Capabilities = capabilities;
-        }
-    }
-
     public class U2FDevice : IDisposable
     {
         static readonly ILog log = LogManager.GetLogger(typeof(FidoU2FHidPaketWriter));
 
-        /// <summary>
-        /// Size of the nonce for INIT messages in bytes.
-        /// </summary>
-        const int INIT_NONCE_SIZE = 8;
-        const uint BROADCAST_CHANNEL = 0xffffffff;
-
-        InitResponse initResponse;
+        public U2FDeviceInfo? DeviceInfo { get; private set; }
 
         [NotNull]
         private readonly IHidDevice device;
@@ -61,76 +35,58 @@ namespace BlackFox.U2FHid
 
         uint GetChannel()
         {
-            return initResponse?.Channel ?? BROADCAST_CHANNEL;
+            return DeviceInfo?.Channel ?? BroadcastChannel;
         }
 
         [NotNull]
         [ItemNotNull]
-        public async Task<ArraySegment<byte>> SendU2FMessage(ArraySegment<byte> message)
+        public async Task<ArraySegment<byte>> SendU2FMessage(ArraySegment<byte> message, CancellationToken cancellationToken = default(CancellationToken))
         {
             var fidoMessage = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Message, message);
-            var response = await Query(fidoMessage);
+            var response = await Query(fidoMessage, cancellationToken);
             return response.Data;
         }
 
         [NotNull]
         [ItemNotNull]
-        public async Task<InitResponse> Init(ArraySegment<byte> nonce)
+        public async Task<U2FDeviceInfo> Init(ArraySegment<byte> nonce, CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (nonce.Count != INIT_NONCE_SIZE)
+            if (nonce.Count != InitNonceSize)
             {
                 throw new ArgumentException(
-                    $"Nonce should be exactly {INIT_NONCE_SIZE} bytes but is {nonce.Count} bytes long instead.",
+                    $"Nonce should be exactly {InitNonceSize} bytes but is {nonce.Count} bytes long instead.",
                     nameof(nonce));
             }
 
             log.Info("Sending initialization");
-            var message = new FidoU2FHidMessage(BROADCAST_CHANNEL, U2FHidCommand.Init, nonce);
-            var answer = await Query(message);
+            var message = new FidoU2FHidMessage(BroadcastChannel, U2FHidCommand.Init, nonce);
+            var answer = await Query(message, cancellationToken);
             return OnInitAnswered(answer, nonce);
         }
 
-        InitResponse OnInitAnswered(FidoU2FHidMessage response, ArraySegment<byte> nonce)
+        U2FDeviceInfo OnInitAnswered(FidoU2FHidMessage response, ArraySegment<byte> requestNonce)
         {
             log.Info("Initialization response received");
 
-            if (response.Data.Count < 17)
+            ArraySegment<byte> responseNonce;
+            var deviceInfo = MessageCodec.DecodeInitResponse(response.Data, out responseNonce);
+
+            if (!responseNonce.ContentEquals(requestNonce))
             {
-                throw new Exception("Answer too small");
+                throw new Exception("Invalid nonce, not an answer to our init request");
             }
 
-            var nonceAnswer = response.Data.Segment(0, INIT_NONCE_SIZE);
-            if (!nonceAnswer.ContentEquals(nonce))
-            {
-                throw new Exception("Invalid nonce, not an answer to our init");
-            }
-
-            var afterNonce = response.Data.Segment(INIT_NONCE_SIZE);
-            using (var reader = new EndianReader(afterNonce.AsStream(), Endianness.BigEndian))
-            {
-                var channel = reader.ReadUInt32();
-                var protocolVersion = reader.ReadByte();
-                var majorVersionNumber = reader.ReadByte();
-                var minorVersionNumber = reader.ReadByte();
-                var buildVersionNumber = reader.ReadByte();
-                var capabilities = (U2FDeviceCapabilities)reader.ReadByte();
-
-                var parsedResponse = new InitResponse(channel, protocolVersion, majorVersionNumber, minorVersionNumber,
-                    buildVersionNumber, capabilities);
-
-                initResponse = parsedResponse;
-
-                return parsedResponse;
-            }
+            DeviceInfo = deviceInfo;
+            return deviceInfo;
         }
 
         static readonly Random random = new Random();
 
         [NotNull]
         [ItemNotNull]
-        public Task<InitResponse> Init()
+        public Task<U2FDeviceInfo> Init()
         {
-            var nonce = new byte[INIT_NONCE_SIZE];
+            var nonce = new byte[InitNonceSize];
             
             // No need for a cryptographic random as the value is only used to distinguish between multiple potential
             // parallel requests
@@ -156,10 +112,10 @@ namespace BlackFox.U2FHid
             }
         }
 
-        public Task Wink()
+        public Task Wink(CancellationToken cancellationToken = default(CancellationToken))
         {
             var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Wink);
-            return Query(message);
+            return Query(message, cancellationToken);
         }
 
         public Task<bool> ReleaseLock()
@@ -174,7 +130,7 @@ namespace BlackFox.U2FHid
         /// 10 seconds may be set. An application requiring a longer lock has to send repeating lock commands to
         /// maintain the lock.
         /// </summary>
-        public async Task<bool> Lock(byte timeInSeconds)
+        public async Task<bool> Lock(byte timeInSeconds, CancellationToken cancellationToken = default (CancellationToken))
         {
             if (timeInSeconds > 10)
             {
@@ -184,7 +140,7 @@ namespace BlackFox.U2FHid
 
             var data = new [] { timeInSeconds }.Segment();
             var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Lock, data);
-            var response = await Query(message, false);
+            var response = await Query(message, cancellationToken, false);
             if (response.Command == U2FHidCommand.Error)
             {
                 var errorCode = GetError(response);
@@ -199,10 +155,10 @@ namespace BlackFox.U2FHid
             return true;
         }
 
-        async Task<FidoU2FHidMessage> Query(FidoU2FHidMessage query, bool throwErrors = true)
+        async Task<FidoU2FHidMessage> Query(FidoU2FHidMessage query, CancellationToken cancellationToken, bool throwErrors = true)
         {
-            await device.WriteFidoU2FHidMessageAsync(query);
-            var init = await device.ReadFidoU2FHidMessageAsync();
+            await device.WriteFidoU2FHidMessageAsync(query, cancellationToken);
+            var init = await device.ReadFidoU2FHidMessageAsync(cancellationToken);
 
             if (init.Channel != query.Channel)
             {
@@ -260,10 +216,10 @@ namespace BlackFox.U2FHid
         /// Sends a transaction to the device, which immediately echoes the same data back.
         /// This command is defined to be an uniform function for debugging, latency and performance measurements.
         /// </summary>
-        public async Task<ArraySegment<byte>> Ping(ArraySegment<byte> pingData)
+        public async Task<ArraySegment<byte>> Ping(ArraySegment<byte> pingData, CancellationToken cancellationToken = default(CancellationToken))
         {
             var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Ping, pingData);
-            var response = await Query(message);
+            var response = await Query(message, cancellationToken);
             if (!pingData.ContentEquals(response.Data))
             {
                 throw new InvalidPingResponseException("The device didn't echo back our ping message.");

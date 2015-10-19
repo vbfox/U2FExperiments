@@ -132,19 +132,16 @@ namespace BlackFox.U2FHid.Tests
             var init = InitDevice(hid, device);
 
             // Assert
-            Check.That(init).IsNotNull();
             Check.That(init.Channel).IsEqualTo(0xCAFEBABE);
             Check.That(init.ProtocolVersion).IsEqualTo((byte)1);
-            Check.That(init.MajorVersionNumber).IsEqualTo((byte)2);
-            Check.That(init.MinorVersionNumber).IsEqualTo((byte)3);
-            Check.That(init.BuildVersionNumber).IsEqualTo((byte)4);
+            Check.That(init.Version).IsEqualTo(new Version(2,3,4));
             Check.That(init.Capabilities).IsEqualTo(U2FDeviceCapabilities.Wink);
         }
 
         const uint TestChannel = 0xCAFEBABE;
         const int PacketSize = 64;
 
-        static InitResponse InitDevice(Mock<IHidDevice> hid, U2FDevice device)
+        static U2FDeviceInfo InitDevice(Mock<IHidDevice> hid, U2FDevice device)
         {
             // Setup
             var scenario = HidScenario.Build();

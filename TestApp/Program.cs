@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Threading;
 using BlackFox.Binary;
 using BlackFox.U2F.Client.impl;
 using BlackFox.U2F.Key;
@@ -301,7 +302,7 @@ namespace U2FExperiments
             var msg = new FidoU2FHidMessage(
                 (uint)(unchecked (b1 << 24 | b2 << 16 | b3 << 8 | b4)),
                 U2FHidCommand.Wink);
-            device.WriteFidoU2FHidMessageAsync(msg).Wait();
+            device.WriteFidoU2FHidMessageAsync(msg, CancellationToken.None).Wait();
 
             var caps = device.Information.Capabilities;
 

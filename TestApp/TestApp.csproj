@@ -72,6 +72,7 @@
     <Compile Include="ChallengeGenerator.cs" />
     <Compile Include="ChannelProvider.cs" />
     <Compile Include="ConsolePresenceVerifier.cs" />
+    <Compile Include="ExternalApi\RegisterRequest.cs" />
     <Compile Include="GuidKeyHandleGenerator.cs" />
     <Compile Include="GuidSessionIdGenerator.cs" />
     <Compile Include="InMemoryKeyDataStore.cs" />
@@ -132,6 +133,7 @@
       <Aliases>LoggingPcl</Aliases>
     </Reference>
   </ItemGroup>
+  <ItemGroup />
   <Choose>
     <When Condition="$(TargetFrameworkIdentifier) == '.NETFramework' And $(TargetFrameworkVersion) == 'v4.5'">
       <ItemGroup>

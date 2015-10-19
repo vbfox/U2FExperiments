@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.U2FHid.Core.RawPackets;
 using BlackFox.UsbHid;
@@ -50,7 +51,7 @@ namespace BlackFox.U2FHid.Core
             return Tuple.Create(init, continuations);
         }
 
-        public static async Task WriteFidoU2FHidMessageAsync([NotNull] this IHidDevice device, FidoU2FHidMessage message)
+        public static async Task WriteFidoU2FHidMessageAsync([NotNull] this IHidDevice device, FidoU2FHidMessage message, CancellationToken cancellationToken)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
 
@@ -60,11 +61,11 @@ namespace BlackFox.U2FHid.Core
             var packets = MakeOutputPackets(report.Data.Count, message);
             packets.Item1.WriteTo(report.Data);
             
-            await device.SendOutputReportAsync(report);
+            await device.SendOutputReportAsync(report, cancellationToken);
 
             foreach (var continuation in packets.Item2)
             {
-                await device.SendOutputReportAsync(ToOutputReport(device, continuation));
+                await device.SendOutputReportAsync(ToOutputReport(device, continuation), cancellationToken);
             }
         }
 

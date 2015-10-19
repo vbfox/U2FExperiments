@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Binary;
 using BlackFox.U2FHid.Core.RawPackets;
@@ -34,11 +35,11 @@ namespace BlackFox.U2FHid.Core
             return new FidoU2FHidMessage(init.ChannelIdentifier, (U2FHidCommand)init.CommandIdentifier, data);
         }
 
-        public static async Task<FidoU2FHidMessage> ReadFidoU2FHidMessageAsync([NotNull] this IHidDevice device)
+        public static async Task<FidoU2FHidMessage> ReadFidoU2FHidMessageAsync([NotNull] this IHidDevice device, CancellationToken cancellationToken)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
 
-            var initReport = await device.GetInputReportAsync();
+            var initReport = await device.GetInputReportAsync(cancellationToken);
             var init = InitializationPacket.ReadFrom(initReport.Data);
 
             var dataSizeReceived = init.Data.Count;
@@ -46,7 +47,7 @@ namespace BlackFox.U2FHid.Core
             byte index = 0;
             while (dataSizeReceived < init.PayloadLength)
             {
-                var continuationReport = await device.GetInputReportAsync();
+                var continuationReport = await device.GetInputReportAsync(cancellationToken);
                 var continuation = ContinuationPacket.ReadFrom(continuationReport.Data, init.PayloadLength - dataSizeReceived);
                 if (continuation.PaketSequence != index)
                 {

@@ -75,9 +75,13 @@
     <Compile Include="Core\FidoU2FHidPaketWriter.cs" />
     <Compile Include="Core\FidoU2FIdentification.cs" />
     <Compile Include="Core\InvalidSequenceNumberException.cs" />
+    <Compile Include="Core\MessageCodec.cs" />
     <Compile Include="Core\RawPackets\InvalidCommandIdentifierException.cs" />
     <Compile Include="Core\RawPackets\InvalidPacketException.cs" />
     <Compile Include="Core\RawPackets\InvalidPacketSizeException.cs" />
+    <Compile Include="Core\U2FHidConsts.cs" />
+    <Compile Include="DeviceNotInitializedException.cs" />
+    <Compile Include="U2FDeviceInfo.cs" />
     <Compile Include="Utils\EnumDescriptionAttribute.cs" />
     <Compile Include="InvalidPingResponseException.cs" />
     <Compile Include="U2FDevice.cs" />
