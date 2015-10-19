@@ -135,11 +135,11 @@ namespace BlackFox.U2F.Server.impl
                 throw new U2FException("Signature is invalid");
             }
 
-            // The first time we create the SecurityKeyData, we set the counter value to 0.
+            // The first time we create the SecurityKeyData, we set the counter value to -1.
             // We don't actually know what the counter value of the real device is - but it will
-            // be something bigger (or equal) to 0, so subsequent signatures will check out ok.
+            // be something bigger than -1, so subsequent signatures will check out ok.
             var securityKeyData = new SecurityKeyData(currentTimeInMillis, transports, keyHandle, userPublicKey,
-                attestationCertificate, 0);
+                attestationCertificate, -1);
 
             /* initial counter value */
             dataStore.AddSecurityKeyData(sessionData.AccountName, securityKeyData);

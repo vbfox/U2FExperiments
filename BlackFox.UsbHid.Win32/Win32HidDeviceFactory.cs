@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Win32.Hid;
 using BlackFox.Win32.Kernel32;
@@ -41,7 +42,7 @@ namespace BlackFox.UsbHid.Win32
             return Task.Factory.StartNew(() => (IHidDevice)FromId(deviceId, accessMode, knownInformation));
         }
 
-        Task<IHidDevice> IHidDeviceFactory.FromIdAsync(string deviceId, HidDeviceAccessMode accessMode)
+        Task<IHidDevice> IHidDeviceFactory.FromIdAsync(string deviceId, HidDeviceAccessMode accessMode, CancellationToken cancellationToken)
         {
             return FromIdAsyncInferface(deviceId, accessMode, null);
         }
@@ -57,14 +58,16 @@ namespace BlackFox.UsbHid.Win32
             return FromIdAsync(deviceId, accessMode, null);
         }
 
-        Task<ICollection<IHidDeviceInformation>> IHidDeviceFactory.FindAllAsync()
+        Task<ICollection<IHidDeviceInformation>> IHidDeviceFactory.FindAllAsync(CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(() => FindAll());
+            return Task.Factory.StartNew(() => FindAll(), cancellationToken);
         }
 
-        public Task<ICollection<Win32HidDeviceInformation>> FindAllAsync()
+        public Task<ICollection<Win32HidDeviceInformation>> FindAllAsync(CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(() => (ICollection<Win32HidDeviceInformation>)FindAll().OfType< Win32HidDeviceInformation>().ToList());
+            return Task.Factory.StartNew(
+                () => (ICollection<Win32HidDeviceInformation>)FindAll().OfType<Win32HidDeviceInformation>().ToList(),
+                cancellationToken);
         }
 
         private static ICollection<IHidDeviceInformation> FindAll()

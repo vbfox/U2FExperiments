@@ -124,7 +124,7 @@ namespace U2FExperiments
             var fidoInfo = devices.Where(FidoU2FIdentification.IsFidoU2F).First();
             using (var device = fidoInfo.OpenDeviceAsync().Result)
             {
-                var u2f = U2FDevice.OpenAsync(device, false).Result;
+                var u2f = U2FHidKey.OpenAsync(device, false).Result;
                 var key = new U2FDeviceKey(u2f);
 
                 var dataStore = new InMemoryServerDataStore(new GuidSessionIdGenerator());
@@ -218,9 +218,9 @@ namespace U2FExperiments
 
                 Console.WriteLine("Using high level API");
 
-                var u2f = new U2FDevice(device, false);
+                var u2f = new U2FHidKey(device, false);
 
-                var init = u2f.Init().Result;
+                var init = u2f.InitAsync().Result;
 
                 var pongShort = u2f.Ping(Encoding.UTF8.GetBytes("Pong !!").Segment()).Result;
                 WriteBuffer(pongShort);
@@ -236,7 +236,7 @@ namespace U2FExperiments
                 if (init.Capabilities.HasFlag(U2FDeviceCapabilities.Wink))
                 {
                     Console.WriteLine("Winking");
-                    u2f.Wink().Wait();
+                    u2f.WinkAsync().Wait();
                 }
                 Console.ReadLine();
             }

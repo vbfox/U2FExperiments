@@ -13,8 +13,6 @@ namespace U2FExperiments.ExternalApi
         public U2FVersion Version { get; }
         public ArraySegment<byte> Challenge { get; }
         public string ApplicationId { get; }
-
-
     }
 
     internal class RegisterResponse
@@ -52,5 +50,21 @@ namespace U2FExperiments.ExternalApi
         Task<SignResponse> SignAsync(
             [NotNull, ItemNotNull] ICollection<SignRequest> signRequests,
             TimeSpan? timeout = null);
+    }
+
+    internal class GnubbyApi: IGnubbyApi
+    {
+        public Task<RegisterResponse> RegisterAsync(ICollection<RegisterRequest> registerRequests, ICollection<SignRequest> signRequests, TimeSpan? timeout = null)
+        {
+            // 1. Get All devices present
+            // 2. Ask all of them to sign each of the signRequests
+            // 3. 
+            throw new NotImplementedException();
+        }
+
+        public Task<SignResponse> SignAsync(ICollection<SignRequest> signRequests, TimeSpan? timeout = null)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

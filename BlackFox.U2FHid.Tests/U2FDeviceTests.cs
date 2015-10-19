@@ -28,13 +28,13 @@ namespace BlackFox.U2FHid.Tests
             scenario.Read(() => new HidInputReport(BuildInitPacket(TestChannel, U2FHidCommand.Wink)));
 
             var hid = CreateHidMock();
-            var device = new U2FDevice(hid.Object, false);
+            var device = new U2FHidKey(hid.Object, false);
             InitDevice(hid, device);
 
             scenario.Run(hid);
 
             // Act
-            device.Wink().Wait();
+            device.WinkAsync().Wait();
 
             // Assert
             scenario.End();
@@ -57,7 +57,7 @@ namespace BlackFox.U2FHid.Tests
             scenario.Read(() => new HidInputReport(BuildInitPacket(TestChannel, U2FHidCommand.Ping, holder)));
 
             var hid = CreateHidMock();
-            var device = new U2FDevice(hid.Object, false);
+            var device = new U2FHidKey(hid.Object, false);
             InitDevice(hid, device);
 
             scenario.Run(hid);
@@ -79,7 +79,7 @@ namespace BlackFox.U2FHid.Tests
             scenario.Read(() => new HidInputReport(BuildInitPacket(TestChannel, U2FHidCommand.Ping, pingData)));
 
             var hid = CreateHidMock();
-            var device = new U2FDevice(hid.Object, false);
+            var device = new U2FHidKey(hid.Object, false);
             InitDevice(hid, device);
 
             scenario.Run(hid);
@@ -108,7 +108,7 @@ namespace BlackFox.U2FHid.Tests
             scenario.Read(() => new HidInputReport(BuildContinuationPacket(TestChannel, 0, writeContData)));
 
             var hid = CreateHidMock();
-            var device = new U2FDevice(hid.Object, false);
+            var device = new U2FHidKey(hid.Object, false);
             InitDevice(hid, device);
 
             scenario.Run(hid);
@@ -126,7 +126,7 @@ namespace BlackFox.U2FHid.Tests
         {
             // Setup
             var hid = CreateHidMock();
-            var device = new U2FDevice(hid.Object, false);
+            var device = new U2FHidKey(hid.Object, false);
 
             // Act
             var init = InitDevice(hid, device);
@@ -141,7 +141,7 @@ namespace BlackFox.U2FHid.Tests
         const uint TestChannel = 0xCAFEBABE;
         const int PacketSize = 64;
 
-        static U2FDeviceInfo InitDevice(Mock<IHidDevice> hid, U2FDevice device)
+        static U2FHidDeviceInfo InitDevice(Mock<IHidDevice> hid, U2FHidKey device)
         {
             // Setup
             var scenario = HidScenario.Build();
@@ -159,7 +159,7 @@ namespace BlackFox.U2FHid.Tests
                 (byte)U2FDeviceCapabilities.Wink)));
 
             scenario.Run(hid);
-            var init = device.Init().Result;
+            var init = device.InitAsync().Result;
             scenario.End();
             return init;
         }

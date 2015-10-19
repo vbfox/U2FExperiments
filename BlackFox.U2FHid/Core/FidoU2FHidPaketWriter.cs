@@ -51,7 +51,8 @@ namespace BlackFox.U2FHid.Core
             return Tuple.Create(init, continuations);
         }
 
-        public static async Task WriteFidoU2FHidMessageAsync([NotNull] this IHidDevice device, FidoU2FHidMessage message, CancellationToken cancellationToken)
+        public static async Task WriteFidoU2FHidMessageAsync([NotNull] this IHidDevice device,
+            FidoU2FHidMessage message, CancellationToken cancellationToken)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
 

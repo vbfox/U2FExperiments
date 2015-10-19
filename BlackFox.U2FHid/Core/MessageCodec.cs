@@ -6,7 +6,7 @@ namespace BlackFox.U2FHid.Core
 {
     public static class MessageCodec
     {
-        public static U2FDeviceInfo DecodeInitResponse(ArraySegment<byte> raw, out ArraySegment<byte> nonce)
+        public static U2FHidDeviceInfo DecodeInitResponse(ArraySegment<byte> raw, out ArraySegment<byte> nonce)
         {
             if (raw.Count < 17)
             {
@@ -26,9 +26,7 @@ namespace BlackFox.U2FHid.Core
                 var capabilities = (U2FDeviceCapabilities)reader.ReadByte();
 
                 var version = new Version(majorVersionNumber, minorVersionNumber, buildVersionNumber);
-                var parsedResponse = new U2FDeviceInfo(channel, protocolVersion, version, capabilities);
-
-                return parsedResponse;
+                return new U2FHidDeviceInfo(channel, protocolVersion, version, capabilities);
             }
         }
     }

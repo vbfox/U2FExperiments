@@ -27,12 +27,12 @@ namespace BlackFox.U2FHid
 
         [NotNull]
         [ItemNotNull]
-        async Task<U2FDevice> OpenDeviceAsync()
+        async Task<U2FHidKey> OpenDeviceAsync()
         {
             var hidDevice = await info.OpenDeviceAsync();
             try
             {
-                return await U2FDevice.OpenAsync(hidDevice);
+                return await U2FHidKey.OpenAsync(hidDevice);
             }
             catch
             {

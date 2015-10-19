@@ -37,6 +37,10 @@
   </PropertyGroup>
   <ItemGroup>
     <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\BlackFox.U2F\BlackFox.U2F.csproj">
+      <Project>{029ad986-b1c8-4713-aac6-783761e8d042}</Project>
+      <Name>BlackFox.U2F</Name>
+    </ProjectReference>
     <ProjectReference Include="..\BlackFox.UsbHid\BlackFox.UsbHid.csproj">
       <Project>{9326377b-a51a-4cf4-b0f3-4a82060c419c}</Project>
       <Name>BlackFox.UsbHid</Name>
@@ -81,10 +85,12 @@
     <Compile Include="Core\RawPackets\InvalidPacketSizeException.cs" />
     <Compile Include="Core\U2FHidConsts.cs" />
     <Compile Include="DeviceNotInitializedException.cs" />
-    <Compile Include="U2FDeviceInfo.cs" />
+    <Compile Include="U2FHidDeviceInfo.cs" />
+    <Compile Include="U2FHidKeyFactory.cs" />
+    <Compile Include="U2FHidKeyId.cs" />
     <Compile Include="Utils\EnumDescriptionAttribute.cs" />
     <Compile Include="InvalidPingResponseException.cs" />
-    <Compile Include="U2FDevice.cs" />
+    <Compile Include="U2FHidKey.cs" />
     <Compile Include="FidoU2FDeviceInformation.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Core\RawPackets\ContinuationPacket.cs" />

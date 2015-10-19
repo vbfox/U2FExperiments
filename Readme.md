@@ -7,7 +7,7 @@ factor specifications in C#.
 Multiple libraries exists for the client-to-server communication parts but
 there is no good library to communicate with keys connected locally via USB.
 
-Port of the Google Reference code has initially be done using
+Port of the [Google Reference code][RefCode] has initially be done using
 [Sharpen][Sharpen] + [Sharpen.Runtime][SharpenRuntime].
 
 Things to try
@@ -23,8 +23,12 @@ I might also experiment with :
 
 Other FIDO U2F Projects in .Net :
 
-* https://github.com/hanswolff/fido-u2f-net MIT, Client only
-* https://github.com/matsprea/AspNetIdentity_U2F/tree/master/U2F Apache License, Full port of the official Google code
+* [FIDO U2F.Net](https://github.com/hanswolff/fido-u2f-net) MIT, Client only
+* [AspNetIdentity_U2F](https://github.com/matsprea/AspNetIdentity_U2F/tree/master/U2F)
+  Apache License, Full port of the official Google code
+
+In other languages :
+* [Yubico Java server](https://github.com/Yubico/java-u2flib-server)
 
 Warning
 -------
@@ -37,3 +41,4 @@ to be. I'm just playing with low level APIs.**
 [Windows10Hid]: https://msdn.microsoft.com/en-us/library/windows/hardware/windows.devices.humaninterfacedevice.aspx
 [Sharpen]: https://github.com/mono/sharpen
 [SharpenRuntime]: https://github.com/hazzik/Sharpen.Runtime
+[RefCode]: https://github.com/google/u2f-ref-code

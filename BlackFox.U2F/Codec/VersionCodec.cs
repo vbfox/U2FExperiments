@@ -1,21 +1,22 @@
-using System;
-
 namespace BlackFox.U2F.Codec
 {
     public static class VersionCodec
     {
-        public static U2FVersion DecodeVersion(string version)
+        public static bool TryDecodeVersion(string version, out U2FVersion parsedVersion)
         {
             switch (version)
             {
                 case U2FConsts.U2Fv1:
-                    return U2FVersion.V1;
+                    parsedVersion = U2FVersion.V1;
+                    return true;
 
                 case U2FConsts.U2Fv2:
-                    return U2FVersion.V2;
+                    parsedVersion = U2FVersion.V2;
+                    return true;
 
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(version), version, "Unknown U2F version");
+                    parsedVersion = default(U2FVersion);
+                    return false;
             }
         }
     }

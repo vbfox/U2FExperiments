@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Binary;
+using BlackFox.U2F.Gnubby;
 using BlackFox.U2FHid.Core;
 using BlackFox.U2FHid.Utils;
 using BlackFox.UsbHid;
@@ -14,18 +15,18 @@ using static BlackFox.U2FHid.Core.U2FHidConsts;
 
 namespace BlackFox.U2FHid
 {
-    public class U2FDevice : IDisposable
+    public class U2FHidKey : U2FApduKey
     {
         static readonly ILog log = LogManager.GetLogger(typeof(FidoU2FHidPaketWriter));
 
-        public U2FDeviceInfo? DeviceInfo { get; private set; }
+        public U2FHidDeviceInfo? DeviceInfo { get; private set; }
 
         [NotNull]
         private readonly IHidDevice device;
 
         readonly bool closeDeviceOnDispose;
 
-        public U2FDevice([NotNull] IHidDevice device, bool closeDeviceOnDispose)
+        public U2FHidKey([NotNull] IHidDevice device, bool closeDeviceOnDispose)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
 
@@ -38,18 +39,27 @@ namespace BlackFox.U2FHid
             return DeviceInfo?.Channel ?? BroadcastChannel;
         }
 
+        protected override void Dispose(bool disposing)
+        {
+            if (closeDeviceOnDispose)
+            {
+                device.Dispose();
+            }
+        }
+
         [NotNull]
         [ItemNotNull]
-        public async Task<ArraySegment<byte>> SendU2FMessage(ArraySegment<byte> message, CancellationToken cancellationToken = default(CancellationToken))
+        protected override async Task<ArraySegment<byte>> QueryAsync(ArraySegment<byte> message,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
             var fidoMessage = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Message, message);
-            var response = await Query(fidoMessage, cancellationToken);
+            var response = await QueryLowLevelAsync(fidoMessage, cancellationToken);
             return response.Data;
         }
 
         [NotNull]
         [ItemNotNull]
-        public async Task<U2FDeviceInfo> Init(ArraySegment<byte> nonce, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<U2FHidDeviceInfo> InitAsync(ArraySegment<byte> nonce, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (nonce.Count != InitNonceSize)
             {
@@ -60,11 +70,11 @@ namespace BlackFox.U2FHid
 
             log.Info("Sending initialization");
             var message = new FidoU2FHidMessage(BroadcastChannel, U2FHidCommand.Init, nonce);
-            var answer = await Query(message, cancellationToken);
+            var answer = await QueryLowLevelAsync(message, cancellationToken);
             return OnInitAnswered(answer, nonce);
         }
 
-        U2FDeviceInfo OnInitAnswered(FidoU2FHidMessage response, ArraySegment<byte> requestNonce)
+        U2FHidDeviceInfo OnInitAnswered(FidoU2FHidMessage response, ArraySegment<byte> requestNonce)
         {
             log.Info("Initialization response received");
 
@@ -84,7 +94,7 @@ namespace BlackFox.U2FHid
 
         [NotNull]
         [ItemNotNull]
-        public Task<U2FDeviceInfo> Init()
+        public Task<U2FHidDeviceInfo> InitAsync()
         {
             var nonce = new byte[InitNonceSize];
             
@@ -92,17 +102,17 @@ namespace BlackFox.U2FHid
             // parallel requests
             random.NextBytes(nonce);
 
-            return Init(nonce.Segment());
+            return InitAsync(nonce.Segment());
         }
 
-        public static async Task<U2FDevice> OpenAsync([NotNull] IHidDevice device, bool closeDeviceOnDispose = true)
+        public static async Task<U2FHidKey> OpenAsync([NotNull] IHidDevice device, bool closeDeviceOnDispose = true)
         {
             if (device == null) throw new ArgumentNullException(nameof(device));
 
-            var instance = new U2FDevice(device, closeDeviceOnDispose);
+            var instance = new U2FHidKey(device, closeDeviceOnDispose);
             try
             {
-                await instance.Init();
+                await instance.InitAsync();
                 return instance;
             }
             catch
@@ -112,15 +122,15 @@ namespace BlackFox.U2FHid
             }
         }
 
-        public Task Wink(CancellationToken cancellationToken = default(CancellationToken))
+        public Task WinkAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
             var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Wink);
-            return Query(message, cancellationToken);
+            return QueryLowLevelAsync(message, cancellationToken);
         }
 
-        public Task<bool> ReleaseLock()
+        public Task<bool> ReleaseLockAsync()
         {
-            return Lock(0);
+            return LockAsync(0);
         }
 
         /// <summary>
@@ -130,7 +140,7 @@ namespace BlackFox.U2FHid
         /// 10 seconds may be set. An application requiring a longer lock has to send repeating lock commands to
         /// maintain the lock.
         /// </summary>
-        public async Task<bool> Lock(byte timeInSeconds, CancellationToken cancellationToken = default (CancellationToken))
+        public async Task<bool> LockAsync(byte timeInSeconds, CancellationToken cancellationToken = default (CancellationToken))
         {
             if (timeInSeconds > 10)
             {
@@ -140,7 +150,7 @@ namespace BlackFox.U2FHid
 
             var data = new [] { timeInSeconds }.Segment();
             var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Lock, data);
-            var response = await Query(message, cancellationToken, false);
+            var response = await QueryLowLevelAsync(message, cancellationToken, false);
             if (response.Command == U2FHidCommand.Error)
             {
                 var errorCode = GetError(response);
@@ -155,7 +165,7 @@ namespace BlackFox.U2FHid
             return true;
         }
 
-        async Task<FidoU2FHidMessage> Query(FidoU2FHidMessage query, CancellationToken cancellationToken, bool throwErrors = true)
+        async Task<FidoU2FHidMessage> QueryLowLevelAsync(FidoU2FHidMessage query, CancellationToken cancellationToken, bool throwErrors = true)
         {
             await device.WriteFidoU2FHidMessageAsync(query, cancellationToken);
             var init = await device.ReadFidoU2FHidMessageAsync(cancellationToken);
@@ -219,21 +229,13 @@ namespace BlackFox.U2FHid
         public async Task<ArraySegment<byte>> Ping(ArraySegment<byte> pingData, CancellationToken cancellationToken = default(CancellationToken))
         {
             var message = new FidoU2FHidMessage(GetChannel(), U2FHidCommand.Ping, pingData);
-            var response = await Query(message, cancellationToken);
+            var response = await QueryLowLevelAsync(message, cancellationToken);
             if (!pingData.ContentEquals(response.Data))
             {
                 throw new InvalidPingResponseException("The device didn't echo back our ping message.");
             }
 
             return response.Data;
-        }
-
-        public void Dispose()
-        {
-            if (closeDeviceOnDispose)
-            {
-                device.Dispose();
-            }
         }
     }
 }

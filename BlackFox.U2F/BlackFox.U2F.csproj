@@ -49,6 +49,9 @@
     <Compile Include="..\BlackFox.BinaryUtils\EmptyArray.cs">
       <Link>Utils\EmptyArray.cs</Link>
     </Compile>
+    <Compile Include="..\BlackFox.BinaryUtils\EmptyArraySegment.cs">
+      <Link>Utils\EmptyArraySegment.cs</Link>
+    </Compile>
     <Compile Include="..\BlackFox.BinaryUtils\EndianessHelpers.cs">
       <Link>Utils\EndianessHelpers.cs</Link>
     </Compile>
@@ -75,9 +78,18 @@
     <Compile Include="Codec\ApduResponse.cs" />
     <Compile Include="Codec\ApduResponseStatus.cs" />
     <Compile Include="Codec\ClientDataCodec.cs" />
+    <Compile Include="Codec\ApduMessageCodec.cs" />
     <Compile Include="Codec\RawMessageCodec.cs" />
     <Compile Include="Codec\SerialCodec.cs" />
     <Compile Include="Codec\VersionCodec.cs" />
+    <Compile Include="Gnubby\IKey.cs" />
+    <Compile Include="Gnubby\IKeyFactory.cs" />
+    <Compile Include="Gnubby\IKeyId.cs" />
+    <Compile Include="Gnubby\InteractionFlags.cs" />
+    <Compile Include="Gnubby\KeyResponse.cs" />
+    <Compile Include="Gnubby\KeyResponseStatus.cs" />
+    <Compile Include="Gnubby\U2FApduKey.cs" />
+    <Compile Include="Gnubby\KeyRequest.cs" />
     <Compile Include="Key\ECKeyPair.cs" />
     <Compile Include="Key\IKeyCrypto.cs" />
     <Compile Include="Key\IKeyDataStore.cs" />
