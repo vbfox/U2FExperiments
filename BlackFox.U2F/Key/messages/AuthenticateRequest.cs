@@ -8,8 +8,11 @@ namespace BlackFox.U2F.Key.messages
 
         public const byte UserPresenceSign = 0x03;
 
-        public AuthenticateRequest(byte control, byte[] challengeSha256, byte[] applicationSha256, byte[] keyHandle)
+        public U2FVersion Version { get; }
+
+        public AuthenticateRequest(U2FVersion version, byte control, byte[] challengeSha256, byte[] applicationSha256, byte[] keyHandle)
         {
+            Version = version;
             Control = control;
             ChallengeSha256 = challengeSha256;
             ApplicationSha256 = applicationSha256;

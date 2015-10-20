@@ -67,6 +67,11 @@ namespace BlackFox.U2F.Gnubby
             return ApduMessageCodec.DecodeVersionResponse(response);
         }
 
+        public Task SyncAsync()
+        {
+            throw new NotImplementedException();
+        }
+
         protected abstract void Dispose(bool disposing);
 
         protected abstract Task<ArraySegment<byte>> QueryAsync(ArraySegment<byte> request,

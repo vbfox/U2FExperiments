@@ -44,6 +44,7 @@ namespace BlackFox.U2F.Server.data
         /// <summary>When these keys were created/enrolled with the relying party.</summary>
         public long EnrollmentTime { get; }
 
+        [CanBeNull]
         public IList<SecurityKeyDataTransports> Transports { get; }
         public byte[] KeyHandle { get; }
         public byte[] PublicKey { get; }

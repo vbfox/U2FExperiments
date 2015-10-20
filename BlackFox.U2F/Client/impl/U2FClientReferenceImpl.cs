@@ -72,7 +72,7 @@ namespace BlackFox.U2F.Client.impl
             var appIdSha256 = crypto.ComputeSha256(appId);
             var keyHandle = WebSafeBase64Converter.FromBase64String(keyHandleBase64);
             var authenticateResponse =
-                key.Authenticate(new AuthenticateRequest(UserPresenceVerifierConstants.UserPresentFlag, clientDataSha256,
+                key.Authenticate(new AuthenticateRequest(U2FVersion.V2, UserPresenceVerifierConstants.UserPresentFlag, clientDataSha256,
                     appIdSha256, keyHandle));
             var rawAuthenticateResponse = RawMessageCodec.EncodeAuthenticateResponse(authenticateResponse);
             var rawAuthenticateResponse64 = WebSafeBase64Converter.ToBase64String(rawAuthenticateResponse);

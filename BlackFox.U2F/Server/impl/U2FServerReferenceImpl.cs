@@ -50,8 +50,7 @@ namespace BlackFox.U2F.Server.impl
             allowedOrigins = CanonicalizeOrigins(origins);
         }
 
-        public RegistrationRequest GetRegistrationRequest
-            (string accountName, string appId)
+        public RegistrationRequest GetRegistrationRequest(string accountName, string appId)
         {
             log.Info(">> getRegistrationRequest " + accountName);
 

@@ -118,6 +118,14 @@ namespace U2FExperiments
             }
         }
 
+        static void LoadDataStore(InMemoryServerDataStore dataStore)
+        {
+            using (var stream = File.OpenRead(dataStorePath))
+            {
+                dataStore.LoadFromStream(stream);
+            }
+        }
+
         private static async Task TestDual()
         {
             var hidFactory = Win32HidDeviceFactory.Instance;
@@ -143,8 +151,9 @@ namespace U2FExperiments
                     key,
                     SystemClock.Instance);
 
-                client.Register("http://example.com", "vbfox");
-                SaveDataStore(dataStore);
+                LoadDataStore(dataStore);
+                //client.Register("http://example.com", "vbfox");
+                //SaveDataStore(dataStore);
 
                 client.Authenticate("http://example.com", "vbfox");
                 SaveDataStore(dataStore);

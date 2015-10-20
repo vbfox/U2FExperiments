@@ -76,7 +76,7 @@ namespace BlackFox.U2F.Tests.Codec
 		public virtual void TestEncodeAuthenticateRequest()
 		{
 			AuthenticateRequest authenticateRequest = new AuthenticateRequest
-				(AuthenticateRequest.UserPresenceSign, BROWSER_DATA_SIGN_SHA256
+				(U2FVersion.V2, AuthenticateRequest.UserPresenceSign, BROWSER_DATA_SIGN_SHA256
 				, APP_ID_SIGN_SHA256, KEY_HANDLE);
 			byte[] encodedBytes = RawMessageCodec.EncodeAuthenticateRequest
 				(authenticateRequest, U2FVersion.V2);
@@ -90,7 +90,7 @@ namespace BlackFox.U2F.Tests.Codec
 			AuthenticateRequest authenticateRequest = RawMessageCodec
 				.DecodeAuthenticateRequest(SIGN_REQUEST_DATA);
 			Assert.AreEqual(new AuthenticateRequest
-				(AuthenticateRequest.UserPresenceSign, BROWSER_DATA_SIGN_SHA256
+				(U2FVersion.V2, AuthenticateRequest.UserPresenceSign, BROWSER_DATA_SIGN_SHA256
 				, APP_ID_SIGN_SHA256, KEY_HANDLE), authenticateRequest);
 		}
 

@@ -68,7 +68,7 @@ namespace BlackFox.U2F.Tests.Client
 		    mockU2FServer.Setup(x => x.GetSignRequest(ACCOUNT_NAME, ORIGIN))
 		        .Returns(new[] { signRequest });
 		    mockOriginVerifier.Setup(x => x.ValidateOrigin(APP_ID_SIGN, ORIGIN));
-            mockU2FKey.Setup(x => x.Authenticate(new AuthenticateRequest(UserPresenceVerifierConstants.UserPresentFlag, BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE)))
+            mockU2FKey.Setup(x => x.Authenticate(new AuthenticateRequest(U2FVersion.V2, UserPresenceVerifierConstants.UserPresentFlag, BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE)))
                 .Returns(new AuthenticateResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE));
             mockU2FServer.Setup(x => x.ProcessSignResponse(new SignResponse
                 (BROWSER_DATA_SIGN_BASE64, SIGN_RESPONSE_DATA_BASE64, SERVER_CHALLENGE_SIGN_BASE64

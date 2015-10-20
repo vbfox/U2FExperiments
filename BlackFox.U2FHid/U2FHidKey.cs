@@ -17,7 +17,7 @@ namespace BlackFox.U2FHid
 {
     public class U2FHidKey : U2FApduKey
     {
-        static readonly ILog log = LogManager.GetLogger(typeof(FidoU2FHidPaketWriter));
+        static readonly ILog log = LogManager.GetLogger(typeof(U2FHidKey));
 
         public U2FHidDeviceInfo? DeviceInfo { get; private set; }
 

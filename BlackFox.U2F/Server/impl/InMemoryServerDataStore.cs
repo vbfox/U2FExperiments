@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using BlackFox.U2F.Server.data;
 using JetBrains.Annotations;
 using Newtonsoft.Json;
@@ -102,14 +103,18 @@ namespace BlackFox.U2F.Server.impl
                 foreach (var keyData in key.Value)
                 {
                     var attestationCert = keyData.AttestationCertificate.GetEncoded();
+                    var transports = keyData.Transports?.Select(t => (object) t.ToString()).ToArray();
+
                     var keyDataJson = new JObject
                     {
                         ["enrollmentTime"] = keyData.EnrollmentTime,
                         ["keyHandle"] = WebSafeBase64Converter.ToBase64String(keyData.KeyHandle),
                         ["publicKey"] = WebSafeBase64Converter.ToBase64String(keyData.PublicKey),
                         ["attestationCert"] = WebSafeBase64Converter.ToBase64String(attestationCert),
-                        ["counter"] = keyData.Counter
+                        ["counter"] = keyData.Counter,
+                        ["transports"] = transports != null ? new JArray(transports) : null
                     };
+                    
                     keyDatas.Add(keyDataJson);
                 }
                 keys[key.Key] = keyDatas;
@@ -117,6 +122,43 @@ namespace BlackFox.U2F.Server.impl
             result["keys"] = keys;
 
             return result;
+        }
+
+        private void LoadFromJson(JObject json)
+        {
+            securityKeyDataBase.Clear();
+
+            var keys = json.GetValue("keys") as JObject ?? new JObject();
+            foreach (var pair in keys)
+            {
+                var accountName = pair.Key;
+                var keyDatas = pair.Value;
+
+                foreach (var keyData in keyDatas)
+                {
+                    var enrollmentTime = (long) keyData["enrollmentTime"];
+                    var keyHandle = WebSafeBase64Converter.FromBase64String((string) keyData["keyHandle"]);
+                    var publicKey = WebSafeBase64Converter.FromBase64String((string) keyData["publicKey"]);
+                    var attestationCertBytes =
+                        WebSafeBase64Converter.FromBase64String((string) keyData["attestationCert"]);
+                    var attestationCert = new X509CertificateParser().ReadCertificate(attestationCertBytes);
+                    var counter = (int) keyData["counter"];
+                    var transportToken = keyData["transports"];
+                    List<SecurityKeyDataTransports> transports = null;
+                    if (transportToken.Type != JTokenType.Null)
+                    {
+                        var transportsArray = (JArray) transportToken;
+                        transports = transportsArray
+                            .Select(o => (string) o)
+                            .Select(
+                                s => (SecurityKeyDataTransports) Enum.Parse(typeof (SecurityKeyDataTransports), s, true))
+                            .ToList();
+                    }
+                    var securityKeyData = new SecurityKeyData(enrollmentTime, transports, keyHandle, publicKey,
+                        attestationCert, counter);
+                    AddSecurityKeyData(accountName, securityKeyData);
+                }
+            }
         }
 
         public void SaveToStream([NotNull] Stream stream)
@@ -130,6 +172,20 @@ namespace BlackFox.U2F.Server.impl
             {
                 writer.Formatting = Formatting.Indented;
                 SaveToJson().WriteTo(writer);
+            }
+        }
+
+        public void LoadFromStream([NotNull] Stream stream)
+        {
+            if (stream == null)
+            {
+                throw new ArgumentNullException(nameof(stream));
+            }
+
+            using (var reader = new JsonTextReader(new StreamReader(stream)))
+            {
+                var json = JObject.Load(reader);
+                LoadFromJson(json);
             }
         }
     }
