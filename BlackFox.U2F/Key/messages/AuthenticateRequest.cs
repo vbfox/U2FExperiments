@@ -2,29 +2,20 @@ using System.Linq;
 
 namespace BlackFox.U2F.Key.messages
 {
+    /// <summary>
+    /// Request the key to sign the provided info with the key-pair corresponding to the keyHandle.
+    /// </summary>
     public class AuthenticateRequest : IU2FRequest
     {
-        public const byte CheckOnly = 0x07;
-
-        public const byte UserPresenceSign = 0x03;
-
         public U2FVersion Version { get; }
 
-        public AuthenticateRequest(U2FVersion version, byte control, byte[] challengeSha256, byte[] applicationSha256, byte[] keyHandle)
+        public AuthenticateRequest(U2FVersion version, byte[] challengeSha256, byte[] applicationSha256, byte[] keyHandle)
         {
             Version = version;
-            Control = control;
             ChallengeSha256 = challengeSha256;
             ApplicationSha256 = applicationSha256;
             KeyHandle = keyHandle;
         }
-
-        /// <summary>
-        ///     The FIDO Client will set the control byte to one of the following values:
-        ///     0x07 ("check-only")
-        ///     0x03 ("enforce-user-presence-and-sign")
-        /// </summary>
-        public byte Control { get; }
 
         /// <summary>
         ///     The challenge parameter is the SHA-256 hash of the Client Data, a
@@ -50,7 +41,7 @@ namespace BlackFox.U2F.Key.messages
 
         protected bool Equals(AuthenticateRequest other)
         {
-            return Control == other.Control && ChallengeSha256.SequenceEqual(other.ChallengeSha256) &&
+            return ChallengeSha256.SequenceEqual(other.ChallengeSha256) &&
                    ApplicationSha256.SequenceEqual(other.ApplicationSha256) && KeyHandle.SequenceEqual(other.KeyHandle);
         }
 
@@ -75,7 +66,7 @@ namespace BlackFox.U2F.Key.messages
         {
             unchecked
             {
-                var hashCode = Control.GetHashCode();
+                var hashCode = 0;
                 hashCode = (hashCode*397) ^ (ChallengeSha256 != null ? ChallengeSha256.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ (ApplicationSha256 != null ? ApplicationSha256.GetHashCode() : 0);
                 hashCode = (hashCode*397) ^ (KeyHandle != null ? KeyHandle.GetHashCode() : 0);

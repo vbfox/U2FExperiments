@@ -81,7 +81,7 @@ namespace BlackFox.U2F.Client.impl
             var clientDataSha256 = crypto.ComputeSha256(clientData);
             var appIdSha256 = crypto.ComputeSha256(signRequest.AppId);
             var keyHandle = WebSafeBase64Converter.FromBase64String(signRequest.KeyHandle);
-            return new AuthenticateRequest(U2FVersion.V2, UserPresenceVerifierConstants.UserPresentFlag,
+            return new AuthenticateRequest(U2FVersion.V2,
                 clientDataSha256, appIdSha256, keyHandle);
         }
     }

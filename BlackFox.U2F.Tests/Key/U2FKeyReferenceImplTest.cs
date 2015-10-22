@@ -71,7 +71,7 @@ namespace BlackFox.U2F.Tests.Key
         [Test]
         public virtual void TestAuthenticate()
         {
-            var authenticateRequest = new AuthenticateRequest(U2FVersion.V2, AuthenticateRequest.UserPresenceSign,
+            var authenticateRequest = new AuthenticateRequest(U2FVersion.V2,
                 BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE);
             var authenticateResponse = u2FKey.Authenticate(authenticateRequest);
 

@@ -203,7 +203,7 @@ namespace BlackFox.U2F.Codec
                     {
                         throw new U2FException("Message ends with unexpected data");
                     }
-                    return new AuthenticateRequest(U2FVersion.V2, controlByte, challengeSha256, appIdSha256, keyHandle);
+                    return new AuthenticateRequest(U2FVersion.V2, challengeSha256, appIdSha256, keyHandle);
                 }
             }
             catch (IOException e)

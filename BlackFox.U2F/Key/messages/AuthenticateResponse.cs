@@ -2,6 +2,9 @@ using System.Linq;
 
 namespace BlackFox.U2F.Key.messages
 {
+    /// <summary>
+    /// Response sent by the key when an <see cref="AuthenticateRequest"/> is accepted and a signature is generated.
+    /// </summary>
     public class AuthenticateResponse : IU2FResponse
     {
         public AuthenticateResponse(byte userPresence, int counter, byte[] signature)

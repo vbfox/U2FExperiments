@@ -118,13 +118,11 @@ namespace BlackFox.U2F.Key.impl
 
             log.Info(">> authenticate");
 
-            var control = authenticateRequest.Control;
             var applicationSha256 = authenticateRequest.ApplicationSha256;
             var challengeSha256 = authenticateRequest.ChallengeSha256;
             var keyHandle = authenticateRequest.KeyHandle;
 
             log.Info(" -- Inputs --");
-            log.Info("  control: " + control);
             log.Info("  applicationSha256: " + applicationSha256.ToHexString());
             log.Info("  challengeSha256: " + challengeSha256.ToHexString());
             log.Info("  keyHandle: " + keyHandle.ToHexString());
