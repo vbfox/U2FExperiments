@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.U2F;
@@ -14,6 +13,30 @@ using ILog = Common.Logging.ILog;
 
 namespace U2FExperiments.Tmp
 {
+    internal struct SignerResult
+    {
+        public bool IsSuccess { get; }
+        public AuthenticateRequest Request { get; }
+        public AuthenticateResponse Response { get; }
+
+        private SignerResult(bool isSuccess, AuthenticateRequest request, AuthenticateResponse response)
+        {
+            IsSuccess = isSuccess;
+            Request = request;
+            Response = response;
+        }
+
+        public static SignerResult Success(AuthenticateRequest request, AuthenticateResponse response)
+        {
+            return new SignerResult(true, request, response);
+        }
+
+        public static SignerResult Failure()
+        {
+            return  new SignerResult(false, null, null);
+        }
+    }
+
     class SingleSigner
     {
         private static readonly TimeSpan timeBetweenChecks = TimeSpan.FromSeconds(1);
@@ -35,7 +58,7 @@ namespace U2FExperiments.Tmp
             Requests = requests;
         }
 
-        public async Task<AuthenticateResponse> Sign(CancellationToken cancellationToken)
+        public async Task<SignerResult> Sign(CancellationToken cancellationToken)
         {
             using (var key = await OpenKeyAsync(cancellationToken))
             {
@@ -64,7 +87,7 @@ namespace U2FExperiments.Tmp
                                     break;
 
                                 case KeyResponseStatus.Success:
-                                    return result.Data;
+                                    return SignerResult.Success(request, result.Data);
                             }
                         }
                         catch (KeyGoneException)
@@ -88,7 +111,7 @@ namespace U2FExperiments.Tmp
                     }
                     if (challengesTried == 0)
                     {
-                        return null;
+                        return SignerResult.Failure();
                     }
 
                     if (!firstPass)

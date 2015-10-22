@@ -80,7 +80,8 @@ namespace BlackFox.U2F.Server.data
                 .AppendFormat("counter: {0}\n", Counter)
                 .AppendFormat("attestation certificate:\n")
                 .Append(SafeCertificateToString(AttestationCertificate))
-                .AppendFormat("transports: {0}\n", Transports == null ? "" : string.Join(", ", Transports.Select(t => t.ToString())))
+                .Append("\n")
+                .AppendFormat("transports: {0}\n", Transports == null ? "(null)" : string.Join(", ", Transports.Select(t => t.ToString())))
                 .ToString();
         }
 

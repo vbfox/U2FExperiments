@@ -30,6 +30,8 @@ namespace BlackFox.U2F.Key.messages
         /// <summary>This is a ECDSA signature (on P-256)</summary>
         public byte[] Signature { get; }
 
+        
+
         protected bool Equals(AuthenticateResponse other)
         {
             return UserPresence == other.UserPresence && Counter == other.Counter &&

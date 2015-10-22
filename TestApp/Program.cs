@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Binary;
+using BlackFox.U2F;
 using BlackFox.U2F.Client.impl;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Gnubby;
@@ -153,9 +154,9 @@ namespace U2FExperiments
             {
                 public IKeyId KeyId { get; }
                 public SingleSigner SingleSigner { get; }
-                public Task<AuthenticateResponse> Task { get; }
+                public Task<SignerResult> Task { get; }
 
-                public SingleSignerInfo(IKeyId keyId, SingleSigner singleSigner, Task<AuthenticateResponse> task)
+                public SingleSignerInfo(IKeyId keyId, SingleSigner singleSigner, Task<SignerResult> task)
                 {
                     KeyId = keyId;
                     SingleSigner = singleSigner;
@@ -174,13 +175,13 @@ namespace U2FExperiments
 
             [NotNull]
             [ItemCanBeNull]
-            public async Task<AuthenticateResponse> Sign(CancellationToken cancellationToken)
+            public async Task<SignerResult> Sign(CancellationToken cancellationToken)
             {
                 signers.Clear();
                 var childsCancellation = new CancellationTokenSource();
                 var linkedChildCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,
                     childsCancellation.Token);
-                var tcs = new TaskCompletionSource<AuthenticateResponse>();
+                var tcs = new TaskCompletionSource<SignerResult>();
                 var detectionLoop = NewSignersDetectionLoopAsync(tcs, linkedChildCancellation.Token);
                 try
                 {
@@ -191,7 +192,7 @@ namespace U2FExperiments
                     }
                     else
                     {
-                        return null;
+                        return SignerResult.Failure();
                     }
                 }
                 finally
@@ -200,7 +201,7 @@ namespace U2FExperiments
                 }
             }
 
-            private async Task NewSignersDetectionLoopAsync(TaskCompletionSource<AuthenticateResponse> tcs, CancellationToken cancellationToken)
+            private async Task NewSignersDetectionLoopAsync(TaskCompletionSource<SignerResult> tcs, CancellationToken cancellationToken)
             {
                 while (!cancellationToken.IsCancellationRequested)
                 {
@@ -210,7 +211,7 @@ namespace U2FExperiments
                 cancellationToken.ThrowIfCancellationRequested();
             }
 
-            private async Task AddNewSignersAsync(TaskCompletionSource<AuthenticateResponse> tcs, CancellationToken cancellationToken)
+            private async Task AddNewSignersAsync(TaskCompletionSource<SignerResult> tcs, CancellationToken cancellationToken)
             {
                 var allKeys = await keyFactory.FindAllAsync(cancellationToken);
                 var newKeys = allKeys.Where(k => !signers.ContainsKey(k)).ToList();
@@ -225,7 +226,7 @@ namespace U2FExperiments
                 }
             }
 
-            private SingleSignerInfo StartSingleSigner(IKeyId keyId, TaskCompletionSource<AuthenticateResponse> tcs, CancellationToken cancellationToken)
+            private SingleSignerInfo StartSingleSigner(IKeyId keyId, TaskCompletionSource<SignerResult> tcs, CancellationToken cancellationToken)
             {
                 var singleSigner = new SingleSigner(forEnroll, keyId, requests);
                 var task = singleSigner.Sign(cancellationToken);
@@ -234,7 +235,7 @@ namespace U2FExperiments
                     switch (t.Status)
                     {
                         case TaskStatus.RanToCompletion:
-                            if (t.Result != null)
+                            if (t.Result.IsSuccess)
                             {
                                 tcs.TrySetResult(t.Result);
                             }
@@ -294,7 +295,30 @@ namespace U2FExperiments
                 this.keyFactory = keyFactory;
             }
 
-            public async Task<AuthenticateResponse> Sign(ICollection<SignRequest> requests, bool forEnroll, CancellationToken cancellationToken)
+            private struct SignInfo
+            {
+                public string ClientDataBase64 { get; }
+                public AuthenticateRequest AuthenticateRequest { get; }
+                public SignRequest SignRequest { get; }
+
+                public SignInfo(SignRequest signRequest, string clientDataBase64, AuthenticateRequest authenticateRequest)
+                {
+                    ClientDataBase64 = clientDataBase64;
+                    AuthenticateRequest = authenticateRequest;
+                    SignRequest = signRequest;
+                }
+            }
+
+            private SignInfo GenerateSignInfo(SignRequest signRequest)
+            {
+                string clientDataB64;
+                var authRequest = U2FClientReferenceImpl.SignRequestToAuthenticateRequest(sender.Origin,
+                    signRequest, sender.ChannelId,
+                    out clientDataB64, new BouncyCastleClientCrypto());
+                return new SignInfo(signRequest, clientDataB64, authRequest);
+            }
+
+            public async Task<SignResponse> Sign(ICollection<SignRequest> requests, CancellationToken cancellationToken)
             {
                 var appIds = requests.Select(r => r.AppId).Distinct().ToList();
                 var originsOk = await originChecker(sender.Origin, appIds, cancellationToken);
@@ -309,17 +333,22 @@ namespace U2FExperiments
                     throw new Exception("App IDs not allowed by this origin");
                 }
 
-                var requestAndClientDatas = requests
-                    .Select(signRequest =>
-                    {
-                        string clientDataB64;
-                        var authRequest = U2FClientReferenceImpl.SignRequestToAuthenticateRequest(sender.Origin, signRequest, sender.ChannelId,
-                            out clientDataB64, new BouncyCastleClientCrypto());
-                        return Tuple.Create(signRequest, clientDataB64, authRequest);
-                    })
-                    .ToList();
-                var signer = new MultiSigner(keyFactory, forEnroll, requestAndClientDatas.Select(x => x.Item3).ToList());
-                return await signer.Sign(cancellationToken);
+                var signInfos = requests.Select(GenerateSignInfo).ToDictionary(s => s.AuthenticateRequest);
+                var signer = new MultiSigner(keyFactory, false, signInfos.Keys.ToList());
+                var result = await signer.Sign(cancellationToken);
+                if (!result.IsSuccess)
+                {
+                    return null;
+                }
+
+                var signInfo = signInfos[result.Request];
+
+                return new SignResponse(
+                    WebSafeBase64Converter.ToBase64String(signInfo.ClientDataBase64),
+                    WebSafeBase64Converter.ToBase64String(RawMessageCodec.EncodeAuthenticateResponse(result.Response)),
+                    signInfo.SignRequest.Challenge,
+                    signInfo.SignRequest.SessionId,
+                    signInfo.SignRequest.AppId);
             }
         }
 
@@ -357,9 +386,16 @@ namespace U2FExperiments
             var signRequests = server.GetSignRequests("vbfox", "http://example.com");
 
             var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-            var x = await myClient.Sign(signRequests, false, cts.Token);
+            var x = await myClient.Sign(signRequests, cts.Token);
 
-            Console.WriteLine("DONE {0}", x);
+            Console.WriteLine("Signature done {0}", x);
+            if (x != null)
+            {
+                var serverResp = server.ProcessSignResponse(x);
+                Console.WriteLine("Server ok: {0}", serverResp);
+            }
+
+            
             Console.ReadLine();
             return;
         }
@@ -387,7 +423,7 @@ namespace U2FExperiments
 
             var signRequests = server.GetSignRequests("vbfox", "http://example.com");
 
-            var x = await myClient.Sign(signRequests, false, CancellationToken.None);
+            var x = await myClient.Sign(signRequests, CancellationToken.None);
             return;
 
 

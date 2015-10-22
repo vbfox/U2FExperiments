@@ -97,9 +97,7 @@ namespace BlackFox.U2F.Tests.Codec
 		[Test]
 		public virtual void TestEncodeAuthenticateResponse()
 		{
-			AuthenticateResponse authenticateResponse = new AuthenticateResponse
-				(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE
-				);
+			var authenticateResponse = new AuthenticateResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE);
 			byte[] encodedBytes = RawMessageCodec.EncodeAuthenticateResponse
 				(authenticateResponse);
 			CollectionAssert.AreEqual(SIGN_RESPONSE_DATA, encodedBytes);
@@ -112,9 +110,7 @@ namespace BlackFox.U2F.Tests.Codec
             
 			AuthenticateResponse authenticateResponse = RawMessageCodec
 				.DecodeAuthenticateResponse(SIGN_RESPONSE_DATA.Segment());
-			Assert.AreEqual(new AuthenticateResponse
-				(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE
-				), authenticateResponse);
+			Assert.AreEqual(new AuthenticateResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE), authenticateResponse);
 		}
 
 		/// <exception cref="System.Exception"/>
