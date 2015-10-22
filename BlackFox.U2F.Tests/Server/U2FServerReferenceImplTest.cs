@@ -182,7 +182,7 @@ namespace BlackFox.U2F.Tests.Server
             mockChallengeGenerator.Setup(x => x.GenerateChallenge(ACCOUNT_NAME))
                 .Returns(SERVER_CHALLENGE_SIGN);
 
-            var signRequest = u2FServer.GetSignRequest(ACCOUNT_NAME, APP_ID_SIGN);
+            var signRequest = u2FServer.GetSignRequests(ACCOUNT_NAME, APP_ID_SIGN);
 
             var expected = new SignRequest("U2F_V2", SERVER_CHALLENGE_SIGN_BASE64, APP_ID_SIGN, KEY_HANDLE_BASE64,
                 SESSION_ID);

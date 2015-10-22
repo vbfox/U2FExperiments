@@ -34,6 +34,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Exceptions\UsbHidException.cs" />
+    <Compile Include="Exceptions\DeviceNotConnectedException.cs" />
     <Compile Include="HidDeviceAccessMode.cs" />
     <Compile Include="HidInputReport.cs" />
     <Compile Include="HidOutputReport.cs" />

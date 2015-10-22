@@ -1,4 +1,3 @@
-using System;
 using System.Text;
 using BlackFox.Binary;
 using BlackFox.U2F.Gnubby;
@@ -31,9 +30,9 @@ namespace BlackFox.U2F.Codec
             return new KeyResponse<RegisterResponse>(apdu, response, status);
         }
 
-        public static ApduRequest EncodeAuthenticateRequest(KeyRequest<AuthenticateRequest> request, U2FVersion version)
+        public static ApduRequest EncodeAuthenticateRequest(KeyRequest<AuthenticateRequest> request)
         {
-            var requestBytes = RawMessageCodec.EncodeAuthenticateRequest(request.Request, version);
+            var requestBytes = RawMessageCodec.EncodeAuthenticateRequest(request.Request);
             return new ApduRequest(AuthenticateCommand, (byte)request.Flags, 0x00, requestBytes.Segment());
         }
 

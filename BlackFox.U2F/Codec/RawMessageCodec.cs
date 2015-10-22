@@ -138,7 +138,7 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static byte[] EncodeAuthenticateRequest([NotNull] AuthenticateRequest authenticateRequest, U2FVersion version)
+        public static byte[] EncodeAuthenticateRequest([NotNull] AuthenticateRequest authenticateRequest)
         {
             if (authenticateRequest == null)
             {
@@ -155,7 +155,7 @@ namespace BlackFox.U2F.Codec
             }
 
             int size;
-            switch (version)
+            switch (authenticateRequest.Version)
             {
                 case U2FVersion.V1:
                     size = appIdSha256.Length + challengeSha256.Length + keyHandle.Length;
@@ -164,7 +164,7 @@ namespace BlackFox.U2F.Codec
                     size = appIdSha256.Length + challengeSha256.Length + keyHandle.Length + 1;
                     break;
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(version), version, null);
+                    throw new ArgumentException("Unknown version: " + authenticateRequest.Version, nameof(authenticateRequest));
             }
 
             var result = new byte[size];
@@ -173,7 +173,7 @@ namespace BlackFox.U2F.Codec
                 //writer.Write(controlByte);
                 writer.Write(challengeSha256);
                 writer.Write(appIdSha256);
-                if (version == U2FVersion.V2)
+                if (authenticateRequest.Version == U2FVersion.V2)
                 {
                     writer.Write((byte)keyHandle.Length);
                 }

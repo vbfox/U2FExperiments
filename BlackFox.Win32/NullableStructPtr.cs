@@ -51,12 +51,15 @@ namespace BlackFox.Win32
             }
         }
 
+        private bool disposed;
+
         public void Dispose()
         {
-            if (HasValue)
+            if (HasValue && !disposed)
             {
-                Marshal.FreeHGlobal(Pointer);
+                //Marshal.FreeHGlobal(Pointer);
             }
+            disposed = true;
         }
     }
 }

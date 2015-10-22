@@ -14,8 +14,9 @@ using ILog = Common.Logging.ILog;
 
 namespace U2FExperiments.Tmp
 {
-    class SingleSigner : IDisposable
+    class SingleSigner
     {
+        private static readonly TimeSpan timeBetweenChecks = TimeSpan.FromSeconds(1);
         class KeyBusyException:Exception
         {
              
@@ -38,7 +39,7 @@ namespace U2FExperiments.Tmp
         {
             using (var key = await OpenKeyAsync(cancellationToken))
             {
-                var version = await GetVersionAsync(key, cancellationToken);
+                var firstPass = true;
                 while (true)
                 {
                     int challengesTried = 0;
@@ -48,15 +49,37 @@ namespace U2FExperiments.Tmp
                         {
                             continue;
                         }
+
                         challengesTried += 1;
                         try
                         {
-                            var result = await key.AuthenticateAsync(request, cancellationToken);
-                            if (result.Status == KeyResponseStatus.BadKeyHandle)
+                            var result = await key.AuthenticateAsync(request, cancellationToken, firstPass);
+
+                            log.Info(result.Status.ToString());
+                            switch (result.Status)
                             {
-                                // No use retrying
-                                blacklistedKeyHandles.Add(request.KeyHandle);
+                                case KeyResponseStatus.BadKeyHandle:
+                                    // No use retrying
+                                    blacklistedKeyHandles.Add(request.KeyHandle);
+                                    break;
+
+                                case KeyResponseStatus.Success:
+                                    return result.Data;
                             }
+                        }
+                        catch (KeyGoneException)
+                        {
+                            log.DebugFormat("Key '{0}' is gone", KeyId);
+                            throw;
+                        }
+                        catch (TaskCanceledException)
+                        {
+                            // Let cancellation bubble up
+                            throw;
+                        }
+                        catch (KeyBusyException)
+                        {
+                            // Maybe it won't be busy later
                         }
                         catch (Exception exception)
                         {
@@ -67,6 +90,12 @@ namespace U2FExperiments.Tmp
                     {
                         return null;
                     }
+
+                    if (!firstPass)
+                    {
+                        await Task.Delay(timeBetweenChecks, cancellationToken);
+                    }
+                    firstPass = false;
                 }
             }
         }
@@ -115,11 +144,6 @@ namespace U2FExperiments.Tmp
         private bool IsBlacklisted(AuthenticateRequest request)
         {
             return blacklistedKeyHandles.Any(h => h.SequenceEqual(request.KeyHandle));
-        }
-
-        public void Dispose()
-        {
-            
         }
     }
 }

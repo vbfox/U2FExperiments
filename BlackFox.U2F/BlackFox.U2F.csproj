@@ -86,6 +86,7 @@
     <Compile Include="Gnubby\IKeyFactory.cs" />
     <Compile Include="Gnubby\IKeyId.cs" />
     <Compile Include="Gnubby\InteractionFlags.cs" />
+    <Compile Include="Gnubby\KeyGoneException.cs" />
     <Compile Include="Gnubby\KeyResponse.cs" />
     <Compile Include="Gnubby\KeyResponseStatus.cs" />
     <Compile Include="Gnubby\U2FApduKey.cs" />

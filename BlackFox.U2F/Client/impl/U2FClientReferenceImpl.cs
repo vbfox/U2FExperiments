@@ -5,6 +5,7 @@ using BlackFox.U2F.Key.messages;
 using BlackFox.U2F.Server;
 using BlackFox.U2F.Server.messages;
 using BlackFox.U2F.Utils;
+using Newtonsoft.Json.Linq;
 using NodaTime;
 
 namespace BlackFox.U2F.Client.impl
@@ -54,31 +55,34 @@ namespace BlackFox.U2F.Client.impl
         public void Authenticate(string origin, string accountName)
         {
             // the key can be used to sign any of the requests - we're gonna sign the first one.
-            var signRequest = server.GetSignRequest(accountName, origin)[0];
-            var version = signRequest.Version;
-            var appId = signRequest.AppId;
-            var serverChallengeBase64 = signRequest.Challenge;
-            var keyHandleBase64 = signRequest.KeyHandle;
-            var sessionId = signRequest.SessionId;
-            if (!version.Equals(U2FConsts.U2Fv2))
+            var signRequest = server.GetSignRequests(accountName, origin)[0];
+            if (!signRequest.Version.Equals(U2FConsts.U2Fv2))
             {
-                throw new U2FException($"Unsupported protocol version: {version}");
+                throw new U2FException($"Unsupported protocol version: {signRequest.Version}");
             }
-            appIdVerifier.ValidateOrigin(appId, origin);
+            appIdVerifier.ValidateOrigin(signRequest.AppId, origin);
             var channelIdJson = channelIdProvider.GetJsonChannelId();
-            var clientData = ClientDataCodec.EncodeClientData(ClientDataCodec.RequestTypeAuthenticate,
-                serverChallengeBase64, origin, channelIdJson);
-            var clientDataSha256 = crypto.ComputeSha256(clientData);
-            var appIdSha256 = crypto.ComputeSha256(appId);
-            var keyHandle = WebSafeBase64Converter.FromBase64String(keyHandleBase64);
-            var authenticateResponse =
-                key.Authenticate(new AuthenticateRequest(U2FVersion.V2, UserPresenceVerifierConstants.UserPresentFlag, clientDataSha256,
-                    appIdSha256, keyHandle));
+            string clientData;
+            var authenticateRequest = SignRequestToAuthenticateRequest(origin, signRequest, channelIdJson, out clientData, crypto);
+
+            var authenticateResponse = key.Authenticate(authenticateRequest);
             var rawAuthenticateResponse = RawMessageCodec.EncodeAuthenticateResponse(authenticateResponse);
             var rawAuthenticateResponse64 = WebSafeBase64Converter.ToBase64String(rawAuthenticateResponse);
             var clientDataBase64 = WebSafeBase64Converter.ToBase64String(Encoding.UTF8.GetBytes(clientData));
             server.ProcessSignResponse(new SignResponse(clientDataBase64, rawAuthenticateResponse64,
-                serverChallengeBase64, sessionId, appId));
+                signRequest.Challenge, signRequest.SessionId, signRequest.AppId));
+        }
+
+        public static AuthenticateRequest SignRequestToAuthenticateRequest(string origin, SignRequest signRequest, JObject channelIdJson,
+            out string clientData, IClientCrypto crypto)
+        {
+            clientData = ClientDataCodec.EncodeClientData(ClientDataCodec.RequestTypeAuthenticate, signRequest.Challenge,
+                origin, channelIdJson);
+            var clientDataSha256 = crypto.ComputeSha256(clientData);
+            var appIdSha256 = crypto.ComputeSha256(signRequest.AppId);
+            var keyHandle = WebSafeBase64Converter.FromBase64String(signRequest.KeyHandle);
+            return new AuthenticateRequest(U2FVersion.V2, UserPresenceVerifierConstants.UserPresentFlag,
+                clientDataSha256, appIdSha256, keyHandle);
         }
     }
 }

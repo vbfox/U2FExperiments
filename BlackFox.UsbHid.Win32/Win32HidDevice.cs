@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,6 +59,11 @@ namespace BlackFox.UsbHid.Win32
             {
                 return await Kernel32Dll.WriteFileAsync(Handle, outputBuffer, cancellationToken);
             }
+            catch (Win32Exception exception)
+            {
+                log.Error("Sending output report failed", exception);
+                throw ExceptionConversion.ConvertException(exception);
+            }
             catch (Exception exception)
             {
                 log.Error("Sending output report failed", exception);
@@ -75,6 +81,11 @@ namespace BlackFox.UsbHid.Win32
 
                 log.Trace(bytes.ToLoggableAsHex("Received input report:"));
                 return new HidInputReport(bytes);
+            }
+            catch (Win32Exception exception)
+            {
+                log.Error("Receiving input report failed", exception);
+                throw ExceptionConversion.ConvertException(exception);
             }
             catch (Exception exception)
             {

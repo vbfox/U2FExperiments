@@ -62,7 +62,7 @@ namespace BlackFox.U2F.Tests.Codec
         {
             var authenticateRequest = new AuthenticateRequest(U2FVersion.V2, AuthenticateRequest.UserPresenceSign,
                 BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE);
-            var encodedBytes = RawMessageCodec.EncodeAuthenticateRequest(authenticateRequest, U2FVersion.V2);
+            var encodedBytes = RawMessageCodec.EncodeAuthenticateRequest(authenticateRequest);
             CollectionAssert.AreEqual(SIGN_REQUEST_DATA, encodedBytes);
         }
 

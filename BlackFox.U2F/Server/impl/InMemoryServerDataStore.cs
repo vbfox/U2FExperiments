@@ -168,7 +168,8 @@ namespace BlackFox.U2F.Server.impl
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            using (var writer = new JsonTextWriter(new StreamWriter(stream)))
+            using (var textWriter = new StreamWriter(stream))
+            using (var writer = new JsonTextWriter(textWriter))
             {
                 writer.Formatting = Formatting.Indented;
                 SaveToJson().WriteTo(writer);
@@ -182,7 +183,8 @@ namespace BlackFox.U2F.Server.impl
                 throw new ArgumentNullException(nameof(stream));
             }
 
-            using (var reader = new JsonTextReader(new StreamReader(stream)))
+            using (var textReader = new StreamReader(stream))
+            using (var reader = new JsonTextReader(textReader))
             {
                 var json = JObject.Load(reader);
                 LoadFromJson(json);

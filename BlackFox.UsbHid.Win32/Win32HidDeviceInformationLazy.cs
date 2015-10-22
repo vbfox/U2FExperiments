@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using BlackFox.Win32.Hid;
 using JetBrains.Annotations;
@@ -33,11 +34,26 @@ namespace BlackFox.UsbHid.Win32
             Path = path;
             this.handle = handle;
             
-            manufacturer = new Lazy<string>(() => HidDll.GetManufacturerString(handle));
-            product = new Lazy<string>(() => HidDll.GetProductString(handle));
-            serialNumber = new Lazy<string>(() => HidDll.GetSerialNumberString(handle));
-            attributes = new Lazy<HiddAttributes>(() => HidDll.GetAttributes(handle));
-            capabilities = new Lazy<HidpCaps>(GetCapabilities);
+            manufacturer = ExceptionWrappedLazy(() => HidDll.GetManufacturerString(handle));
+            product = ExceptionWrappedLazy(() => HidDll.GetProductString(handle));
+            serialNumber = ExceptionWrappedLazy(() => HidDll.GetSerialNumberString(handle));
+            attributes = ExceptionWrappedLazy(() => HidDll.GetAttributes(handle));
+            capabilities = ExceptionWrappedLazy(GetCapabilities);
+        }
+
+        private static Lazy<T> ExceptionWrappedLazy<T>(Func<T> valueFactory)
+        {
+            return new Lazy<T>(() =>
+            {
+                try
+                {
+                    return valueFactory();
+                }
+                catch (Win32Exception exception)
+                {
+                    throw ExceptionConversion.ConvertException(exception);
+                }
+            });
         }
 
         private HidpCaps GetCapabilities()

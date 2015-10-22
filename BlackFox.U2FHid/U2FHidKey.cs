@@ -167,29 +167,37 @@ namespace BlackFox.U2FHid
 
         async Task<FidoU2FHidMessage> QueryLowLevelAsync(FidoU2FHidMessage query, CancellationToken cancellationToken, bool throwErrors = true)
         {
-            await device.WriteFidoU2FHidMessageAsync(query, cancellationToken);
-            var init = await device.ReadFidoU2FHidMessageAsync(cancellationToken);
-
-            if (init.Channel != query.Channel)
+            try
             {
-                throw new Exception($"Bad channel in query answer (0x{init.Channel:X8} but expected 0x{query.Channel:X8})");
-            }
+                await device.WriteFidoU2FHidMessageAsync(query, cancellationToken);
+                var init = await device.ReadFidoU2FHidMessageAsync(cancellationToken);
 
-            if (init.Command == U2FHidCommand.Error)
-            {
-                if (throwErrors)
+                if (init.Channel != query.Channel)
                 {
-                    ThrowForError(init);
+                    throw new Exception(
+                        $"Bad channel in query answer (0x{init.Channel:X8} but expected 0x{query.Channel:X8})");
                 }
+
+                if (init.Command == U2FHidCommand.Error)
+                {
+                    if (throwErrors)
+                    {
+                        ThrowForError(init);
+                    }
+                    return init;
+                }
+
+                if (init.Command != query.Command)
+                {
+                    throw new Exception($"Bad command in query answer ({init.Command} but expected {query.Command})");
+                }
+
                 return init;
             }
-
-            if (init.Command != query.Command)
+            catch (DeviceNotConnectedException exception)
             {
-                throw new Exception($"Bad command in query answer ({init.Command} but expected {query.Command})");
+                throw new KeyGoneException("The key isn't connected anymore", exception);
             }
-
-            return init;
         }
 
         [ContractAnnotation("=> halt")]

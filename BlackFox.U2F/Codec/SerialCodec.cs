@@ -33,7 +33,7 @@ namespace BlackFox.U2F.Codec
         public static void SendAuthenticateRequest(Stream outputStream, AuthenticateRequest authenticateRequest)
         {
             SendRequest(outputStream, CommandAuthenticate,
-                RawMessageCodec.EncodeAuthenticateRequest(authenticateRequest, U2FVersion.V2));
+                RawMessageCodec.EncodeAuthenticateRequest(authenticateRequest));
         }
 
         /// <exception cref="System.IO.IOException"/>

@@ -146,8 +146,7 @@ namespace BlackFox.U2F.Server.impl
             return securityKeyData;
         }
 
-        /// <exception cref="U2FException" />
-        public IList<SignRequest> GetSignRequest(string accountName, string appId)
+        public IList<SignRequest> GetSignRequests(string accountName, string appId)
         {
             log.Info(">> getSignRequest " + accountName);
             var securityKeyDataList = dataStore.GetSecurityKeyData(accountName);
@@ -170,7 +169,6 @@ namespace BlackFox.U2F.Server.impl
             return result;
         }
 
-        /// <exception cref="U2FException" />
         public SecurityKeyData ProcessSignResponse(SignResponse signResponse)
         {
             log.Info(">> processSignResponse");

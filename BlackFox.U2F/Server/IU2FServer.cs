@@ -16,7 +16,7 @@ namespace BlackFox.U2F.Server
 
 		// authentication //
 		/// <exception cref="U2FException"/>
-		System.Collections.Generic.IList<SignRequest> GetSignRequest
+		System.Collections.Generic.IList<SignRequest> GetSignRequests
 			(string accountName, string appId);
 
 		/// <exception cref="U2FException"/>

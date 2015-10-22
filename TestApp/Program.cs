@@ -2,6 +2,7 @@
 extern alias LoggingNet4x;
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,9 +13,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Binary;
 using BlackFox.U2F.Client.impl;
+using BlackFox.U2F.Codec;
+using BlackFox.U2F.Gnubby;
 using BlackFox.U2F.Key;
 using BlackFox.U2F.Key.impl;
+using BlackFox.U2F.Key.messages;
 using BlackFox.U2F.Server.impl;
+using BlackFox.U2F.Server.messages;
 using BlackFox.U2F.Tests;
 using BlackFox.U2FHid;
 using BlackFox.U2FHid.Core;
@@ -23,10 +28,13 @@ using BlackFox.UsbHid;
 using BlackFox.UsbHid.Win32;
 using BlackFox.Win32.Kernel32;
 using Common.Logging.NLog;
+using JetBrains.Annotations;
+using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NodaTime;
+using U2FExperiments.Tmp;
 
 namespace U2FExperiments
 {
@@ -95,7 +103,7 @@ namespace U2FExperiments
             LogManager.Configuration = new LoggingConfiguration();
 
             LogManager.Configuration.AddTarget(consoleTarget);
-            LogManager.Configuration.LoggingRules.Add(new LoggingRule("*", LogLevel.Trace, consoleTarget));
+            LogManager.Configuration.LoggingRules.Add(new LoggingRule("*", LogLevel.Info, consoleTarget));
             LogManager.ReconfigExistingLoggers();
         }
 
@@ -103,7 +111,8 @@ namespace U2FExperiments
         {
             ConfigureLogging();
 
-            TestDual().Wait();
+            TestNew2().Wait();
+            //TestDual().Wait();
             //TestSoftwareOnly();
             //TestHardwareOnly();
         }
@@ -120,10 +129,315 @@ namespace U2FExperiments
 
         static void LoadDataStore(InMemoryServerDataStore dataStore)
         {
-            using (var stream = File.OpenRead(dataStorePath))
+            if (File.Exists(dataStorePath))
             {
-                dataStore.LoadFromStream(stream);
+                using (var stream = File.OpenRead(dataStorePath))
+                {
+                    dataStore.LoadFromStream(stream);
+                }
             }
+        }
+
+        /// <summary>
+        /// Continuously query all the keys connected for a signature, returning when either one key succeeded in signing or the request is cancelled.
+        /// </summary>
+        private class MultiSigner
+        {
+            private static readonly ILogger log = LogManager.GetCurrentClassLogger();
+            private static readonly TimeSpan timeBetweenKeyScans = TimeSpan.FromSeconds(1);
+            private readonly IKeyFactory keyFactory;
+            private readonly bool forEnroll;
+            private readonly List<AuthenticateRequest> requests;
+
+            private struct SingleSignerInfo
+            {
+                public IKeyId KeyId { get; }
+                public SingleSigner SingleSigner { get; }
+                public Task<AuthenticateResponse> Task { get; }
+
+                public SingleSignerInfo(IKeyId keyId, SingleSigner singleSigner, Task<AuthenticateResponse> task)
+                {
+                    KeyId = keyId;
+                    SingleSigner = singleSigner;
+                    Task = task;
+                }
+            }
+
+            public MultiSigner(IKeyFactory keyFactory, bool forEnroll, List<AuthenticateRequest> requests)
+            {
+                this.keyFactory = keyFactory;
+                this.forEnroll = forEnroll;
+                this.requests = requests;
+            }
+
+            readonly ConcurrentDictionary<IKeyId, SingleSignerInfo> signers = new ConcurrentDictionary<IKeyId, SingleSignerInfo>();
+
+            [NotNull]
+            [ItemCanBeNull]
+            public async Task<AuthenticateResponse> Sign(CancellationToken cancellationToken)
+            {
+                signers.Clear();
+                var childsCancellation = new CancellationTokenSource();
+                var linkedChildCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,
+                    childsCancellation.Token);
+                var tcs = new TaskCompletionSource<AuthenticateResponse>();
+                var detectionLoop = NewSignersDetectionLoopAsync(tcs, linkedChildCancellation.Token);
+                try
+                {
+                    var finishedTask = await Task.WhenAny(tcs.Task, detectionLoop);
+                    if (finishedTask == tcs.Task)
+                    {
+                        return tcs.Task.Result;
+                    }
+                    else
+                    {
+                        return null;
+                    }
+                }
+                finally
+                {
+                    childsCancellation.Cancel();
+                }
+            }
+
+            private async Task NewSignersDetectionLoopAsync(TaskCompletionSource<AuthenticateResponse> tcs, CancellationToken cancellationToken)
+            {
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    await AddNewSignersAsync(tcs, cancellationToken);
+                    await Task.Delay(timeBetweenKeyScans, cancellationToken);
+                }
+                cancellationToken.ThrowIfCancellationRequested();
+            }
+
+            private async Task AddNewSignersAsync(TaskCompletionSource<AuthenticateResponse> tcs, CancellationToken cancellationToken)
+            {
+                var allKeys = await keyFactory.FindAllAsync(cancellationToken);
+                var newKeys = allKeys.Where(k => !signers.ContainsKey(k)).ToList();
+                if (newKeys.Count > 0)
+                {
+                    log.Info($"Found {newKeys.Count} new keys connected");
+
+                    foreach (var key in newKeys)
+                    {
+                        signers.AddOrUpdate(key, k => StartSingleSigner(k, tcs, cancellationToken), (k, v) => v);
+                    }
+                }
+            }
+
+            private SingleSignerInfo StartSingleSigner(IKeyId keyId, TaskCompletionSource<AuthenticateResponse> tcs, CancellationToken cancellationToken)
+            {
+                var singleSigner = new SingleSigner(forEnroll, keyId, requests);
+                var task = singleSigner.Sign(cancellationToken);
+                task.ContinueWith(t =>
+                {
+                    switch (t.Status)
+                    {
+                        case TaskStatus.RanToCompletion:
+                            if (t.Result != null)
+                            {
+                                tcs.TrySetResult(t.Result);
+                            }
+
+                            // If the result is null it mean that there is no way that it can sign any of the requests,
+                            // so we  remember it so that we won't query it again.
+                            break;
+                        case TaskStatus.Faulted:
+                            // Will be re-discovered next iteration
+                            ForgetSigner(keyId);
+                            break;
+                    }
+                }, cancellationToken);
+                return new SingleSignerInfo(keyId, singleSigner, task);
+            }
+
+            private void ForgetSigner(IKeyId keyId)
+            {
+                SingleSignerInfo signerInfo;
+                signers.TryRemove(keyId, out signerInfo);
+            }
+        }
+
+        private interface ISender
+        {
+            string Origin { get; }
+            JObject ChannelId { get;}
+        }
+
+        private class MyClient
+        {
+            public delegate Task<bool> CheckAppIdOrOrigin(string origin, ICollection<string> appIds, CancellationToken cancellationToken);
+
+            [NotNull] private readonly ISender sender;
+
+            /// <summary>
+            /// Check that an origin should be allowed to claim all the specified AppIds.
+            /// </summary>
+            /// <remarks>
+            /// Should check if the eTLD+1 is the same (google.com) or if there is a redirection in place with the header :
+            /// FIDO-AppID-Redirect-Authorized
+            /// </remarks>
+            [NotNull] private readonly CheckAppIdOrOrigin originChecker;
+            /// <summary>
+            /// Check that an origin accept the specified appids using the 'trustedFacets' in a JSON document
+            /// </summary>
+            [NotNull] private readonly CheckAppIdOrOrigin appIdChecker;
+
+            [NotNull] private readonly IKeyFactory keyFactory;
+
+            public MyClient([NotNull] ISender sender, [CanBeNull] CheckAppIdOrOrigin originChecker,
+                [CanBeNull] CheckAppIdOrOrigin appIdChecker, [NotNull] IKeyFactory keyFactory)
+            {
+                this.sender = sender;
+                this.originChecker = originChecker ?? ((o, a, ct) => Task.FromResult(true));
+                this.appIdChecker = appIdChecker ?? ((o, a, ct) => Task.FromResult(true));
+                this.keyFactory = keyFactory;
+            }
+
+            public async Task<AuthenticateResponse> Sign(ICollection<SignRequest> requests, bool forEnroll, CancellationToken cancellationToken)
+            {
+                var appIds = requests.Select(r => r.AppId).Distinct().ToList();
+                var originsOk = await originChecker(sender.Origin, appIds, cancellationToken);
+                if (!originsOk)
+                {
+                    throw new Exception("Bad origins for appid");
+                }
+
+                var appIdsOk = await appIdChecker(sender.Origin, appIds, cancellationToken);
+                if (!appIdsOk)
+                {
+                    throw new Exception("App IDs not allowed by this origin");
+                }
+
+                var requestAndClientDatas = requests
+                    .Select(signRequest =>
+                    {
+                        string clientDataB64;
+                        var authRequest = U2FClientReferenceImpl.SignRequestToAuthenticateRequest(sender.Origin, signRequest, sender.ChannelId,
+                            out clientDataB64, new BouncyCastleClientCrypto());
+                        return Tuple.Create(signRequest, clientDataB64, authRequest);
+                    })
+                    .ToList();
+                var signer = new MultiSigner(keyFactory, forEnroll, requestAndClientDatas.Select(x => x.Item3).ToList());
+                return await signer.Sign(cancellationToken);
+            }
+        }
+
+        private class DummySender : ISender
+        {
+            public string Origin { get; }
+            public JObject ChannelId { get; }
+
+            public DummySender(string origin, JObject channelId)
+            {
+                Origin = origin;
+                ChannelId = channelId;
+            }
+        }
+
+        private static async Task TestNew2()
+        {
+            var hidFactory = Win32HidDeviceFactory.Instance;
+            var keyFactory = new U2FHidKeyFactory(hidFactory);
+
+            var dataStore = new InMemoryServerDataStore(new GuidSessionIdGenerator());
+            LoadDataStore(dataStore);
+            var server = new U2FServerReferenceImpl(
+                new ChallengeGenerator(),
+                dataStore,
+                new BouncyCastleServerCrypto(),
+                new[] {"http://example.com", "https://example.com"});
+
+            var myClient = new MyClient(
+                new DummySender("http://example.com", new JObject()),
+                (o, a, ct) => Task.FromResult(true),
+                (o, a, ct) => Task.FromResult(true),
+                keyFactory);
+
+            var signRequests = server.GetSignRequests("vbfox", "http://example.com");
+
+            var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+            var x = await myClient.Sign(signRequests, false, cts.Token);
+
+            Console.WriteLine("DONE {0}", x);
+            Console.ReadLine();
+            return;
+        }
+
+        private static async Task TestNew()
+        {
+            var hidFactory = Win32HidDeviceFactory.Instance;
+            var keyFactory = new U2FHidKeyFactory(hidFactory);
+            var keyIds = await keyFactory.FindAllAsync();
+            var keyId = keyIds.First();
+
+            var dataStore = new InMemoryServerDataStore(new GuidSessionIdGenerator());
+            LoadDataStore(dataStore);
+            var server = new U2FServerReferenceImpl(
+                new ChallengeGenerator(),
+                dataStore,
+                new BouncyCastleServerCrypto(),
+                new[] { "http://example.com", "https://example.com" });
+
+            var myClient = new MyClient(
+                new DummySender("http://example.com", new JObject()),
+                (o, a, ct) => Task.FromResult(true),
+                (o, a, ct) => Task.FromResult(true),
+                keyFactory);
+
+            var signRequests = server.GetSignRequests("vbfox", "http://example.com");
+
+            var x = await myClient.Sign(signRequests, false, CancellationToken.None);
+            return;
+
+
+            var origin = "http://example.com";
+            var channelId = new JObject();
+
+            
+
+            var requestAndClientDatas = signRequests
+                .Select(signRequest =>
+                {
+                    string clientDataB64;
+                    var authRequest = U2FClientReferenceImpl.SignRequestToAuthenticateRequest("http://example.com", signRequest, new JObject(),
+                        out clientDataB64, new BouncyCastleClientCrypto());
+                    return Tuple.Create(signRequest, clientDataB64, authRequest);
+                })
+                .ToList();
+
+            new MyClient(
+                new DummySender("http://example.com", new JObject()),
+                (o, a, ct) => Task.FromResult(true),
+                (o, a, ct) => Task.FromResult(true),
+                keyFactory);
+
+
+
+            using (var u2f = await keyId.OpenAsync())
+            {
+                var key = new U2FDeviceKey(u2f);
+
+
+
+                var client = new U2FClientReferenceImpl(
+                    new BouncyCastleClientCrypto(),
+                    new SimpleOriginVerifier(new[] { "http://example.com", "https://example.com" }),
+                    new ChannelProvider(),
+                    server,
+                    key,
+                    SystemClock.Instance);
+
+                
+                //client.Register("http://example.com", "vbfox");
+                //SaveDataStore(dataStore);
+
+                client.Authenticate("http://example.com", "vbfox");
+                SaveDataStore(dataStore);
+            }
+
+            Console.WriteLine("Done.");
+            Console.ReadLine();
         }
 
         private static async Task TestDual()

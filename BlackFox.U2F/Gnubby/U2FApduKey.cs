@@ -37,24 +37,12 @@ namespace BlackFox.U2F.Gnubby
             CancellationToken cancellationToken = new CancellationToken(),
             bool noWink = false)
         {
-            var versionResponse = await GetVersionAsync(cancellationToken);
-            if (versionResponse.Status != KeyResponseStatus.Success)
-            {
-                return versionResponse.ToFailedOf<AuthenticateResponse>();
-            }
-
-            U2FVersion version;
-            if (!VersionCodec.TryDecodeVersion(versionResponse.Data, out version))
-            {
-                version = U2FVersion.V2;
-            }
-
             var flags = noWink
                 ? EnforceUserPresenceAndSign | InteractionFlags.TestSignatureOnly
                 : EnforceUserPresenceAndSign;
 
             var message = ApduMessageCodec.EncodeAuthenticateRequest(
-                new KeyRequest<AuthenticateRequest>(request, flags), version);
+                new KeyRequest<AuthenticateRequest>(request, flags));
             var response = await QueryApduAsync(message, cancellationToken);
             return ApduMessageCodec.DecodeAuthenticateReponse(response);
         }

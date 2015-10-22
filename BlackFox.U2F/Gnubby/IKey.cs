@@ -19,6 +19,9 @@ namespace BlackFox.U2F.Gnubby
         [NotNull, ItemNotNull]
         Task<KeyResponse<string>> GetVersionAsync(CancellationToken cancellationToken = default(CancellationToken));
 
+        //[NotNull]
+        //Task WinkAsync(CancellationToken cancellationToken = default(CancellationToken));
+
         [NotNull]
         Task SyncAsync();
     }

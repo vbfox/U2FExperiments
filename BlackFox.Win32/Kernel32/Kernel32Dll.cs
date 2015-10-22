@@ -110,8 +110,9 @@ namespace BlackFox.Win32.Kernel32
             {
                 EventHandle = finishedEvent.SafeWaitHandle.DangerousGetHandle()
             }.ToPtr();
-            
+
             var result = nativeMethod(overlapped.Pointer);
+
             var completionSource = new TaskCompletionSource<int>();
 
             var finishedSynchronously = FinishOverlappedSynchronously(handle, cancellationToken, overlapped,
@@ -130,16 +131,30 @@ namespace BlackFox.Win32.Kernel32
             return completionSource.Task;
         }
 
+        private class OverlappedState
+        {
+            public bool IsCancellation { get; }
+            public RegisteredWaitHandle OtherRegistration { get; set; }
+
+            public OverlappedState(bool isCancellation)
+            {
+                IsCancellation = isCancellation;
+            }
+
+            public void Unregister()
+            {
+                OtherRegistration?.Unregister(null);
+            }
+        }
+
         static void FinishOverlappedAsynchronously(SafeFileHandle handle, CancellationToken cancellationToken,
             NullableStructPtr<NativeOverlapped> overlapped, ManualResetEvent finishedEvent, TaskCompletionSource<int> completionSource)
         {
             var alreadyFinished = false;
             var lockObject = new object();
-            RegisteredWaitHandle finishedWait = null;
-            RegisteredWaitHandle cancelledWait = null;
-            WaitOrTimerCallback finishedCallback = (state, timedOut) =>
+            WaitOrTimerCallback callback = (state, timedOut) =>
             {
-                var isCancellation = !(bool)state;
+                var overlappedState = (OverlappedState) state;
                 lock (lockObject)
                 {
                     if (alreadyFinished)
@@ -147,17 +162,11 @@ namespace BlackFox.Win32.Kernel32
                         return;
                     }
 
-                    // ReSharper disable AccessToModifiedClosure
-                    finishedWait?.Unregister(finishedEvent);
-                    cancelledWait?.Unregister(cancellationToken.WaitHandle);
-                    // ReSharper restore AccessToModifiedClosure
+                    overlappedState.Unregister();
 
-                    if (isCancellation)
+                    if (overlappedState.IsCancellation || cancellationToken.IsCancellationRequested)
                     {
                         NativeMethods.CancelIoEx(handle, overlapped.Pointer);
-                    }
-                    if (cancellationToken.IsCancellationRequested)
-                    {
                         completionSource.SetCanceled();
                     }
                     else
@@ -185,12 +194,16 @@ namespace BlackFox.Win32.Kernel32
 
             lock (lockObject)
             {
-                finishedWait = ThreadPool.RegisterWaitForSingleObject(finishedEvent, finishedCallback, true, -1, true);
+                var finishedState = new OverlappedState(false);
+                var cancelledState = new OverlappedState(true);
+                var finishedWait = ThreadPool.RegisterWaitForSingleObject(finishedEvent, callback, finishedState, -1, true);
+                cancelledState.OtherRegistration = finishedWait;
                 if (cancellationToken != CancellationToken.None)
                 {
-                    cancelledWait = ThreadPool.RegisterWaitForSingleObject(cancellationToken.WaitHandle,
-                        finishedCallback,
-                        false, -1, true);
+                    var cancelledWait = ThreadPool.RegisterWaitForSingleObject(cancellationToken.WaitHandle,
+                        callback,
+                        cancelledState, -1, true);
+                    finishedState.OtherRegistration = cancelledWait;
                 }
             }
         }
