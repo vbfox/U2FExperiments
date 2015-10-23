@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Xml.Serialization.Configuration;
 using BlackFox.Binary;
 using BlackFox.U2F.Client.impl;
 using BlackFox.U2F.Key;
@@ -161,21 +162,51 @@ namespace U2FExperiments
                 new DummySender("http://example.com", new JObject()),
                 keyFactory);
 
-            var signRequests = server.GetSignRequests("vbfox", "http://example.com");
-            Console.WriteLine("Sign requests obtained ({0})", signRequests.Count);
-            var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
-            var x = await myClient.Sign(signRequests, cts.Token);
+            Console.WriteLine("Register or Sign ? (r/s)");
+            var mode = Console.ReadLine();
 
-            Console.WriteLine("Signature done {0}", x);
-            if (x != null)
+            if (mode == "s")
             {
-                var serverResp = server.ProcessSignResponse(x);
-                Console.WriteLine("Server ok: {0}", serverResp);
+                var signRequests = server.GetSignRequests("vbfox", "http://example.com");
+                Console.WriteLine("Sign requests obtained ({0})", signRequests.Count);
+                var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+                var x = await myClient.Sign(signRequests, cts.Token);
+
+                Console.WriteLine("Signature done {0}", x);
+                if (x != null)
+                {
+                    var serverResp = server.ProcessSignResponse(x);
+                    Console.WriteLine("Server ok: {0}", serverResp);
+                    SaveDataStore(dataStore);
+                }
+            }
+            else if (mode == "r")
+            {
+                var signRequests = server.GetSignRequests("vbfox", "http://example.com");
+                var regRequest = server.GetRegistrationRequest("vbfox", "http://example.com");
+                var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+                var x = await myClient.Register(new[] { regRequest }, signRequests, cts.Token);
+
+                Console.WriteLine("Authentication done {0}", x);
+                if (x != null)
+                {
+                    var serverResp = server.ProcessRegistrationResponse(x, ToUnixTimeMilliseconds(SystemClock.Instance.Now));
+                    Console.WriteLine("Server ok: {0}", serverResp);
+                    SaveDataStore(dataStore);
+                }
+            }
+            else
+            {
+                Console.WriteLine("???");
             }
 
-            
             Console.ReadLine();
             return;
+        }
+
+        public static long ToUnixTimeMilliseconds(Instant instant)
+        {
+            return instant.Ticks / NodaConstants.TicksPerMillisecond;
         }
 
         private static async Task TestNew()

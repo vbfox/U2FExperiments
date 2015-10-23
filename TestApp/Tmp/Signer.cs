@@ -13,7 +13,9 @@ namespace U2FExperiments.Tmp
 {
     class Signer
     {
-        private static readonly TimeSpan timeBetweenChecks = TimeSpan.FromSeconds(1);
+        static readonly TimeSpan timeBetweenSignCalls = TimeSpan.FromMilliseconds(200);
+        static readonly TimeSpan timeBetweenOpenCalls = TimeSpan.FromMilliseconds(200);
+
         class KeyBusyException:Exception
         {
              
@@ -48,7 +50,7 @@ namespace U2FExperiments.Tmp
 
                     if (!firstPass)
                     {
-                        await Task.Delay(timeBetweenChecks, cancellationToken);
+                        await Task.Delay(timeBetweenSignCalls, cancellationToken);
                     }
                     firstPass = false;
                 }
@@ -142,6 +144,7 @@ namespace U2FExperiments.Tmp
                 catch (KeyBusyException)
                 {
                     key = null;
+                    await Task.Delay(timeBetweenOpenCalls, cancellationToken);
                 }
             } while (key == null);
             return key;

@@ -148,9 +148,25 @@ namespace U2FExperiments.Tmp
                 .ToList();
             await CheckOriginAndAppIdsAsync(appIds, cancellationToken);
 
-            var signInfos = registrationRequests.Select(GenerateRegisterInfo).ToDictionary(s => s.RegistrationRequest);
+            var registerInfos = registrationRequests.Select(GenerateRegisterInfo).ToDictionary(s => s.RegisterRequest);
+            var keyRequests = registerInfos.Keys.ToList();
+            var signer = new MultiKeyOperation<AuthentifierResult>(
+                keyFactory,
+                (keyId, ct) => new Authentifier(keyId, keyRequests).AuthenticateAsync(ct),
+                r => r.IsSuccess
+                );
+            var result = await signer.SignAsync(cancellationToken);
+            if (!result.IsSuccess)
+            {
+                return null;
+            }
 
-            return null;
+            var registerInfo = registerInfos[result.Request];
+
+            return new RegistrationResponse(
+                WebSafeBase64Converter.ToBase64String(RawMessageCodec.EncodeRegisterResponse(result.Response)),
+                WebSafeBase64Converter.ToBase64String(registerInfo.ClientDataBase64),
+                registerInfo.RegistrationRequest.SessionId);
         }
     }
 }
