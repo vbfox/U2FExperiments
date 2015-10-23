@@ -39,11 +39,9 @@ namespace BlackFox.U2F.Client.impl
             }
             appIdVerifier.ValidateOrigin(registrationRequest.AppId, origin);
             var channelIdJson = channelIdProvider.GetJsonChannelId();
-            var clientData = ClientDataCodec.EncodeClientData(ClientDataCodec.RequestTypeRegister,
-                registrationRequest.Challenge, origin, channelIdJson);
-            var appIdSha256 = crypto.ComputeSha256(registrationRequest.AppId);
-            var clientDataSha256 = crypto.ComputeSha256(clientData);
-            var registerResponse = key.Register(new RegisterRequest(appIdSha256, clientDataSha256));
+            string clientData;
+            var registerRequest = RegistrationRequestToRegisterRequest(origin, registrationRequest, channelIdJson, out clientData, crypto);
+            var registerResponse = key.Register(registerRequest);
             var rawRegisterResponse = RawMessageCodec.EncodeRegisterResponse(registerResponse);
             var rawRegisterResponseBase64 = WebSafeBase64Converter.ToBase64String(rawRegisterResponse);
             var clientDataBase64 = WebSafeBase64Converter.ToBase64String(Encoding.UTF8.GetBytes(clientData));
@@ -83,6 +81,17 @@ namespace BlackFox.U2F.Client.impl
             var keyHandle = WebSafeBase64Converter.FromBase64String(signRequest.KeyHandle);
             return new AuthenticateRequest(U2FVersion.V2,
                 clientDataSha256, appIdSha256, keyHandle);
+        }
+
+        public static RegisterRequest RegistrationRequestToRegisterRequest(string origin,
+            RegistrationRequest registrationRequest, JObject channelIdJson, out string clientData,
+            IClientCrypto crypto)
+        {
+            clientData = ClientDataCodec.EncodeClientData(ClientDataCodec.RequestTypeRegister, registrationRequest.Challenge,
+                origin, channelIdJson);
+            var clientDataSha256 = crypto.ComputeSha256(clientData);
+            var appIdSha256 = crypto.ComputeSha256(registrationRequest.AppId);
+            return new RegisterRequest(appIdSha256, clientDataSha256);
         }
     }
 }

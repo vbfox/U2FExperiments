@@ -145,7 +145,7 @@ namespace BlackFox.U2F.Server.impl
                     var counter = (int) keyData["counter"];
                     var transportToken = keyData["transports"];
                     List<SecurityKeyDataTransports> transports = null;
-                    if (transportToken.Type != JTokenType.Null)
+                    if (transportToken != null && transportToken.Type != JTokenType.Null)
                     {
                         var transportsArray = (JArray) transportToken;
                         transports = transportsArray

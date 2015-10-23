@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BlackFox.U2F;
-using BlackFox.U2F.Codec;
 using BlackFox.U2F.Gnubby;
 using BlackFox.U2F.Key.messages;
 using LoggingPcl::Common.Logging;
@@ -13,30 +11,6 @@ using ILog = Common.Logging.ILog;
 
 namespace U2FExperiments.Tmp
 {
-    internal struct SignerResult
-    {
-        public bool IsSuccess { get; }
-        public AuthenticateRequest Request { get; }
-        public AuthenticateResponse Response { get; }
-
-        private SignerResult(bool isSuccess, AuthenticateRequest request, AuthenticateResponse response)
-        {
-            IsSuccess = isSuccess;
-            Request = request;
-            Response = response;
-        }
-
-        public static SignerResult Success(AuthenticateRequest request, AuthenticateResponse response)
-        {
-            return new SignerResult(true, request, response);
-        }
-
-        public static SignerResult Failure()
-        {
-            return  new SignerResult(false, null, null);
-        }
-    }
-
     class SingleSigner
     {
         private static readonly TimeSpan timeBetweenChecks = TimeSpan.FromSeconds(1);
@@ -46,72 +20,30 @@ namespace U2FExperiments.Tmp
         }
         static readonly ILog log = LogManager.GetLogger(typeof(SingleSigner));
 
-        public bool ForEnroll { get; }
-        public IKeyId KeyId { get; }
-        public ICollection<AuthenticateRequest> Requests { get; }
+        readonly bool forEnroll;
+        readonly IKeyId keyId;
+        readonly ICollection<AuthenticateRequest> requests;
         private readonly List<byte[]> blacklistedKeyHandles = new List<byte[]>();
 
         public SingleSigner(bool forEnroll, IKeyId keyId, ICollection<AuthenticateRequest> requests)
         {
-            ForEnroll = forEnroll;
-            KeyId = keyId;
-            Requests = requests;
+            this.forEnroll = forEnroll;
+            this.keyId = keyId;
+            this.requests = requests;
         }
 
-        public async Task<SignerResult> Sign(CancellationToken cancellationToken)
+        public async Task<SignerResult> SignAsync(CancellationToken cancellationToken)
         {
             using (var key = await OpenKeyAsync(cancellationToken))
             {
                 var firstPass = true;
-                while (true)
+                while (!forEnroll)
                 {
-                    int challengesTried = 0;
-                    foreach (var request in Requests)
+                    var signOnceResult = await TrySigningOnceAsync(key, firstPass, cancellationToken);
+
+                    if (signOnceResult.HasValue)
                     {
-                        if (IsBlacklisted(request))
-                        {
-                            continue;
-                        }
-
-                        challengesTried += 1;
-                        try
-                        {
-                            var result = await key.AuthenticateAsync(request, cancellationToken, firstPass);
-
-                            log.Info(result.Status.ToString());
-                            switch (result.Status)
-                            {
-                                case KeyResponseStatus.BadKeyHandle:
-                                    // No use retrying
-                                    blacklistedKeyHandles.Add(request.KeyHandle);
-                                    break;
-
-                                case KeyResponseStatus.Success:
-                                    return SignerResult.Success(request, result.Data);
-                            }
-                        }
-                        catch (KeyGoneException)
-                        {
-                            log.DebugFormat("Key '{0}' is gone", KeyId);
-                            throw;
-                        }
-                        catch (TaskCanceledException)
-                        {
-                            // Let cancellation bubble up
-                            throw;
-                        }
-                        catch (KeyBusyException)
-                        {
-                            // Maybe it won't be busy later
-                        }
-                        catch (Exception exception)
-                        {
-                            log.Error("Authenticate request failed", exception);
-                        }
-                    }
-                    if (challengesTried == 0)
-                    {
-                        return SignerResult.Failure();
+                        return signOnceResult.Value;
                     }
 
                     if (!firstPass)
@@ -120,31 +52,82 @@ namespace U2FExperiments.Tmp
                     }
                     firstPass = false;
                 }
+
+                return SignerResult.Failure(KeyResponseStatus.Failure);
             }
         }
 
-        private async Task<U2FVersion> GetVersionAsync(IKey key, CancellationToken cancellationToken)
+        async Task<SignerResult?> TrySigningOnceAsync(IKey key, bool isFirstPass, CancellationToken cancellationToken)
         {
-            do
+            int challengesTried = 0;
+            foreach (var request in requests)
             {
-                try
+                if (IsBlacklisted(request))
                 {
-                    var response = await key.GetVersionAsync(cancellationToken);
-                    if (response.Status == KeyResponseStatus.Success)
-                    {
-                        U2FVersion parsedVersion;
-                        if (VersionCodec.TryDecodeVersion(response.Data, out parsedVersion))
+                    continue;
+                }
+                challengesTried += 1;
+
+                var requestSignResult = await TrySignOneRequest(key, isFirstPass, request, cancellationToken);
+                if (requestSignResult.HasValue)
+                {
+                    return requestSignResult.Value;
+                }
+            }
+            if (challengesTried == 0)
+            {
+                return SignerResult.Failure(KeyResponseStatus.Failure);
+            }
+
+            return null;
+        }
+
+        async Task<SignerResult?> TrySignOneRequest(IKey key, bool isFirstPass, AuthenticateRequest request,
+            CancellationToken cancellationToken)
+        {
+            try
+            {
+                var result = await key.AuthenticateAsync(request, cancellationToken, isFirstPass || forEnroll);
+
+                log.Info(result.Status.ToString());
+                switch (result.Status)
+                {
+                    case KeyResponseStatus.BadKeyHandle:
+                        // No use retrying
+                        blacklistedKeyHandles.Add(request.KeyHandle);
+                        break;
+
+                    case KeyResponseStatus.Success:
+                        return SignerResult.Success(request, result.Data);
+
+                    case KeyResponseStatus.TestOfuserPresenceRequired:
+                        if (forEnroll)
                         {
-                            return parsedVersion;
+                            return SignerResult.Failure(result.Status);
                         }
-                    }
-                    throw new InvalidOperationException("Unexpected answer to version query: " + response.Data);
+                        break;
                 }
-                catch (KeyBusyException)
-                {
-                    
-                }
-            } while (true);
+            }
+            catch (KeyGoneException)
+            {
+                // No sense in continuing with this signer, the key isn't physically present anymore
+                log.DebugFormat("Key '{0}' is gone", keyId);
+                throw;
+            }
+            catch (TaskCanceledException)
+            {
+                // Let cancellation bubble up
+                throw;
+            }
+            catch (KeyBusyException)
+            {
+                // Maybe it won't be busy later
+            }
+            catch (Exception exception)
+            {
+                log.Error("Authenticate request failed", exception);
+            }
+            return null;
         }
 
         private async Task<IKey> OpenKeyAsync(CancellationToken cancellationToken)
@@ -154,7 +137,7 @@ namespace U2FExperiments.Tmp
             {
                 try
                 {
-                    key = await KeyId.OpenAsync(cancellationToken);
+                    key = await keyId.OpenAsync(cancellationToken);
                 }
                 catch (KeyBusyException)
                 {

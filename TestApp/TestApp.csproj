@@ -82,6 +82,10 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="GoogleCodeImpl\U2FDeviceKey.cs" />
+    <Compile Include="Tmp\ISender.cs" />
+    <Compile Include="Tmp\MultiSigner.cs" />
+    <Compile Include="Tmp\MyClient.cs" />
+    <Compile Include="Tmp\SignerResult.cs" />
     <Compile Include="Tmp\SingleSigner.cs" />
   </ItemGroup>
   <ItemGroup>
