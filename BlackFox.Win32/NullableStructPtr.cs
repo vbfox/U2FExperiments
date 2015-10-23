@@ -34,6 +34,7 @@ namespace BlackFox.Win32
             {
                 Pointer = IntPtr.Zero;
             }
+            disposed = false;
         }
 
         bool HasValue => Pointer != IntPtr.Zero;
@@ -57,7 +58,7 @@ namespace BlackFox.Win32
         {
             if (HasValue && !disposed)
             {
-                //Marshal.FreeHGlobal(Pointer);
+                Marshal.FreeHGlobal(Pointer);
             }
             disposed = true;
         }
