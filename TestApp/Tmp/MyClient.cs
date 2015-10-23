@@ -78,7 +78,12 @@ namespace U2FExperiments.Tmp
             await CheckOriginAndAppIdsAsync(appIds, cancellationToken);
 
             var signInfos = requests.Select(GenerateSignInfo).ToDictionary(s => s.AuthenticateRequest);
-            var signer = new MultiSigner(keyFactory, signInfos.Keys.ToList());
+            var keyRequests = signInfos.Keys.ToList();
+            var signer = new MultiKeyOperation<SignerResult>(
+                keyFactory,
+                (keyId, ct) => new Signer(false, keyId, keyRequests).SignAsync(ct),
+                r => r.IsSuccess
+                );
             var result = await signer.SignAsync(cancellationToken);
             if (!result.IsSuccess)
             {

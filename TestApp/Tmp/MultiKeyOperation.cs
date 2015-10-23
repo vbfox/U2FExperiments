@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,46 +13,46 @@ using NLog;
 namespace U2FExperiments.Tmp
 {
     /// <summary>
-    /// Continuously query all the keys connected for a signature, returning when either one key succeeded in signing
+    /// Run an operation on all the keys, returning when either one key succeeded
     /// or the request is cancelled.
     /// </summary>
-    class MultiSigner
+    class MultiKeyOperation<T>
     {
+        // ReSharper disable StaticMemberInGenericType
         private static readonly ILogger log = LogManager.GetCurrentClassLogger();
         private static readonly TimeSpan timeBetweenKeyScansWithKey = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan timeBetweenKeyScansNoKeyDetected = TimeSpan.FromMilliseconds(300);
-        private readonly IKeyFactory keyFactory;
-        private readonly List<AuthenticateRequest> requests;
+        // ReSharper restore StaticMemberInGenericType
 
-        public MultiSigner(IKeyFactory keyFactory, List<AuthenticateRequest> requests)
+        private readonly IKeyFactory keyFactory;
+        readonly Func<IKeyId, CancellationToken, Task<T>> operation;
+        readonly Func<T, bool> resultValidator;
+
+        public MultiKeyOperation(IKeyFactory keyFactory, Func<IKeyId, CancellationToken, Task<T>> operation, Func<T, bool> resultValidator)
         {
             this.keyFactory = keyFactory;
-            this.requests = requests;
+            this.operation = operation;
+            this.resultValidator = resultValidator;
         }
 
         readonly ConcurrentDictionary<IKeyId, bool> signersInProgress = new ConcurrentDictionary<IKeyId, bool>();
 
         [NotNull]
         [ItemCanBeNull]
-        public async Task<SignerResult> SignAsync(CancellationToken cancellationToken)
+        public async Task<T> SignAsync(CancellationToken cancellationToken)
         {
             signersInProgress.Clear();
             var childsCancellation = new CancellationTokenSource();
             var linkedChildCancellation = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,
                 childsCancellation.Token);
-            var tcs = new TaskCompletionSource<SignerResult>();
+            var tcs = new TaskCompletionSource<T>();
             var detection = NewSignersDetectionLoopAsync(tcs, linkedChildCancellation.Token);
             try
             {
                 var finishedTask = await Task.WhenAny(tcs.Task, detection);
-                if (finishedTask == tcs.Task)
-                {
-                    return tcs.Task.Result;
-                }
-                else
-                {
-                    return SignerResult.Failure(KeyResponseStatus.Failure);
-                }
+                Debug.Assert(finishedTask == tcs.Task,
+                    "Only the completion source should finish normally, the other task can only finish in error");
+                return tcs.Task.Result;
             }
             finally
             {
@@ -60,7 +61,7 @@ namespace U2FExperiments.Tmp
             }
         }
 
-        private async Task NewSignersDetectionLoopAsync(TaskCompletionSource<SignerResult> tcs, CancellationToken cancellationToken)
+        private async Task NewSignersDetectionLoopAsync(TaskCompletionSource<T> tcs, CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -71,7 +72,7 @@ namespace U2FExperiments.Tmp
             cancellationToken.ThrowIfCancellationRequested();
         }
 
-        private async Task AddNewSignersAsync(TaskCompletionSource<SignerResult> tcs, CancellationToken cancellationToken)
+        private async Task AddNewSignersAsync(TaskCompletionSource<T> tcs, CancellationToken cancellationToken)
         {
             var allKeys = await keyFactory.FindAllAsync(cancellationToken);
             var newKeys = allKeys.Where(k => !signersInProgress.ContainsKey(k)).ToList();
@@ -86,16 +87,15 @@ namespace U2FExperiments.Tmp
             }
         }
 
-        private bool StartSingleSigner(IKeyId keyId, TaskCompletionSource<SignerResult> tcs, CancellationToken cancellationToken)
+        private bool StartSingleSigner(IKeyId keyId, TaskCompletionSource<T> tcs, CancellationToken cancellationToken)
         {
-            var singleSigner = new SingleSigner(false, keyId, requests);
-            var task = singleSigner.SignAsync(cancellationToken);
+            var task = operation(keyId, cancellationToken);
             task.ContinueWith(t =>
             {
                 switch (t.Status)
                 {
                     case TaskStatus.RanToCompletion:
-                        if (t.Result.IsSuccess)
+                        if (resultValidator(t.Result))
                         {
                             tcs.TrySetResult(t.Result);
                         }

@@ -11,21 +11,21 @@ using ILog = Common.Logging.ILog;
 
 namespace U2FExperiments.Tmp
 {
-    class SingleSigner
+    class Signer
     {
         private static readonly TimeSpan timeBetweenChecks = TimeSpan.FromSeconds(1);
         class KeyBusyException:Exception
         {
              
         }
-        static readonly ILog log = LogManager.GetLogger(typeof(SingleSigner));
+        static readonly ILog log = LogManager.GetLogger(typeof(Signer));
 
         readonly bool forEnroll;
         readonly IKeyId keyId;
         readonly ICollection<AuthenticateRequest> requests;
         private readonly List<byte[]> blacklistedKeyHandles = new List<byte[]>();
 
-        public SingleSigner(bool forEnroll, IKeyId keyId, ICollection<AuthenticateRequest> requests)
+        public Signer(bool forEnroll, IKeyId keyId, ICollection<AuthenticateRequest> requests)
         {
             this.forEnroll = forEnroll;
             this.keyId = keyId;
