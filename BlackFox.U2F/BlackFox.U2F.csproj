@@ -82,6 +82,13 @@
     <Compile Include="Codec\RawMessageCodec.cs" />
     <Compile Include="Codec\SerialCodec.cs" />
     <Compile Include="Codec\VersionCodec.cs" />
+    <Compile Include="GnubbyApi\Authentifier.cs" />
+    <Compile Include="GnubbyApi\AuthentifierResult.cs" />
+    <Compile Include="GnubbyApi\ISender.cs" />
+    <Compile Include="GnubbyApi\MultiKeyOperation.cs" />
+    <Compile Include="GnubbyApi\GnubbyApiClient.cs" />
+    <Compile Include="GnubbyApi\Signer.cs" />
+    <Compile Include="GnubbyApi\SignerResult.cs" />
     <Compile Include="Gnubby\IKey.cs" />
     <Compile Include="Gnubby\IKeyFactory.cs" />
     <Compile Include="Gnubby\IKeyId.cs" />

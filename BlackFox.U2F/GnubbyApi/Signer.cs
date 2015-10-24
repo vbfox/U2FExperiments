@@ -1,15 +1,13 @@
-﻿extern alias LoggingPcl;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.U2F.Gnubby;
 using BlackFox.U2F.Key.messages;
-using LoggingPcl::Common.Logging;
-using ILog = Common.Logging.ILog;
+using Common.Logging;
 
-namespace U2FExperiments.Tmp
+namespace BlackFox.U2F.GnubbyApi
 {
     class Signer
     {
@@ -50,7 +48,7 @@ namespace U2FExperiments.Tmp
 
                     if (!firstPass)
                     {
-                        await Task.Delay(timeBetweenSignCalls, cancellationToken);
+                        await TaskEx.Delay(timeBetweenSignCalls, cancellationToken);
                     }
                     firstPass = false;
                 }
@@ -144,7 +142,7 @@ namespace U2FExperiments.Tmp
                 catch (KeyBusyException)
                 {
                     key = null;
-                    await Task.Delay(timeBetweenOpenCalls, cancellationToken);
+                    await TaskEx.Delay(timeBetweenOpenCalls, cancellationToken);
                 }
             } while (key == null);
             return key;

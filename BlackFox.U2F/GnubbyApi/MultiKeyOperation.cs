@@ -1,16 +1,14 @@
 using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.U2F.Gnubby;
-using BlackFox.U2F.Key.messages;
+using Common.Logging;
 using JetBrains.Annotations;
-using NLog;
 
-namespace U2FExperiments.Tmp
+namespace BlackFox.U2F.GnubbyApi
 {
     /// <summary>
     /// Run an operation on all the keys, returning when either one key succeeded
@@ -18,8 +16,9 @@ namespace U2FExperiments.Tmp
     /// </summary>
     class MultiKeyOperation<T>
     {
+        static readonly ILog log = LogManager.GetLogger(typeof(MultiKeyOperation<T>));
+
         // ReSharper disable StaticMemberInGenericType
-        private static readonly ILogger log = LogManager.GetCurrentClassLogger();
         private static readonly TimeSpan timeBetweenKeyScansWithKey = TimeSpan.FromSeconds(1);
         private static readonly TimeSpan timeBetweenKeyScansNoKeyDetected = TimeSpan.FromMilliseconds(300);
         // ReSharper restore StaticMemberInGenericType
@@ -49,7 +48,7 @@ namespace U2FExperiments.Tmp
             var detection = NewSignersDetectionLoopAsync(tcs, linkedChildCancellation.Token);
             try
             {
-                var finishedTask = await Task.WhenAny(tcs.Task, detection);
+                var finishedTask = await TaskEx.WhenAny(tcs.Task, detection);
                 Debug.Assert(finishedTask == tcs.Task,
                     "Only the completion source should finish normally, the other task can only finish in error");
                 return tcs.Task.Result;
@@ -67,7 +66,7 @@ namespace U2FExperiments.Tmp
             {
                 await AddNewSignersAsync(tcs, cancellationToken);
                 var delay = signersInProgress.Count == 0 ? timeBetweenKeyScansNoKeyDetected : timeBetweenKeyScansWithKey;
-                await Task.Delay(delay, cancellationToken);
+                await TaskEx.Delay(delay, cancellationToken);
             }
             cancellationToken.ThrowIfCancellationRequested();
         }

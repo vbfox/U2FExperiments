@@ -1,8 +1,8 @@
 using Newtonsoft.Json.Linq;
 
-namespace U2FExperiments.Tmp
+namespace BlackFox.U2F.GnubbyApi
 {
-    interface ISender
+    public interface ISender
     {
         string Origin { get; }
 

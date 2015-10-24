@@ -1,7 +1,7 @@
 ﻿using BlackFox.U2F.Gnubby;
 using BlackFox.U2F.Key.messages;
 
-namespace U2FExperiments.Tmp
+namespace BlackFox.U2F.GnubbyApi
 {
     internal struct AuthentifierResult
     {

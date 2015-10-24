@@ -7,10 +7,8 @@ using BlackFox.U2F.Key.messages;
 using Common.Logging;
 using JetBrains.Annotations;
 
-namespace U2FExperiments.Tmp
+namespace BlackFox.U2F.GnubbyApi
 {
-    extern alias LoggingPcl;
-
     class Authentifier
     {
         static readonly TimeSpan timeBetweenRegisterCalls = TimeSpan.FromMilliseconds(200);
@@ -19,7 +17,8 @@ namespace U2FExperiments.Tmp
         {
 
         }
-        static readonly ILog log = LoggingPcl::Common.Logging.LogManager.GetLogger(typeof(Signer));
+
+        static readonly ILog log = LogManager.GetLogger(typeof(Authentifier));
 
         readonly IKeyId keyId;
         readonly ICollection<RegisterRequest> requests;
@@ -52,7 +51,7 @@ namespace U2FExperiments.Tmp
                         return signOnceResult.Value;
                     }
 
-                    await Task.Delay(timeBetweenRegisterCalls, cancellationToken);
+                    await TaskEx.Delay(timeBetweenRegisterCalls, cancellationToken);
                 }
             }
         }
@@ -126,7 +125,7 @@ namespace U2FExperiments.Tmp
                 catch (KeyBusyException)
                 {
                     key = null;
-                    await Task.Delay(timeBetweenOpenCalls, cancellationToken);
+                    await TaskEx.Delay(timeBetweenOpenCalls, cancellationToken);
                 }
             } while (key == null);
             return key;

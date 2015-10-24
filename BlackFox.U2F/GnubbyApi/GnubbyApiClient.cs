@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BlackFox.U2F;
 using BlackFox.U2F.Client.impl;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Gnubby;
@@ -11,11 +10,13 @@ using BlackFox.U2F.Key.messages;
 using BlackFox.U2F.Server.messages;
 using JetBrains.Annotations;
 
-namespace U2FExperiments.Tmp
+namespace BlackFox.U2F.GnubbyApi
 {
-    class MyClient
+    public class GnubbyApiClient
     {
         public delegate Task<bool> CheckAppIdOrOrigin(string origin, ICollection<string> appIds, CancellationToken cancellationToken);
+
+        public static readonly CheckAppIdOrOrigin NoAppIdOrOriginCheck = (o, a, ct) => TaskEx.FromResult(true);
 
         [NotNull] private readonly ISender sender;
 
@@ -34,17 +35,17 @@ namespace U2FExperiments.Tmp
 
         [NotNull] private readonly IKeyFactory keyFactory;
 
-        public MyClient([NotNull] ISender sender, [NotNull] IKeyFactory keyFactory)
+        public GnubbyApiClient([NotNull] ISender sender, [NotNull] IKeyFactory keyFactory)
             : this(sender, null, null, keyFactory)
         {
         }
 
-        public MyClient([NotNull] ISender sender, [CanBeNull] CheckAppIdOrOrigin originChecker,
+        public GnubbyApiClient([NotNull] ISender sender, [CanBeNull] CheckAppIdOrOrigin originChecker,
             [CanBeNull] CheckAppIdOrOrigin appIdChecker, [NotNull] IKeyFactory keyFactory)
         {
             this.sender = sender;
-            this.originChecker = originChecker ?? ((o, a, ct) => Task.FromResult(true));
-            this.appIdChecker = appIdChecker ?? ((o, a, ct) => Task.FromResult(true));
+            this.originChecker = originChecker ?? NoAppIdOrOriginCheck;
+            this.appIdChecker = appIdChecker ?? NoAppIdOrOriginCheck;
             this.keyFactory = keyFactory;
         }
 

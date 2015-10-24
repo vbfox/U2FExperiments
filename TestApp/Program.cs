@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization.Configuration;
 using BlackFox.Binary;
 using BlackFox.U2F.Client.impl;
+using BlackFox.U2F.GnubbyApi;
 using BlackFox.U2F.Key;
 using BlackFox.U2F.Key.impl;
 using BlackFox.U2F.Server.impl;
@@ -29,7 +30,6 @@ using NLog;
 using NLog.Config;
 using NLog.Targets;
 using NodaTime;
-using U2FExperiments.Tmp;
 
 namespace U2FExperiments
 {
@@ -158,7 +158,7 @@ namespace U2FExperiments
                 new BouncyCastleServerCrypto(),
                 new[] {"http://example.com", "https://example.com"});
 
-            var myClient = new MyClient(
+            var myClient = new GnubbyApiClient(
                 new DummySender("http://example.com", new JObject()),
                 keyFactory);
 
@@ -224,7 +224,7 @@ namespace U2FExperiments
                 new BouncyCastleServerCrypto(),
                 new[] { "http://example.com", "https://example.com" });
 
-            var myClient = new MyClient(
+            var myClient = new GnubbyApiClient(
                 new DummySender("http://example.com", new JObject()),
                 (o, a, ct) => Task.FromResult(true),
                 (o, a, ct) => Task.FromResult(true),
@@ -251,7 +251,7 @@ namespace U2FExperiments
                 })
                 .ToList();
 
-            new MyClient(
+            new GnubbyApiClient(
                 new DummySender("http://example.com", new JObject()),
                 (o, a, ct) => Task.FromResult(true),
                 (o, a, ct) => Task.FromResult(true),
