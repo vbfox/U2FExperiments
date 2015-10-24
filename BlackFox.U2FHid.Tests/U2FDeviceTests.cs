@@ -179,9 +179,21 @@ namespace BlackFox.U2FHid.Tests
             return hid;
         }
 
-        static HidOutputReport CreateOutputReport(byte id)
+        class TestHidOutputReport : IHidOutputReport
         {
-            return new HidOutputReport(id, new byte[PacketSize].Segment());
+            public byte Id { get; }
+            public ArraySegment<byte> Data { get; }
+
+            public TestHidOutputReport(byte id, ArraySegment<byte> data)
+            {
+                Id = id;
+                Data = data;
+            }
+        }
+
+        static IHidOutputReport CreateOutputReport(byte id)
+        {
+            return new TestHidOutputReport(id, new byte[PacketSize].Segment());
         }
 
         static void AssertWriteInitPacketSized(ArraySegment<byte> actual, uint channel, U2FHidCommand command, int size,

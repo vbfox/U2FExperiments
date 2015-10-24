@@ -11,10 +11,10 @@ namespace BlackFox.UsbHid
         IHidDeviceInformation Information { get; }
 
         [NotNull]
-        HidOutputReport CreateOutputReport(byte id = 0);
+        IHidOutputReport CreateOutputReport(byte id = 0);
 
         [NotNull]
-        Task<int> SendOutputReportAsync([NotNull] HidOutputReport report,
+        Task<int> SendOutputReportAsync([NotNull] IHidOutputReport report,
             CancellationToken cancellationToken = default(CancellationToken));
 
         [NotNull]

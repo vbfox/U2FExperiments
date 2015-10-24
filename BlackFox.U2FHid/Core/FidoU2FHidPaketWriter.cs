@@ -70,7 +70,7 @@ namespace BlackFox.U2FHid.Core
             }
         }
 
-        static HidOutputReport ToOutputReport(IHidDevice device, ContinuationPacket continuation)
+        static IHidOutputReport ToOutputReport(IHidDevice device, ContinuationPacket continuation)
         {
             var report = device.CreateOutputReport();
             continuation.WriteTo(report.Data);

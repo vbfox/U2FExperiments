@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Threading;
+using System.Threading.Tasks;
 using JetBrains.Annotations;
 
 namespace BlackFox.UsbHid
@@ -28,6 +29,7 @@ namespace BlackFox.UsbHid
 
         [NotNull]
         [ItemNotNull]
-        Task<IHidDevice> OpenDeviceAsync(HidDeviceAccessMode accessMode = HidDeviceAccessMode.ReadWrite);
+        Task<IHidDevice> OpenDeviceAsync(HidDeviceAccessMode accessMode = HidDeviceAccessMode.ReadWrite,
+            CancellationToken cancellationToken = default(CancellationToken));
     }
 }

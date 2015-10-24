@@ -54,6 +54,7 @@
       <Link>Utils\ResharperAnnotations.cs</Link>
     </Compile>
     <Compile Include="ExceptionConversion.cs" />
+    <Compile Include="Win32HidOutputReport.cs" />
     <Compile Include="Win32HidDevice.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Win32HidDeviceFactory.cs" />

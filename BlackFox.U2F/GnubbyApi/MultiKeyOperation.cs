@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Linq;
+using System.Security;
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.U2F.Gnubby;

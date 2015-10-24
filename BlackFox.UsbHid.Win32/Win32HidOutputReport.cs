@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
-namespace BlackFox.UsbHid
+namespace BlackFox.UsbHid.Win32
 {
-    public class HidOutputReport
+    public class Win32HidOutputReport : IHidOutputReport
     {
         readonly ArraySegment<byte> buffer;
 
@@ -15,7 +15,7 @@ namespace BlackFox.UsbHid
             return buffer;
         }
 
-        public HidOutputReport(byte id, ArraySegment<byte> buffer)
+        public Win32HidOutputReport(byte id, ArraySegment<byte> buffer)
         {
             buffer.Array[buffer.Offset] = id;
 

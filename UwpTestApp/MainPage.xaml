@@ -1,0 +1,23 @@
+﻿<Page
+    x:Class="UwpTestApp.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:UwpTestApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="auto"/>
+            <ColumnDefinition Width="*"/>
+        </Grid.ColumnDefinitions>
+        <StackPanel Grid.Column="0">
+            <Button Click="RunClicked" Content="List HID Devices"></Button>
+            <Button Click="U2fClicked" Content="List U2F Devices"></Button>
+            <Button Click="EnrollClicked" Content="Enroll a device"></Button>
+        </StackPanel>
+        
+        <TextBox Grid.Column="1" Name="textBox" AcceptsReturn="True" TextWrapping="Wrap" Background="Aquamarine"></TextBox>
+    </Grid>
+</Page>

@@ -38,7 +38,7 @@
     <Compile Include="Exceptions\DeviceNotConnectedException.cs" />
     <Compile Include="HidDeviceAccessMode.cs" />
     <Compile Include="HidInputReport.cs" />
-    <Compile Include="HidOutputReport.cs" />
+    <Compile Include="IHidOutputReport.cs" />
     <Compile Include="IHidDevice.cs" />
     <Compile Include="IHidDeviceFactory.cs" />
     <Compile Include="IHidDeviceInformation.cs" />

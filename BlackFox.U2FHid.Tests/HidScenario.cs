@@ -55,23 +55,23 @@ namespace BlackFox.U2FHid.Tests
         {
             public override Operation Operation => Operation.Write;
 
-            readonly Func<HidOutputReport, Task<int>> func;
+            readonly Func<IHidOutputReport, Task<int>> func;
 
-            public WriteOperation(Func<HidOutputReport, Task<int>> func)
+            public WriteOperation(Func<IHidOutputReport, Task<int>> func)
             {
                 this.func = func;
             }
 
             public override void Poison(Mock<IHidDevice> device, Action callback)
             {
-                device.Setup(h => h.SendOutputReportAsync(It.IsAny<HidOutputReport>(), It.IsAny<CancellationToken>()))
+                device.Setup(h => h.SendOutputReportAsync(It.IsAny<IHidOutputReport>(), It.IsAny<CancellationToken>()))
                     .Callback(callback);
             }
 
             public override void Setup(Mock<IHidDevice> device, Action successContinuation)
             {
-                device.Setup(h => h.SendOutputReportAsync(It.IsAny<HidOutputReport>(), It.IsAny<CancellationToken>()))
-                    .Returns<HidOutputReport, CancellationToken>((report, _) =>
+                device.Setup(h => h.SendOutputReportAsync(It.IsAny<IHidOutputReport>(), It.IsAny<CancellationToken>()))
+                    .Returns<IHidOutputReport, CancellationToken>((report, _) =>
                     {
                         var result = func(report);
                         successContinuation();
@@ -102,7 +102,7 @@ namespace BlackFox.U2FHid.Tests
                 steps.Add(new ReadOperation(read));
             }
 
-            public void Write(Action<HidOutputReport> write)
+            public void Write(Action<IHidOutputReport> write)
             {
                 Write(report =>
                 {
@@ -111,12 +111,12 @@ namespace BlackFox.U2FHid.Tests
                 });
             }
 
-            public void Write(Func<HidOutputReport, int> write)
+            public void Write(Func<IHidOutputReport, int> write)
             {
                 Write(report => Task.FromResult(write(report)));
             }
 
-            public void Write(Func<HidOutputReport, Task<int>> write)
+            public void Write(Func<IHidOutputReport, Task<int>> write)
             {
                 if (!building) throw new InvalidOperationException("Not building");
                 steps.Add(new WriteOperation(write));
