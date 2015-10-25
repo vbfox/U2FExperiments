@@ -103,7 +103,7 @@ namespace BlackFox.Binary
         }
 
         /// <summary>
-        /// Wrap the segment in a <see cref="Stream"/> instance.
+        /// Wrap the segment in a <see cref="IEnumerable{T}"/> instance.
         /// </summary>
         public static IEnumerable<T> AsEnumerable<T>(this ArraySegment<T> segment)
         {

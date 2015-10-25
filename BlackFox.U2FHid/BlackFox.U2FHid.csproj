@@ -47,33 +47,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentExtensions.cs">
-      <Link>Utils\ArraySegmentExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentLoggingExtensions.cs">
-      <Link>Utils\ArraySegmentLoggingExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\BlackFox.BinaryUtils\EmptyArray.cs">
-      <Link>Utils\EmptyArray.cs</Link>
-    </Compile>
-    <Compile Include="..\BlackFox.BinaryUtils\EmptyArraySegment.cs">
-      <Link>Utils\EmptyArraySegment.cs</Link>
-    </Compile>
-    <Compile Include="..\BlackFox.BinaryUtils\EndianessHelpers.cs">
-      <Link>Utils\EndianessHelpers.cs</Link>
-    </Compile>
-    <Compile Include="..\BlackFox.BinaryUtils\Endianness.cs">
-      <Link>Utils\Endianness.cs</Link>
-    </Compile>
-    <Compile Include="..\BlackFox.BinaryUtils\EndianReader.cs">
-      <Link>Utils\EndianReader.cs</Link>
-    </Compile>
-    <Compile Include="..\BlackFox.BinaryUtils\EndianWriter.cs">
-      <Link>Utils\EndianWriter.cs</Link>
-    </Compile>
-    <Compile Include="..\BlackFox.BinaryUtils\ResharperAnnotations.cs">
-      <Link>Utils\ResharperAnnotations.cs</Link>
-    </Compile>
     <Compile Include="Core\FidoU2FHidMessage.cs" />
     <Compile Include="Core\FidoU2FHidPaketReader.cs" />
     <Compile Include="Core\FidoU2FHidPaketWriter.cs" />
@@ -103,6 +76,8 @@
   <ItemGroup>
     <None Include="paket.references" />
   </ItemGroup>
+  <Import Project="..\BlackFox.BinaryUtils\BinaryUtils.projitems" Label="Shared" />
+  <Import Project="..\ResharperAnnotations\ResharperAnnotations.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -25,13 +25,30 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.U2FHid.Tests", "Bl
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.U2F", "BlackFox.U2F\BlackFox.U2F.csproj", "{029AD986-B1C8-4713-AAC6-783761E8D042}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.BinaryUtils", "BlackFox.BinaryUtils\BlackFox.BinaryUtils.csproj", "{EDEB47CD-014D-49A4-B4C3-20354A003AD4}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.U2F.Tests", "BlackFox.U2F.Tests\BlackFox.U2F.Tests.csproj", "{58A39661-89FB-4017-AB57-9FDB70C69AC2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UwpTestApp", "UwpTestApp\UwpTestApp.csproj", "{98E75FEE-0FBB-4E57-881B-0F4D9756A608}"
 EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BinaryUtils", "BlackFox.BinaryUtils\BinaryUtils.shproj", "{F9623C13-348B-47D1-9DF1-4580B7C5CCB6}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ResharperAnnotations", "ResharperAnnotations\ResharperAnnotations.shproj", "{CF042726-F1EE-4CA1-906A-346FA6647B88}"
+EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		ResharperAnnotations\ResharperAnnotations.projitems*{e54f34e3-1242-414b-b249-7742835a11a0}*SharedItemsImports = 4
+		BlackFox.BinaryUtils\BinaryUtils.projitems*{e54f34e3-1242-414b-b249-7742835a11a0}*SharedItemsImports = 4
+		BlackFox.BinaryUtils\BinaryUtils.projitems*{f9623c13-348b-47d1-9df1-4580b7c5ccb6}*SharedItemsImports = 13
+		ResharperAnnotations\ResharperAnnotations.projitems*{98e75fee-0fbb-4e57-881b-0f4d9756a608}*SharedItemsImports = 4
+		BlackFox.BinaryUtils\BinaryUtils.projitems*{98e75fee-0fbb-4e57-881b-0f4d9756a608}*SharedItemsImports = 4
+		ResharperAnnotations\ResharperAnnotations.projitems*{6781a77f-b12f-46a7-9031-7dc282226a11}*SharedItemsImports = 4
+		BlackFox.BinaryUtils\BinaryUtils.projitems*{6781a77f-b12f-46a7-9031-7dc282226a11}*SharedItemsImports = 4
+		ResharperAnnotations\ResharperAnnotations.projitems*{029ad986-b1c8-4713-aac6-783761e8d042}*SharedItemsImports = 4
+		BlackFox.BinaryUtils\BinaryUtils.projitems*{029ad986-b1c8-4713-aac6-783761e8d042}*SharedItemsImports = 4
+		ResharperAnnotations\ResharperAnnotations.projitems*{cf042726-f1ee-4ca1-906a-346fa6647b88}*SharedItemsImports = 13
+		ResharperAnnotations\ResharperAnnotations.projitems*{82a6d2fa-7322-40f9-8cc8-91af500be384}*SharedItemsImports = 4
+		BlackFox.BinaryUtils\BinaryUtils.projitems*{82a6d2fa-7322-40f9-8cc8-91af500be384}*SharedItemsImports = 4
+		ResharperAnnotations\ResharperAnnotations.projitems*{9326377b-a51a-4cf4-b0f3-4a82060c419c}*SharedItemsImports = 4
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Debug|ARM = Debug|ARM
@@ -155,16 +172,6 @@ Global
 		{029AD986-B1C8-4713-AAC6-783761E8D042}.Release|x64.Build.0 = Release|Any CPU
 		{029AD986-B1C8-4713-AAC6-783761E8D042}.Release|x86.ActiveCfg = Release|Any CPU
 		{029AD986-B1C8-4713-AAC6-783761E8D042}.Release|x86.Build.0 = Release|Any CPU
-		{EDEB47CD-014D-49A4-B4C3-20354A003AD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EDEB47CD-014D-49A4-B4C3-20354A003AD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EDEB47CD-014D-49A4-B4C3-20354A003AD4}.Debug|ARM.ActiveCfg = Debug|Any CPU
-		{EDEB47CD-014D-49A4-B4C3-20354A003AD4}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{EDEB47CD-014D-49A4-B4C3-20354A003AD4}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{EDEB47CD-014D-49A4-B4C3-20354A003AD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EDEB47CD-014D-49A4-B4C3-20354A003AD4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EDEB47CD-014D-49A4-B4C3-20354A003AD4}.Release|ARM.ActiveCfg = Release|Any CPU
-		{EDEB47CD-014D-49A4-B4C3-20354A003AD4}.Release|x64.ActiveCfg = Release|Any CPU
-		{EDEB47CD-014D-49A4-B4C3-20354A003AD4}.Release|x86.ActiveCfg = Release|Any CPU
 		{58A39661-89FB-4017-AB57-9FDB70C69AC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{58A39661-89FB-4017-AB57-9FDB70C69AC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58A39661-89FB-4017-AB57-9FDB70C69AC2}.Debug|ARM.ActiveCfg = Debug|Any CPU

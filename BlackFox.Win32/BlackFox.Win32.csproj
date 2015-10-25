@@ -48,6 +48,7 @@
     <Compile Include="FixedArraySegment.cs" />
     <Compile Include="Hid\HiddAttributes.cs" />
     <Compile Include="Hid\HidDll.cs" />
+    <Compile Include="Hid\HidDllNativeMethods.cs" />
     <Compile Include="Hid\HidpCaps.cs" />
     <Compile Include="Hid\SafePreparsedDataHandle.cs" />
     <Compile Include="Kernel32\Kernel32FileAccess.cs" />
@@ -56,7 +57,7 @@
     <Compile Include="Kernel32\FileFlags.cs" />
     <Compile Include="Kernel32\FileShareMode.cs" />
     <Compile Include="Kernel32\Kernel32Dll.cs" />
-    <Compile Include="Kernel32\Kernel32Dll.NativeMethods.cs" />
+    <Compile Include="Kernel32\Kernell32DllNativeMethods.cs" />
     <Compile Include="Kernel32\Kernell32Extensions.cs" />
     <Compile Include="NullableStructPtr.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -65,7 +66,7 @@
     <Compile Include="SetupApi\GetClassDevsFlags.cs" />
     <Compile Include="SetupApi\SafeDeviceInfoListHandle.cs" />
     <Compile Include="SetupApi\SetupApiDll.cs" />
-    <Compile Include="SetupApi\SetupApiDll.NativeMethods.cs" />
+    <Compile Include="SetupApi\SetupApiDllNativeMethods.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.references" />

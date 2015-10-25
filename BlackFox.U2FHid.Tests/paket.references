@@ -1,4 +1,6 @@
-﻿group Tests
+﻿Common.Logging.Portable
+
+group Tests
     Moq
     NUnit
     NFluent

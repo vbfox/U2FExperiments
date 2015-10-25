@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <SharedGUID>f9623c13-348b-47d1-9df1-4580b7c5ccb6</SharedGUID>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration">
+    <Import_RootNamespace>
+    </Import_RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(MSBuildThisFileDirectory)ArraySegmentExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ArraySegmentLoggingExtensions.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EmptyArray.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EmptyArraySegment.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EndianessHelpers.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Endianness.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EndianReader.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EndianWriter.cs" />
+  </ItemGroup>
+</Project>

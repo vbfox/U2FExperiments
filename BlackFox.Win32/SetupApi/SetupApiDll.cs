@@ -17,7 +17,7 @@ namespace BlackFox.Win32.SetupApi
         {
             using (var guidPtr = new NullableStructPtr<Guid>(gClass))
             {
-                return NativeMethods.SetupDiGetClassDevs(guidPtr.Pointer, strEnumerator, hParent, nFlags);
+                return SetupApiDllNativeMethods.SetupDiGetClassDevs(guidPtr.Pointer, strEnumerator, hParent, nFlags);
             }
         }
 
@@ -31,7 +31,7 @@ namespace BlackFox.Win32.SetupApi
             uint nIndex,
             ref DeviceInterfaceData oInterfaceData)
         {
-            return NativeMethods.SetupDiEnumDeviceInterfaces(lpDeviceInfoSet, nDeviceInfoData, ref gClass, nIndex,
+            return SetupApiDllNativeMethods.SetupDiEnumDeviceInterfaces(lpDeviceInfoSet, nDeviceInfoData, ref gClass, nIndex,
                 ref oInterfaceData);
         }
 
@@ -89,7 +89,7 @@ namespace BlackFox.Win32.SetupApi
         {
             using (var requiredSize = new NullableStructPtr<uint>(0))
             {
-                NativeMethods.GetDeviceInterfaceDetail(lpDeviceInfoSet, ref oInterfaceData, IntPtr.Zero,
+                SetupApiDllNativeMethods.GetDeviceInterfaceDetail(lpDeviceInfoSet, ref oInterfaceData, IntPtr.Zero,
                     0, requiredSize.Pointer, IntPtr.Zero);
 
                 var lastError = Marshal.GetLastWin32Error();
@@ -104,7 +104,7 @@ namespace BlackFox.Win32.SetupApi
                 try
                 {
                     Marshal.WriteInt32(buffer, deviceInterfaceDetailDataSize.Value);
-                    var success = NativeMethods.GetDeviceInterfaceDetail(lpDeviceInfoSet, ref oInterfaceData, buffer,
+                    var success = SetupApiDllNativeMethods.GetDeviceInterfaceDetail(lpDeviceInfoSet, ref oInterfaceData, buffer,
                         requiredSize.Value, IntPtr.Zero, IntPtr.Zero);
                     if (!success)
                     {

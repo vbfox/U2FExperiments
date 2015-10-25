@@ -17,7 +17,7 @@ namespace BlackFox.Win32.Hid
 
         protected override bool ReleaseHandle()
         {
-            return HidDll.NativeMethods.HidD_FreePreparsedData(handle);
+            return HidDllNativeMethods.HidD_FreePreparsedData(handle);
         }
     }
 }

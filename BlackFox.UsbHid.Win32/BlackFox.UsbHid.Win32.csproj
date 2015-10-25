@@ -23,6 +23,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +32,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="mscorlib" />
@@ -44,15 +46,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentExtensions.cs">
-      <Link>Utils\ArraySegmentExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\BlackFox.BinaryUtils\ArraySegmentLoggingExtensions.cs">
-      <Link>Utils\ArraySegmentLoggingExtensions.cs</Link>
-    </Compile>
-    <Compile Include="..\BlackFox.BinaryUtils\ResharperAnnotations.cs">
-      <Link>Utils\ResharperAnnotations.cs</Link>
-    </Compile>
     <Compile Include="ExceptionConversion.cs" />
     <Compile Include="Win32HidOutputReport.cs" />
     <Compile Include="Win32HidDevice.cs" />
@@ -75,6 +68,8 @@
   <ItemGroup>
     <None Include="paket.references" />
   </ItemGroup>
+  <Import Project="..\BlackFox.BinaryUtils\BinaryUtils.projitems" Label="Shared" />
+  <Import Project="..\ResharperAnnotations\ResharperAnnotations.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build\build\Microsoft.Bcl.Build.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

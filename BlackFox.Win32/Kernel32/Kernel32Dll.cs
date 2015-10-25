@@ -28,7 +28,7 @@ namespace BlackFox.Win32.Kernel32
             IntPtr hTemplateFile,
             bool throwOnInvalid = true)
         {
-            var result = NativeMethods.CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
+            var result = Kernell32DllNativeMethods.CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
                 dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 
             if (result.IsInvalid && throwOnInvalid)
@@ -51,7 +51,7 @@ namespace BlackFox.Win32.Kernel32
         {
             using (var overlapped = new NullableStructPtr<NativeOverlapped>(lpOverlapped))
             {
-                return NativeMethods.DeviceIoControl(hDevice, dwIoControlCode, inBuffer, nInBufferSize,
+                return Kernell32DllNativeMethods.DeviceIoControl(hDevice, dwIoControlCode, inBuffer, nInBufferSize,
                     outBuffer, nOutBufferSize, out pBytesReturned, overlapped.Pointer);
             }
         }
@@ -166,13 +166,13 @@ namespace BlackFox.Win32.Kernel32
 
                     if (overlappedState.IsCancellation || cancellationToken.IsCancellationRequested)
                     {
-                        NativeMethods.CancelIoEx(handle, overlapped.Pointer);
+                        Kernell32DllNativeMethods.CancelIoEx(handle, overlapped.Pointer);
                         completionSource.SetCanceled();
                     }
                     else
                     {
                         int bytesReturned;
-                        var overlappedResult = NativeMethods.GetOverlappedResult(handle, overlapped.Pointer,
+                        var overlappedResult = Kernell32DllNativeMethods.GetOverlappedResult(handle, overlapped.Pointer,
                             out bytesReturned, false);
 
                         overlapped.Dispose();
@@ -234,7 +234,7 @@ namespace BlackFox.Win32.Kernel32
             }
 
             int pBytesReturned;
-            NativeMethods.GetOverlappedResult(handle, overlapped.Pointer, out pBytesReturned, false);
+            Kernell32DllNativeMethods.GetOverlappedResult(handle, overlapped.Pointer, out pBytesReturned, false);
             if (cancellationToken.IsCancellationRequested)
             {
                 completionSource.SetCanceled();
@@ -259,7 +259,7 @@ namespace BlackFox.Win32.Kernel32
             return OverlappedAsync(hDevice, lpOverlapped =>
             {
                 int pBytesReturned;
-                return NativeMethods.DeviceIoControl(hDevice, dwIoControlCode, inBuffer, nInBufferSize, outBuffer,
+                return Kernell32DllNativeMethods.DeviceIoControl(hDevice, dwIoControlCode, inBuffer, nInBufferSize, outBuffer,
                     nOutBufferSize, out pBytesReturned, lpOverlapped);
             }, cancellationToken);
         }
@@ -273,7 +273,7 @@ namespace BlackFox.Win32.Kernel32
             return OverlappedAsync(handle, lpOverlapped =>
             {
                 int numberOfBytesWritten;
-                return NativeMethods.WriteFile(handle, buffer, numberOfBytesToWrite, out numberOfBytesWritten,
+                return Kernell32DllNativeMethods.WriteFile(handle, buffer, numberOfBytesToWrite, out numberOfBytesWritten,
                     lpOverlapped);
             }, cancellationToken);
         }
@@ -294,7 +294,7 @@ namespace BlackFox.Win32.Kernel32
             return OverlappedAsync(handle, lpOverlapped =>
             {
                 int numberOfBytesRead;
-                return NativeMethods.ReadFile(handle, buffer, numberOfBytesToRead, out numberOfBytesRead,
+                return Kernell32DllNativeMethods.ReadFile(handle, buffer, numberOfBytesToRead, out numberOfBytesRead,
                     lpOverlapped);
             }, cancellationToken);
         }
