@@ -59,7 +59,7 @@
     <Compile Include="Kernel32\Kernel32Dll.cs" />
     <Compile Include="Kernel32\Kernell32DllNativeMethods.cs" />
     <Compile Include="Kernel32\Kernell32Extensions.cs" />
-    <Compile Include="NullableStructPtr.cs" />
+    <Compile Include="PinnedStruct.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResharperAnnotations.cs" />
     <Compile Include="SetupApi\DeviceInterfaceData.cs" />

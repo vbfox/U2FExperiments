@@ -2,6 +2,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using System.Security;
+using System.Threading;
 using Microsoft.Win32.SafeHandles;
 
 namespace BlackFox.Win32.Kernel32
@@ -21,7 +22,7 @@ namespace BlackFox.Win32.Kernel32
             IntPtr hTemplateFile);
 
         [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool DeviceIoControl(
+        public static extern unsafe bool DeviceIoControl(
             SafeFileHandle hDevice,
             uint dwIoControlCode,
             IntPtr inBuffer,
@@ -29,38 +30,38 @@ namespace BlackFox.Win32.Kernel32
             IntPtr outBuffer,
             int nOutBufferSize,
             out int pBytesReturned,
-            IntPtr lpOverlapped);
+            NativeOverlapped* lpOverlapped);
 
         [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool GetOverlappedResult(
+        public static extern unsafe bool GetOverlappedResult(
             SafeFileHandle hDevice,
-            IntPtr lpOverlapped,
+            NativeOverlapped* lpOverlapped,
             out int lpNumberOfBytesTransferred,
             bool wait);
 
         [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool WriteFile(
+        public static extern unsafe bool WriteFile(
             SafeFileHandle hFile,
             IntPtr lpBuffer,
             int nNumberOfBytesToWrite,
             out int lpNumberOfBytesWritten,
-            IntPtr lpOverlapped);
+            NativeOverlapped* lpOverlapped);
 
         [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool ReadFile(
+        public static extern unsafe bool ReadFile(
             SafeFileHandle hFile,
             IntPtr lpBuffer,
             int nNumberOfBytesToRead,
             out int lpNumberOfBytesRead,
-            IntPtr lpOverlapped);
+            NativeOverlapped* lpOverlapped);
 
         [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern bool CancelIo(
             SafeFileHandle hFile);
 
         [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool CancelIoEx(
+        public static extern unsafe bool CancelIoEx(
             SafeFileHandle hFile,
-            IntPtr lpOverlapped);
+            NativeOverlapped* lpOverlapped);
     }
 }

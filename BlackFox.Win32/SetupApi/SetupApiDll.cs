@@ -15,9 +15,9 @@ namespace BlackFox.Win32.SetupApi
             [MarshalAs(UnmanagedType.LPStr)] string strEnumerator,
             IntPtr hParent, GetClassDevsFlags nFlags)
         {
-            using (var guidPtr = new NullableStructPtr<Guid>(gClass))
+            using (var guidPtr = new PinnedStruct<Guid>(gClass))
             {
-                return SetupApiDllNativeMethods.SetupDiGetClassDevs(guidPtr.Pointer, strEnumerator, hParent, nFlags);
+                return SetupApiDllNativeMethods.SetupDiGetClassDevs(guidPtr.IntPtr, strEnumerator, hParent, nFlags);
             }
         }
 
@@ -87,10 +87,10 @@ namespace BlackFox.Win32.SetupApi
             SafeDeviceInfoListHandle lpDeviceInfoSet, DeviceInterfaceData oInterfaceData,
             IntPtr lpDeviceInfoData)
         {
-            using (var requiredSize = new NullableStructPtr<uint>(0))
+            using (var requiredSize = new PinnedStruct<uint>(0))
             {
                 SetupApiDllNativeMethods.GetDeviceInterfaceDetail(lpDeviceInfoSet, ref oInterfaceData, IntPtr.Zero,
-                    0, requiredSize.Pointer, IntPtr.Zero);
+                    0, requiredSize.IntPtr, IntPtr.Zero);
 
                 var lastError = Marshal.GetLastWin32Error();
 

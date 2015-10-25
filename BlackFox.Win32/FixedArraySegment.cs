@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 namespace BlackFox.Win32
 {
     class FixedArraySegment<T> : IDisposable
-        where T : struct 
+        where T : struct
     {
         GCHandle? handle;
 
@@ -14,7 +14,8 @@ namespace BlackFox.Win32
 
         public int SizeInBytes
         {
-            get {
+            get
+            {
                 if (LongSizeInBytes > int.MaxValue || LongSizeInBytes < int.MinValue)
                 {
                     throw new InvalidOperationException("Segment is too big for it's size to be represented by an Int32");
@@ -37,9 +38,9 @@ namespace BlackFox.Win32
             var segment = maybeSegment.Value;
             handle = GCHandle.Alloc(segment.Array, GCHandleType.Pinned);
             var arrayPtr = handle.Value.AddrOfPinnedObject();
-            ElementSize = Marshal.SizeOf(typeof(T));
-            Pointer = new IntPtr(arrayPtr.ToInt64() + ElementSize * segment.Offset);
-            LongSizeInBytes = ElementSize * segment.Count;
+            ElementSize = Marshal.SizeOf(typeof (T));
+            Pointer = new IntPtr(arrayPtr.ToInt64() + ElementSize*segment.Offset);
+            LongSizeInBytes = ElementSize*segment.Count;
         }
 
         public void Dispose()
