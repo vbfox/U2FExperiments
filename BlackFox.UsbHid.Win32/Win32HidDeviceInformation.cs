@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Win32.Hid;
 
@@ -16,14 +17,15 @@ namespace BlackFox.UsbHid.Win32
         public abstract string Product { get; }
         public abstract string SerialNumber { get; }
 
-        Task<IHidDevice> IHidDeviceInformation.OpenDeviceAsync(HidDeviceAccessMode accessMode)
+        Task<IHidDevice> IHidDeviceInformation.OpenDeviceAsync(HidDeviceAccessMode accessMode, CancellationToken cancellationToken)
         {
-            return Win32HidDeviceFactory.Instance.FromIdAsyncInferface(Path, accessMode, this);
+            return Win32HidDeviceFactory.Instance.FromIdAsyncInferface(Path, accessMode, this, cancellationToken);
         }
 
-        public Task<Win32HidDevice> OpenDeviceAsync(HidDeviceAccessMode accessMode = HidDeviceAccessMode.ReadWrite)
+        public Task<Win32HidDevice> OpenDeviceAsync(HidDeviceAccessMode accessMode = HidDeviceAccessMode.ReadWrite,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
-            return Win32HidDeviceFactory.Instance.FromIdAsync(Path, accessMode, this);
+            return Win32HidDeviceFactory.Instance.FromIdAsync(Path, accessMode, this, cancellationToken);
         }
 
         string IHidDeviceInformation.Id => Path;

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Security;
@@ -35,7 +36,8 @@ namespace BlackFox.U2F.GnubbyApi
             this.resultValidator = resultValidator;
         }
 
-        readonly ConcurrentDictionary<IKeyId, bool> signersInProgress = new ConcurrentDictionary<IKeyId, bool>();
+        readonly Dictionary<IKeyId, bool> signersInProgress = new Dictionary<IKeyId, bool>();
+        readonly object signersInProgressLock = new object();
 
         [NotNull]
         [ItemCanBeNull]
@@ -74,15 +76,23 @@ namespace BlackFox.U2F.GnubbyApi
 
         private async Task AddNewSignersAsync(TaskCompletionSource<T> tcs, CancellationToken cancellationToken)
         {
+            Dictionary<IKeyId, bool> localSignersInProgress;
+            lock (signersInProgressLock)
+            {
+                localSignersInProgress = new Dictionary<IKeyId, bool>(signersInProgress);
+            }
             var allKeys = await keyFactory.FindAllAsync(cancellationToken);
-            var newKeys = allKeys.Where(k => !signersInProgress.ContainsKey(k)).ToList();
+            var newKeys = allKeys.Where(k => !localSignersInProgress.ContainsKey(k)).ToList();
             if (newKeys.Count > 0)
             {
                 log.Info($"Found {newKeys.Count} new keys connected");
 
-                foreach (var key in newKeys)
+                lock (signersInProgressLock)
                 {
-                    signersInProgress.AddOrUpdate(key, k => StartSingleSigner(k, tcs, cancellationToken), (k, v) => v);
+                    foreach (var key in newKeys)
+                    {
+                        signersInProgress[key] = StartSingleSigner(key, tcs, cancellationToken);
+                    }
                 }
             }
         }
@@ -114,8 +124,10 @@ namespace BlackFox.U2F.GnubbyApi
 
         private void ForgetSigner(IKeyId keyId)
         {
-            bool useless;
-            signersInProgress.TryRemove(keyId, out useless);
+            lock (signersInProgressLock)
+            {
+                signersInProgress.Remove(keyId);
+            }
         }
     }
 }

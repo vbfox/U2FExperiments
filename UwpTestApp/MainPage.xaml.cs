@@ -74,7 +74,7 @@ namespace UwpTestApp
         async void U2fClicked(object sender, RoutedEventArgs e)
         {
             textBox.Text = "";
-            var hidFactory = UwpFactory.Instance;
+            var hidFactory = new UwpFactory(Dispatcher);
             var u2FFactory = new U2FHidKeyFactory(hidFactory);
             var u2FDevices = await u2FFactory.FindAllAsync();
             
@@ -120,7 +120,7 @@ namespace UwpTestApp
         {
             var keyDict = new ConcurrentDictionary<IKeyId, bool>();
             textBox.Text = "";
-            var hidFactory = UwpFactory.Instance;
+            var hidFactory = new UwpFactory(Dispatcher);
             var keyFactory = new U2FHidKeyFactory(hidFactory);
 
             var dataStore = new InMemoryServerDataStore(new GuidSessionIdGenerator());

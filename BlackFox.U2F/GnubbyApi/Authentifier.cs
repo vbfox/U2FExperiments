@@ -44,7 +44,7 @@ namespace BlackFox.U2F.GnubbyApi
             {
                 while (true)
                 {
-                    var signOnceResult = await TrySigningOnceAsync(key, cancellationToken);
+                    var signOnceResult = await TryRegisteringOnceAsync(key, cancellationToken);
 
                     if (signOnceResult.HasValue)
                     {
@@ -56,14 +56,14 @@ namespace BlackFox.U2F.GnubbyApi
             }
         }
 
-        async Task<AuthentifierResult?> TrySigningOnceAsync(IKey key, CancellationToken cancellationToken)
+        async Task<AuthentifierResult?> TryRegisteringOnceAsync(IKey key, CancellationToken cancellationToken)
         {
             int challengesTried = 0;
             foreach (var request in requests)
             {
                 challengesTried += 1;
 
-                var requestSignResult = await TrySignOneRequest(key, request, cancellationToken);
+                var requestSignResult = await TryOneRequest(key, request, cancellationToken);
                 if (requestSignResult.HasValue)
                 {
                     return requestSignResult.Value;
@@ -77,7 +77,7 @@ namespace BlackFox.U2F.GnubbyApi
             return null;
         }
 
-        async Task<AuthentifierResult?> TrySignOneRequest(IKey key, RegisterRequest request,
+        async Task<AuthentifierResult?> TryOneRequest(IKey key, RegisterRequest request,
             CancellationToken cancellationToken)
         {
             try

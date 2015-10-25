@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
@@ -8,8 +9,11 @@ using System.Threading.Tasks;
 using Windows.Devices.Enumeration;
 using Windows.Devices.HumanInterfaceDevice;
 using Windows.Storage;
+using Windows.Storage.Streams;
+using Windows.UI.Core;
 using BlackFox.Binary;
 using BlackFox.UsbHid;
+using JetBrains.Annotations;
 using HidInputReport = BlackFox.UsbHid.HidInputReport;
 
 
@@ -24,15 +28,15 @@ namespace UwpTestApp
         public UwpOutputReport(HidOutputReport report)
         {
             this.report = report;
-            Data = new ArraySegment<byte>(new byte[report.Data.Capacity]);
+            Data = new ArraySegment<byte>(new byte[report.Data.Capacity-1]);
         }
 
         public HidOutputReport GetFilledReport()
         {
-            using (var stream = report.Data.AsStream())
-            {
-                stream.Write(Data.Array, Data.Offset, Data.Count);
-            }
+            var dataWriter = new DataWriter();
+            dataWriter.WriteByte(Id);
+            dataWriter.WriteBytes(Data.Array);
+            report.Data = dataWriter.DetachBuffer();
 
             return report;
         }
@@ -50,6 +54,27 @@ namespace UwpTestApp
             }
 
             this.device = device;
+            device.InputReportReceived += DeviceOnInputReportReceived;
+        }
+
+        object inputReportLock = new object();
+        Queue<Windows.Devices.HumanInterfaceDevice.HidInputReport> inputReportQueue
+            = new Queue<Windows.Devices.HumanInterfaceDevice.HidInputReport>();
+        TaskCompletionSource<Windows.Devices.HumanInterfaceDevice.HidInputReport> inputReportSource;
+
+        void DeviceOnInputReportReceived(HidDevice sender, HidInputReportReceivedEventArgs args)
+        {
+            lock (inputReportLock)
+            {
+                if (inputReportSource != null)
+                {
+                    inputReportSource.SetResult(args.Report);
+                }
+                else
+                {
+                    inputReportQueue.Enqueue(args.Report);
+                }
+            }
         }
 
         public void Dispose()
@@ -92,9 +117,42 @@ namespace UwpTestApp
 
         public async Task<HidInputReport> GetInputReportAsync(CancellationToken cancellationToken = new CancellationToken())
         {
+            lock (inputReportLock)
+            {
+                if (inputReportSource != null)
+                {
+                    throw new ArgumentException("Can't have more than one GetInputReportAsync running");
+                }
+
+                if (inputReportQueue.Count > 0)
+                {
+                    return WrapInputReport(inputReportQueue.Dequeue());
+                }
+
+                inputReportSource = new TaskCompletionSource<Windows.Devices.HumanInterfaceDevice.HidInputReport>();
+            }
+
+            try
+            {
+                return WrapInputReport(await inputReportSource.Task);
+            }
+            finally
+            {
+                lock (inputReportLock)
+                {
+                    inputReportSource = null;
+                }
+            }
+            /*
             var result = await device.GetInputReportAsync().AsTask(cancellationToken);
             var buffer = result.Data.ToArray().Segment();
-            return new HidInputReport((byte)result.Id, buffer);
+            return new HidInputReport((byte)result.Id, buffer);*/
+        }
+
+        static HidInputReport WrapInputReport(Windows.Devices.HumanInterfaceDevice.HidInputReport report)
+        {
+            var buffer = report.Data.ToArray().Segment();
+            return new HidInputReport(buffer);
         }
     }
 
@@ -109,7 +167,12 @@ namespace UwpTestApp
 
     class UwpFactory : IHidDeviceFactory
     {
-        public static UwpFactory Instance { get; } = new UwpFactory();
+        readonly CoreDispatcher uiDispatcher;
+
+        public UwpFactory(CoreDispatcher uiDispatcher)
+        {
+            this.uiDispatcher = uiDispatcher;
+        }
 
         static FileAccessMode ConvertAccessMode(HidDeviceAccessMode mode)
         {
@@ -133,7 +196,18 @@ namespace UwpTestApp
             CancellationToken cancellationToken = new CancellationToken())
         {
             var uwpAccessMode = ConvertAccessMode(accessMode);
-            var device = await HidDevice.FromIdAsync(deviceId, uwpAccessMode).AsTask(cancellationToken);
+
+            HidDevice device = null;
+            await uiDispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
+            {
+                device = HidDevice.FromIdAsync(deviceId, uwpAccessMode).AsTask(cancellationToken).Result;
+            });
+
+            if (device == null)
+            {
+                throw new InvalidOperationException("Can't create device");
+            }
+
             return new UwpDevice(device);
         }
 
@@ -154,12 +228,13 @@ namespace UwpTestApp
             var raw = await DeviceInformation.FindAllAsync(EnabledUsbHidSelector, wantedProperties,
                 DeviceInformationKind.DeviceInterface);
 
-            return raw.Select(di => (IHidDeviceInformation)new UwpDeviceInformation(di)).ToList();
+            return raw.Select(di => (IHidDeviceInformation)new UwpDeviceInformation(this, di)).ToList();
         }
     }
 
     class UwpDeviceInformation : IHidDeviceInformation
     {
+        readonly UwpFactory factory;
         readonly DeviceInformation deviceInformation;
         public string Id => deviceInformation.Id;
         public ushort ProductId => UInt16Property(UwpDevicePropertyNames.ProductId);
@@ -174,13 +249,22 @@ namespace UwpTestApp
         public Task<IHidDevice> OpenDeviceAsync(HidDeviceAccessMode accessMode = HidDeviceAccessMode.ReadWrite,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            return UwpFactory.Instance.FromIdAsync(Id, accessMode, cancellationToken);
+            return factory.FromIdAsync(Id, accessMode, cancellationToken);
         }
 
-        public UwpDeviceInformation(DeviceInformation deviceInformation)
+        public UwpDeviceInformation([NotNull] UwpFactory factory, [NotNull] DeviceInformation deviceInformation)
         {
-            this.deviceInformation = deviceInformation;
+            if (factory == null)
+            {
+                throw new ArgumentNullException(nameof(factory));
+            }
+            if (deviceInformation == null)
+            {
+                throw new ArgumentNullException(nameof(deviceInformation));
+            }
 
+            this.factory = factory;
+            this.deviceInformation = deviceInformation;
         }
 
         string StringProperty(string name)

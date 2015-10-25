@@ -37,25 +37,26 @@ namespace BlackFox.UsbHid.Win32
         }
 
         internal Task<IHidDevice> FromIdAsyncInferface(string deviceId, HidDeviceAccessMode accessMode,
-            [CanBeNull] Win32HidDeviceInformation knownInformation)
+            [CanBeNull] Win32HidDeviceInformation knownInformation, CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(() => (IHidDevice)FromId(deviceId, accessMode, knownInformation));
+            return TaskEx.Run(() => (IHidDevice)FromId(deviceId, accessMode, knownInformation), cancellationToken);
         }
 
         Task<IHidDevice> IHidDeviceFactory.FromIdAsync(string deviceId, HidDeviceAccessMode accessMode, CancellationToken cancellationToken)
         {
-            return FromIdAsyncInferface(deviceId, accessMode, null);
+            return FromIdAsyncInferface(deviceId, accessMode, null, cancellationToken);
         }
 
         internal Task<Win32HidDevice> FromIdAsync(string deviceId, HidDeviceAccessMode accessMode,
-            [CanBeNull] Win32HidDeviceInformation knownInformation)
+            [CanBeNull] Win32HidDeviceInformation knownInformation, CancellationToken cancellationToken)
         {
-            return Task.Factory.StartNew(() => FromId(deviceId, accessMode, knownInformation));
+            return TaskEx.Run(() => FromId(deviceId, accessMode, knownInformation), cancellationToken);
         }
 
-        public Task<Win32HidDevice> FromIdAsync(string deviceId, HidDeviceAccessMode accessMode)
+        public Task<Win32HidDevice> FromIdAsync(string deviceId, HidDeviceAccessMode accessMode,
+            CancellationToken cancellationToken = default(CancellationToken))
         {
-            return FromIdAsync(deviceId, accessMode, null);
+            return FromIdAsync(deviceId, accessMode, null, cancellationToken);
         }
 
         Task<ICollection<IHidDeviceInformation>> IHidDeviceFactory.FindAllAsync(CancellationToken cancellationToken)
