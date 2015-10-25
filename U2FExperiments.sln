@@ -29,14 +29,19 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.U2F.Tests", "Black
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UwpTestApp", "UwpTestApp\UwpTestApp.csproj", "{98E75FEE-0FBB-4E57-881B-0F4D9756A608}"
 EndProject
-Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BinaryUtils", "BlackFox.BinaryUtils\BinaryUtils.shproj", "{F9623C13-348B-47D1-9DF1-4580B7C5CCB6}"
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BlackFox.Binary", "BlackFox.BinaryUtils\BlackFox.Binary.shproj", "{F9623C13-348B-47D1-9DF1-4580B7C5CCB6}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ResharperAnnotations", "ResharperAnnotations\ResharperAnnotations.shproj", "{CF042726-F1EE-4CA1-906A-346FA6647B88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BlackFox.UsbHid.Uwp", "BlackFox.UsbHid.Uwp\BlackFox.UsbHid.Uwp.csproj", "{D3A00E99-5078-496D-A726-BA7DAA132C08}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "BlackFox.Binary.Logging", "BlackFox.Binary.Logging\BlackFox.Binary.Logging.shproj", "{9F157242-9AE6-4ADB-8085-FD1FB5CD4C12}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		ResharperAnnotations\ResharperAnnotations.projitems*{e54f34e3-1242-414b-b249-7742835a11a0}*SharedItemsImports = 4
 		BlackFox.BinaryUtils\BinaryUtils.projitems*{e54f34e3-1242-414b-b249-7742835a11a0}*SharedItemsImports = 4
+		BlackFox.Binary.Logging\BlackFox.Binary.Logging.projitems*{e54f34e3-1242-414b-b249-7742835a11a0}*SharedItemsImports = 4
 		BlackFox.BinaryUtils\BinaryUtils.projitems*{f9623c13-348b-47d1-9df1-4580b7c5ccb6}*SharedItemsImports = 13
 		ResharperAnnotations\ResharperAnnotations.projitems*{98e75fee-0fbb-4e57-881b-0f4d9756a608}*SharedItemsImports = 4
 		BlackFox.BinaryUtils\BinaryUtils.projitems*{98e75fee-0fbb-4e57-881b-0f4d9756a608}*SharedItemsImports = 4
@@ -44,7 +49,10 @@ Global
 		BlackFox.BinaryUtils\BinaryUtils.projitems*{6781a77f-b12f-46a7-9031-7dc282226a11}*SharedItemsImports = 4
 		ResharperAnnotations\ResharperAnnotations.projitems*{029ad986-b1c8-4713-aac6-783761e8d042}*SharedItemsImports = 4
 		BlackFox.BinaryUtils\BinaryUtils.projitems*{029ad986-b1c8-4713-aac6-783761e8d042}*SharedItemsImports = 4
+		BlackFox.Binary.Logging\BlackFox.Binary.Logging.projitems*{9f157242-9ae6-4adb-8085-fd1fb5cd4c12}*SharedItemsImports = 13
 		ResharperAnnotations\ResharperAnnotations.projitems*{cf042726-f1ee-4ca1-906a-346fa6647b88}*SharedItemsImports = 13
+		ResharperAnnotations\ResharperAnnotations.projitems*{d3a00e99-5078-496d-a726-ba7daa132c08}*SharedItemsImports = 4
+		BlackFox.BinaryUtils\BinaryUtils.projitems*{d3a00e99-5078-496d-a726-ba7daa132c08}*SharedItemsImports = 4
 		ResharperAnnotations\ResharperAnnotations.projitems*{82a6d2fa-7322-40f9-8cc8-91af500be384}*SharedItemsImports = 4
 		BlackFox.BinaryUtils\BinaryUtils.projitems*{82a6d2fa-7322-40f9-8cc8-91af500be384}*SharedItemsImports = 4
 		ResharperAnnotations\ResharperAnnotations.projitems*{9326377b-a51a-4cf4-b0f3-4a82060c419c}*SharedItemsImports = 4
@@ -210,6 +218,22 @@ Global
 		{98E75FEE-0FBB-4E57-881B-0F4D9756A608}.Release|x86.ActiveCfg = Release|x86
 		{98E75FEE-0FBB-4E57-881B-0F4D9756A608}.Release|x86.Build.0 = Release|x86
 		{98E75FEE-0FBB-4E57-881B-0F4D9756A608}.Release|x86.Deploy.0 = Release|x86
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Debug|ARM.ActiveCfg = Debug|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Debug|ARM.Build.0 = Debug|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Debug|x64.Build.0 = Debug|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Debug|x86.Build.0 = Debug|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Release|ARM.ActiveCfg = Release|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Release|ARM.Build.0 = Release|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Release|x64.ActiveCfg = Release|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Release|x64.Build.0 = Release|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Release|x86.ActiveCfg = Release|Any CPU
+		{D3A00E99-5078-496D-A726-BA7DAA132C08}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

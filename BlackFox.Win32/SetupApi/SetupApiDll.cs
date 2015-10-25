@@ -7,7 +7,7 @@ using System.Security;
 
 namespace BlackFox.Win32.SetupApi
 {
-    public static partial class SetupApiDll
+    public static class SetupApiDll
     {
         /* function returns a handle to a device information set that contains
          * requested device information elements for a local computer */

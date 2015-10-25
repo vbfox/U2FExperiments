@@ -7,7 +7,7 @@ using Microsoft.Win32.SafeHandles;
 
 namespace BlackFox.Win32.Kernel32
 {
-    public static partial class Kernel32Dll
+    public static class Kernel32Dll
     {
         public static IntPtr InvalidHandleValue = new IntPtr(-1);
 

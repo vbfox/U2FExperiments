@@ -2,19 +2,19 @@
 <Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
-    <MinimumVisualStudioVersion>10.0</MinimumVisualStudioVersion>
+    <MinimumVisualStudioVersion>12.0</MinimumVisualStudioVersion>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{9326377B-A51A-4CF4-B0F3-4A82060C419C}</ProjectGuid>
+    <ProjectGuid>{D3A00E99-5078-496D-A726-BA7DAA132C08}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BlackFox.UsbHid</RootNamespace>
-    <AssemblyName>BlackFox.UsbHid</AssemblyName>
+    <RootNamespace>BlackFox.UsbHid.Uwp</RootNamespace>
+    <AssemblyName>BlackFox.UsbHid.Uwp</AssemblyName>
     <DefaultLanguage>en-US</DefaultLanguage>
     <FileAlignment>512</FileAlignment>
     <ProjectTypeGuids>{786C830F-07A1-408B-BD7F-6EE04809D6DB};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
-    <TargetFrameworkProfile>Profile92</TargetFrameworkProfile>
-    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Profile32</TargetFrameworkProfile>
+    <TargetFrameworkVersion>v4.6</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -24,6 +24,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -32,22 +33,32 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Exceptions\UsbHidException.cs" />
-    <Compile Include="Exceptions\DeviceNotConnectedException.cs" />
-    <Compile Include="HidDeviceAccessMode.cs" />
-    <Compile Include="HidInputReport.cs" />
-    <Compile Include="IHidOutputReport.cs" />
-    <Compile Include="IHidDevice.cs" />
-    <Compile Include="IHidDeviceFactory.cs" />
-    <Compile Include="IHidDeviceInformation.cs" />
+    <!-- A reference to the entire .NET Framework is automatically included -->
+    <ProjectReference Include="..\BlackFox.UsbHid\BlackFox.UsbHid.csproj">
+      <Project>{9326377b-a51a-4cf4-b0f3-4a82060c419c}</Project>
+      <Name>BlackFox.UsbHid</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <TargetPlatform Include="Windows, Version=8.1" />
+    <TargetPlatform Include="WindowsPhoneApp, Version=8.1" />
+  </ItemGroup>
+  <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UwpHidDevice.cs" />
+    <Compile Include="UwpHidDeviceInformation.cs" />
+    <Compile Include="UwpDevicePropertyNames.cs" />
+    <Compile Include="UwpHidDeviceFactory.cs" />
+    <Compile Include="UwpOutputReport.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.references" />
   </ItemGroup>
   <Import Project="..\ResharperAnnotations\ResharperAnnotations.projitems" Label="Shared" />
+  <Import Project="..\BlackFox.BinaryUtils\BinaryUtils.projitems" Label="Shared" />
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\Portable\$(TargetFrameworkVersion)\Microsoft.Portable.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

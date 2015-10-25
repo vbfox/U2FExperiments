@@ -103,7 +103,6 @@
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UwpFactory.cs" />
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -139,6 +138,10 @@
     <ProjectReference Include="..\BlackFox.U2F\BlackFox.U2F.csproj">
       <Project>{029ad986-b1c8-4713-aac6-783761e8d042}</Project>
       <Name>BlackFox.U2F</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\BlackFox.UsbHid.Uwp\BlackFox.UsbHid.Uwp.csproj">
+      <Project>{d3a00e99-5078-496d-a726-ba7daa132c08}</Project>
+      <Name>BlackFox.UsbHid.Uwp</Name>
     </ProjectReference>
     <ProjectReference Include="..\BlackFox.UsbHid\BlackFox.UsbHid.csproj">
       <Project>{9326377b-a51a-4cf4-b0f3-4a82060c419c}</Project>

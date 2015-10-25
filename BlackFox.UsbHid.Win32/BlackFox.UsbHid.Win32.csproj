@@ -70,6 +70,7 @@
   </ItemGroup>
   <Import Project="..\BlackFox.BinaryUtils\BinaryUtils.projitems" Label="Shared" />
   <Import Project="..\ResharperAnnotations\ResharperAnnotations.projitems" Label="Shared" />
+  <Import Project="..\BlackFox.Binary.Logging\BlackFox.Binary.Logging.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="..\packages\Microsoft.Bcl.Build\build\Microsoft.Bcl.Build.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
