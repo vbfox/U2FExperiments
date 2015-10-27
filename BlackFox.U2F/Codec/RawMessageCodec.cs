@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using BlackFox.Binary;
-using BlackFox.U2F.Key.messages;
+using BlackFox.U2F.Gnubby.Messages;
 using JetBrains.Annotations;
 using Org.BouncyCastle.Security.Certificates;
 using Org.BouncyCastle.X509;
@@ -15,15 +15,15 @@ namespace BlackFox.U2F.Codec
 
         public const byte RegistrationSignedReservedByteValue = 0x00;
 
-        public static byte[] EncodeRegisterRequest([NotNull] RegisterRequest registerRequest)
+        public static byte[] EncodeKeyRegisterRequest([NotNull] KeyRegisterRequest keyRegisterRequest)
         {
-            if (registerRequest == null)
+            if (keyRegisterRequest == null)
             {
-                throw new ArgumentNullException(nameof(registerRequest));
+                throw new ArgumentNullException(nameof(keyRegisterRequest));
             }
 
-            var appIdSha256 = registerRequest.ApplicationSha256;
-            var challengeSha256 = registerRequest.ChallengeSha256;
+            var appIdSha256 = keyRegisterRequest.ApplicationSha256;
+            var challengeSha256 = keyRegisterRequest.ChallengeSha256;
             var result = new byte[appIdSha256.Length + challengeSha256.Length];
             using (var writer = new EndianWriter(new MemoryStream(result), Endianness.BigEndian))
             {
@@ -34,7 +34,7 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static RegisterRequest DecodeRegisterRequest([NotNull] byte[] data)
+        public static KeyRegisterRequest DecodeKeyRegisterRequest([NotNull] byte[] data)
         {
             if (data == null)
             {
@@ -51,7 +51,7 @@ namespace BlackFox.U2F.Codec
                     {
                         throw new U2FException("Message ends with unexpected data");
                     }
-                    return new RegisterRequest(appIdSha256, challengeSha256);
+                    return new KeyRegisterRequest(appIdSha256, challengeSha256);
                 }
             }
             catch (IOException e)
@@ -61,17 +61,17 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static byte[] EncodeRegisterResponse([NotNull] RegisterResponse registerResponse)
+        public static byte[] EncodeKeyRegisterResponse([NotNull] KeyRegisterResponse keyRegisterResponse)
         {
-            if (registerResponse == null)
+            if (keyRegisterResponse == null)
             {
-                throw new ArgumentNullException(nameof(registerResponse));
+                throw new ArgumentNullException(nameof(keyRegisterResponse));
             }
 
-            var userPublicKey = registerResponse.UserPublicKey;
-            var keyHandle = registerResponse.KeyHandle;
-            var attestationCertificate = registerResponse.AttestationCertificate;
-            var signature = registerResponse.Signature;
+            var userPublicKey = keyRegisterResponse.UserPublicKey;
+            var keyHandle = keyRegisterResponse.KeyHandle;
+            var attestationCertificate = keyRegisterResponse.AttestationCertificate;
+            var signature = keyRegisterResponse.Signature;
             byte[] attestationCertificateBytes;
             try
             {
@@ -101,7 +101,7 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static RegisterResponse DecodeRegisterResponse(ArraySegment<byte> data)
+        public static KeyRegisterResponse DecodeKeyRegisterResponse(ArraySegment<byte> data)
         {
             try
             {
@@ -123,7 +123,7 @@ namespace BlackFox.U2F.Codec
                         throw new U2FException(
                             $"Incorrect value of reserved byte. Expected: {RegistrationReservedByteValue}. Was: {reservedByte}");
                     }
-                    return new RegisterResponse(userPublicKey, keyHandle,
+                    return new KeyRegisterResponse(userPublicKey, keyHandle,
                         attestationCertificate, signature);
                 }
             }
@@ -138,24 +138,24 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static byte[] EncodeAuthenticateRequest([NotNull] AuthenticateRequest authenticateRequest)
+        public static byte[] EncodeKeySignRequest([NotNull] KeySignRequest keySignRequest)
         {
-            if (authenticateRequest == null)
+            if (keySignRequest == null)
             {
-                throw new ArgumentNullException(nameof(authenticateRequest));
+                throw new ArgumentNullException(nameof(keySignRequest));
             }
 
             //var controlByte = authenticateRequest.Control;
-            var appIdSha256 = authenticateRequest.ApplicationSha256;
-            var challengeSha256 = authenticateRequest.ChallengeSha256;
-            var keyHandle = authenticateRequest.KeyHandle;
+            var appIdSha256 = keySignRequest.ApplicationSha256;
+            var challengeSha256 = keySignRequest.ChallengeSha256;
+            var keyHandle = keySignRequest.KeyHandle;
             if (keyHandle.Length > 255)
             {
                 throw new U2FException("keyHandle length cannot be longer than 255 bytes!");
             }
 
             int size;
-            switch (authenticateRequest.Version)
+            switch (keySignRequest.Version)
             {
                 case U2FVersion.V1:
                     size = appIdSha256.Length + challengeSha256.Length + keyHandle.Length;
@@ -164,16 +164,15 @@ namespace BlackFox.U2F.Codec
                     size = appIdSha256.Length + challengeSha256.Length + keyHandle.Length + 1;
                     break;
                 default:
-                    throw new ArgumentException("Unknown version: " + authenticateRequest.Version, nameof(authenticateRequest));
+                    throw new ArgumentException("Unknown version: " + keySignRequest.Version, nameof(keySignRequest));
             }
 
             var result = new byte[size];
             using (var writer = new EndianWriter(new MemoryStream(result), Endianness.BigEndian))
             {
-                //writer.Write(controlByte);
                 writer.Write(challengeSha256);
                 writer.Write(appIdSha256);
-                if (authenticateRequest.Version == U2FVersion.V2)
+                if (keySignRequest.Version == U2FVersion.V2)
                 {
                     writer.Write((byte)keyHandle.Length);
                 }
@@ -183,7 +182,7 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static AuthenticateRequest DecodeAuthenticateRequest([NotNull] byte[] data)
+        public static KeySignRequest DecodeKeySignRequest([NotNull] byte[] data)
         {
             if (data == null)
             {
@@ -194,7 +193,6 @@ namespace BlackFox.U2F.Codec
             {
                 using (var inputStream = new EndianReader(new MemoryStream(data), Endianness.BigEndian))
                 {
-                    var controlByte = inputStream.ReadByte();
                     var challengeSha256 = inputStream.ReadBytes(32);
                     var appIdSha256 = inputStream.ReadBytes(32);
                     var keyHandleSize = inputStream.ReadByte();
@@ -203,7 +201,7 @@ namespace BlackFox.U2F.Codec
                     {
                         throw new U2FException("Message ends with unexpected data");
                     }
-                    return new AuthenticateRequest(U2FVersion.V2, challengeSha256, appIdSha256, keyHandle);
+                    return new KeySignRequest(U2FVersion.V2, challengeSha256, appIdSha256, keyHandle);
                 }
             }
             catch (IOException e)
@@ -213,16 +211,16 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static byte[] EncodeAuthenticateResponse([NotNull] AuthenticateResponse authenticateResponse)
+        public static byte[] EncodeKeySignResponse([NotNull] KeySignResponse keySignResponse)
         {
-            if (authenticateResponse == null)
+            if (keySignResponse == null)
             {
-                throw new ArgumentNullException(nameof(authenticateResponse));
+                throw new ArgumentNullException(nameof(keySignResponse));
             }
 
-            var userPresence = authenticateResponse.UserPresence;
-            var counter = authenticateResponse.Counter;
-            var signature = authenticateResponse.Signature;
+            var userPresence = keySignResponse.UserPresence;
+            var counter = keySignResponse.Counter;
+            var signature = keySignResponse.Signature;
             var result = new byte[1 + 4 + signature.Length];
             using (var writer = new EndianWriter(new MemoryStream(result), Endianness.BigEndian))
             {
@@ -234,7 +232,7 @@ namespace BlackFox.U2F.Codec
         }
 
         /// <exception cref="U2FException"/>
-        public static AuthenticateResponse DecodeAuthenticateResponse(ArraySegment<byte> data)
+        public static KeySignResponse DecodeKeySignResponse(ArraySegment<byte> data)
         {
             try
             {
@@ -247,7 +245,7 @@ namespace BlackFox.U2F.Codec
                         var signatureSize = (int)(inputStream.BaseStream.Length - inputStream.BaseStream.Position);
                         var signature = inputStream.ReadBytes(signatureSize);
 
-                        return new AuthenticateResponse(userPresence, counter, signature);
+                        return new KeySignResponse(userPresence, counter, signature);
                     }
                 }
             }
@@ -257,7 +255,7 @@ namespace BlackFox.U2F.Codec
             }
         }
 
-        public static byte[] EncodeRegistrationSignedBytes(byte[] applicationSha256, byte[] challengeSha256, byte[] keyHandle, byte[] userPublicKey)
+        public static byte[] EncodeKeyRegisterSignedBytes(byte[] applicationSha256, byte[] challengeSha256, byte[] keyHandle, byte[] userPublicKey)
         {
             var size = 1 + applicationSha256.Length + challengeSha256.Length + keyHandle.Length + userPublicKey.Length;
             var signedData = new byte[size];
@@ -275,7 +273,7 @@ namespace BlackFox.U2F.Codec
             return signedData;
         }
 
-        public static byte[] EncodeAuthenticateSignedBytes(byte[] applicationSha256, byte userPresence, int counter, byte[] challengeSha256)
+        public static byte[] EncodeKeySignSignedBytes(byte[] applicationSha256, byte userPresence, int counter, byte[] challengeSha256)
         {
             var size = applicationSha256.Length + 1 + 4 + challengeSha256.Length;
             var signedData = new byte[size];

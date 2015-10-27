@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.U2F.Codec;
-using BlackFox.U2F.Key.messages;
+using BlackFox.U2F.Gnubby.Messages;
 
 namespace BlackFox.U2F.Gnubby
 {
@@ -20,7 +20,7 @@ namespace BlackFox.U2F.Gnubby
             GC.SuppressFinalize(this);
         }
 
-        public async Task<KeyResponse<RegisterResponse>> RegisterAsync(RegisterRequest request,
+        public async Task<KeyResponse<KeyRegisterResponse>> RegisterAsync(KeyRegisterRequest request,
             CancellationToken cancellationToken = new CancellationToken(),
             bool invididualAttestation = false)
         {
@@ -28,12 +28,12 @@ namespace BlackFox.U2F.Gnubby
                 ? EnforceUserPresenceAndSign | InteractionFlags.AttestWithDeviceKey
                 : EnforceUserPresenceAndSign;
 
-            var message = ApduMessageCodec.EncodeRegisterRequest(new KeyRequest<RegisterRequest>(request, flags));
+            var message = ApduMessageCodec.EncodeRegisterRequest(new KeyRequest<KeyRegisterRequest>(request, flags));
             var response = await QueryApduAsync(message, cancellationToken);
             return ApduMessageCodec.DecodeRegisterReponse(response);
         }
 
-        public async Task<KeyResponse<AuthenticateResponse>> AuthenticateAsync(AuthenticateRequest request,
+        public async Task<KeyResponse<KeySignResponse>> SignAsync(KeySignRequest request,
             CancellationToken cancellationToken = new CancellationToken(),
             bool noWink = false)
         {
@@ -42,7 +42,7 @@ namespace BlackFox.U2F.Gnubby
                 : EnforceUserPresenceAndSign;
 
             var message = ApduMessageCodec.EncodeAuthenticateRequest(
-                new KeyRequest<AuthenticateRequest>(request, flags));
+                new KeyRequest<KeySignRequest>(request, flags));
             var response = await QueryApduAsync(message, cancellationToken);
             return ApduMessageCodec.DecodeAuthenticateReponse(response);
         }

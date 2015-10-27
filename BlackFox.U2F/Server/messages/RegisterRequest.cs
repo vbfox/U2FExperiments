@@ -1,8 +1,8 @@
 namespace BlackFox.U2F.Server.messages
 {
-    public class RegistrationRequest
+    public class RegisterRequest
     {
-        public RegistrationRequest(string version, string challenge, string appId, string sessionId)
+        public RegisterRequest(string version, string challenge, string appId, string sessionId)
         {
             Version = version;
             Challenge = challenge;
@@ -39,7 +39,7 @@ namespace BlackFox.U2F.Server.messages
         /// </remarks>
         public string SessionId { get; }
 
-        protected bool Equals(RegistrationRequest other)
+        protected bool Equals(RegisterRequest other)
         {
             return string.Equals(Version, other.Version) && string.Equals(Challenge, other.Challenge) &&
                    string.Equals(AppId, other.AppId) && string.Equals(SessionId, other.SessionId);
@@ -59,7 +59,7 @@ namespace BlackFox.U2F.Server.messages
             {
                 return false;
             }
-            return Equals((RegistrationRequest) obj);
+            return Equals((RegisterRequest) obj);
         }
 
         public override int GetHashCode()

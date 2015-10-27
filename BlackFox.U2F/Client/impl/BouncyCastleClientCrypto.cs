@@ -1,3 +1,4 @@
+using System;
 using System.Text;
 using Org.BouncyCastle.Security;
 
@@ -5,7 +6,13 @@ namespace BlackFox.U2F.Client.impl
 {
 	public class BouncyCastleClientCrypto : IClientCrypto
 	{
-		public byte[] ComputeSha256(string message)
+	    public static BouncyCastleClientCrypto Instance { get; } = new BouncyCastleClientCrypto();
+
+	    private BouncyCastleClientCrypto()
+	    {
+	    }
+
+	    public byte[] ComputeSha256(string message)
 		{
             try
 			{

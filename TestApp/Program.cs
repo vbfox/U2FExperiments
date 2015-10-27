@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Xml.Serialization.Configuration;
 using BlackFox.Binary;
 using BlackFox.U2F.Client.impl;
+using BlackFox.U2F.Gnubby;
 using BlackFox.U2F.GnubbyApi;
 using BlackFox.U2F.Key;
 using BlackFox.U2F.Key.impl;
@@ -158,7 +159,7 @@ namespace U2FExperiments
                 new BouncyCastleServerCrypto(),
                 new[] {"http://example.com", "https://example.com"});
 
-            var myClient = new GnubbyApiClient(
+            var myClient = new U2FClient(
                 new DummySender("http://example.com", new JObject()),
                 keyFactory);
 
@@ -224,11 +225,12 @@ namespace U2FExperiments
                 new BouncyCastleServerCrypto(),
                 new[] { "http://example.com", "https://example.com" });
 
-            var myClient = new GnubbyApiClient(
+            var myClient = new U2FClient(
                 new DummySender("http://example.com", new JObject()),
                 (o, a, ct) => Task.FromResult(true),
                 (o, a, ct) => Task.FromResult(true),
-                keyFactory);
+                keyFactory,
+                BouncyCastleClientCrypto.Instance);
 
             var signRequests = server.GetSignRequests("vbfox", "http://example.com");
 
@@ -246,16 +248,17 @@ namespace U2FExperiments
                 {
                     string clientDataB64;
                     var authRequest = U2FClientReferenceImpl.SignRequestToAuthenticateRequest("http://example.com", signRequest, new JObject(),
-                        out clientDataB64, new BouncyCastleClientCrypto());
+                        out clientDataB64, BouncyCastleClientCrypto.Instance);
                     return Tuple.Create(signRequest, clientDataB64, authRequest);
                 })
                 .ToList();
 
-            new GnubbyApiClient(
+            new U2FClient(
                 new DummySender("http://example.com", new JObject()),
                 (o, a, ct) => Task.FromResult(true),
                 (o, a, ct) => Task.FromResult(true),
-                keyFactory);
+                keyFactory,
+                BouncyCastleClientCrypto.Instance);
 
 
 
@@ -266,7 +269,7 @@ namespace U2FExperiments
 
 
                 var client = new U2FClientReferenceImpl(
-                    new BouncyCastleClientCrypto(),
+                    BouncyCastleClientCrypto.Instance,
                     new SimpleOriginVerifier(new[] { "http://example.com", "https://example.com" }),
                     new ChannelProvider(),
                     server,
@@ -303,7 +306,7 @@ namespace U2FExperiments
                     new[] {"http://example.com", "https://example.com"});
 
                 var client = new U2FClientReferenceImpl(
-                    new BouncyCastleClientCrypto(),
+                    BouncyCastleClientCrypto.Instance,
                     new SimpleOriginVerifier(new[] {"http://example.com", "https://example.com"}),
                     new ChannelProvider(),
                     server,
@@ -331,7 +334,7 @@ namespace U2FExperiments
                 new GuidKeyHandleGenerator(),
                 new InMemoryKeyDataStore(),
                 new ConsolePresenceVerifier(),
-                new BouncyCastleCrypto());
+                new BouncyCastleKeyCrypto());
 
             var server = new U2FServerReferenceImpl(
                 new ChallengeGenerator(),
@@ -340,7 +343,7 @@ namespace U2FExperiments
                 new [] { "http://example.com", "https://example.com" });
 
             var client = new U2FClientReferenceImpl(
-                new BouncyCastleClientCrypto(),
+                BouncyCastleClientCrypto.Instance,
                 new SimpleOriginVerifier(new[] {"http://example.com", "https://example.com"}),
                 new ChannelProvider(),
                 server,

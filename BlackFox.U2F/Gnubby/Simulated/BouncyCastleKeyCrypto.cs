@@ -3,9 +3,9 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace BlackFox.U2F.Key.impl
+namespace BlackFox.U2F.Gnubby
 {
-	public class BouncyCastleCrypto : IKeyCrypto
+	public class BouncyCastleKeyCrypto : IKeyCrypto
 	{
 		public byte[] Sign(byte[] signedData, ECPrivateKeyParameters privateKey)
 		{

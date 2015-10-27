@@ -1,19 +1,21 @@
-using System;
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using BlackFox.Binary;
 using BlackFox.U2F.Codec;
-using BlackFox.U2F.Gnubby;
 using BlackFox.U2F.Gnubby.Messages;
-using BlackFox.U2F.Gnubby.Simulated;
+using BlackFox.U2F.Key;
+using BlackFox.U2F.Key.impl;
 using Common.Logging;
 using JetBrains.Annotations;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.X509;
 
-namespace BlackFox.U2F.Key.impl
+namespace BlackFox.U2F.Gnubby.Simulated
 {
-    public class U2FKeyReferenceImpl : IU2FKey
+    public class SimulatedKey : IKey
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof (U2FKeyReferenceImpl));
+        private static readonly ILog log = LogManager.GetLogger(typeof(U2FKeyReferenceImpl));
 
         private readonly ECPrivateKeyParameters certificatePrivateKey;
         private readonly IKeyCrypto crypto;
@@ -23,7 +25,7 @@ namespace BlackFox.U2F.Key.impl
         private readonly IUserPresenceVerifier userPresenceVerifier;
         private readonly X509Certificate vendorCertificate;
 
-        public U2FKeyReferenceImpl([NotNull] X509Certificate vendorCertificate,
+        public SimulatedKey([NotNull] X509Certificate vendorCertificate,
             [NotNull] ECPrivateKeyParameters certificatePrivateKey, [NotNull] IKeyPairGenerator keyPairGenerator,
             [NotNull] IKeyHandleGenerator keyHandleGenerator, [NotNull] IKeyDataStore dataStore,
             [NotNull] IUserPresenceVerifier userPresenceVerifier, [NotNull] IKeyCrypto crypto)
@@ -66,18 +68,23 @@ namespace BlackFox.U2F.Key.impl
             this.crypto = crypto;
         }
 
-        /// <exception cref="U2FException" />
-        public KeyRegisterResponse Register(KeyRegisterRequest keyRegisterRequest)
+        public void Dispose()
         {
-            if (keyRegisterRequest == null)
+            // Nothing to do
+        }
+
+        public Task<KeyResponse<KeyRegisterResponse>> RegisterAsync(KeyRegisterRequest request, CancellationToken cancellationToken = new CancellationToken(),
+            bool invididualAttestation = false)
+        {
+            if (request == null)
             {
-                throw new ArgumentNullException(nameof(keyRegisterRequest));
+                throw new ArgumentNullException(nameof(request));
             }
 
             log.Info(">> register");
 
-            var applicationSha256 = keyRegisterRequest.ApplicationSha256;
-            var challengeSha256 = keyRegisterRequest.ChallengeSha256;
+            var applicationSha256 = request.ApplicationSha256;
+            var challengeSha256 = request.ChallengeSha256;
 
             log.Info(" -- Inputs --");
             log.Info("  applicationSha256: " + applicationSha256.ToHexString());
@@ -86,7 +93,7 @@ namespace BlackFox.U2F.Key.impl
             var userPresent = userPresenceVerifier.VerifyUserPresence();
             if ((userPresent & UserPresenceVerifierConstants.UserPresentFlag) == 0)
             {
-                throw new U2FException("Cannot verify user presence");
+                return TestOfUserPresenceRequired<KeyRegisterResponse>();
             }
 
             var keyPair = keyPairGenerator.GenerateKeyPair(applicationSha256, challengeSha256);
@@ -107,22 +114,33 @@ namespace BlackFox.U2F.Key.impl
             log.Info("  signature: " + signature.ToHexString());
             log.Info("<< register");
 
-            return new KeyRegisterResponse(userPublicKey, keyHandle, vendorCertificate, signature);
+            var response = new KeyRegisterResponse(userPublicKey, keyHandle, vendorCertificate, signature);
+            var responseData = RawMessageCodec.EncodeKeyRegisterResponse(response).Segment();
+            var apdu = new ApduResponse(ApduResponseStatus.NoError, responseData);
+            var keyResponse = new KeyResponse<KeyRegisterResponse>(apdu, response, KeyResponseStatus.Success);
+
+            return TaskEx.FromResult(keyResponse);
         }
 
-        /// <exception cref="U2FException" />
-        public KeySignResponse Authenticate(KeySignRequest keySignRequest)
+        private static Task<KeyResponse<TData>> TestOfUserPresenceRequired<TData>() where TData : class
         {
-            if (keySignRequest == null)
+            return TaskEx.FromResult(KeyResponse<TData>.Empty(ApduResponseStatus.NoError,
+                KeyResponseStatus.TestOfuserPresenceRequired));
+        }
+
+        public Task<KeyResponse<KeySignResponse>> SignAsync(KeySignRequest request, CancellationToken cancellationToken = new CancellationToken(),
+            bool noWink = false)
+        {
+            if (request == null)
             {
-                throw new ArgumentNullException(nameof(keySignRequest));
+                throw new ArgumentNullException(nameof(request));
             }
 
             log.Info(">> authenticate");
 
-            var applicationSha256 = keySignRequest.ApplicationSha256;
-            var challengeSha256 = keySignRequest.ChallengeSha256;
-            var keyHandle = keySignRequest.KeyHandle;
+            var applicationSha256 = request.ApplicationSha256;
+            var challengeSha256 = request.ChallengeSha256;
+            var keyHandle = request.KeyHandle;
 
             log.Info(" -- Inputs --");
             log.Info("  applicationSha256: " + applicationSha256.ToHexString());
@@ -131,20 +149,41 @@ namespace BlackFox.U2F.Key.impl
 
             var keyPair = dataStore.GetKeyPair(keyHandle);
             var counter = dataStore.IncrementCounter();
-            var userPresence = userPresenceVerifier.VerifyUserPresence();
-            var signedData = RawMessageCodec.EncodeKeySignSignedBytes(applicationSha256, userPresence, counter,
+            var userPresent = userPresenceVerifier.VerifyUserPresence();
+            if ((userPresent & UserPresenceVerifierConstants.UserPresentFlag) == 0)
+            {
+                return TestOfUserPresenceRequired<KeySignResponse>();
+            }
+
+            var signedData = RawMessageCodec.EncodeKeySignSignedBytes(applicationSha256, userPresent, counter,
                 challengeSha256);
 
             log.Info("Signing bytes " + signedData.ToHexString());
             var signature = crypto.Sign(signedData, keyPair.PrivateKey);
 
             log.Info(" -- Outputs --");
-            log.Info("  userPresence: " + userPresence);
+            log.Info("  userPresence: " + userPresent);
             log.Info("  counter: " + counter);
             log.Info("  signature: " + signature.ToHexString());
             log.Info("<< authenticate");
 
-            return new KeySignResponse(userPresence, counter, signature);
+            var response = new KeySignResponse(userPresent, counter, signature);
+            var responseData = RawMessageCodec.EncodeKeySignResponse(response).Segment();
+            var apdu = new ApduResponse(ApduResponseStatus.NoError, responseData);
+            var keyResponse = new KeyResponse<KeySignResponse>(apdu, response, KeyResponseStatus.Success);
+
+            return TaskEx.FromResult(keyResponse);
+        }
+
+        public Task<KeyResponse<string>> GetVersionAsync(CancellationToken cancellationToken = new CancellationToken())
+        {
+            var keyResponse = new KeyResponse<string>(ApduResponse.Empty(ApduResponseStatus.NoError), U2FConsts.U2Fv2, KeyResponseStatus.Success);
+            return TaskEx.FromResult(keyResponse);
+        }
+
+        public Task SyncAsync()
+        {
+            return TaskEx.FromResult(true);
         }
     }
 }

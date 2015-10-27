@@ -131,7 +131,7 @@ namespace UwpTestApp
                 new BouncyCastleServerCrypto(),
                 new[] { "http://example.com", "https://example.com" });
 
-            var myClient = new GnubbyApiClient(
+            var myClient = new U2FClient(
                 new DummySender("http://example.com", new JObject()),
                 keyFactory);
 

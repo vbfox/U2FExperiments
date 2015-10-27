@@ -7,10 +7,11 @@
 using System.Threading;
 using BlackFox.U2F.Client;
 using BlackFox.U2F.Client.impl;
+using BlackFox.U2F.Gnubby.Messages;
+using BlackFox.U2F.Gnubby.Simulated;
 using BlackFox.U2F.Server.data;
 using BlackFox.U2F.Server.messages;
 using BlackFox.U2F.Key;
-using BlackFox.U2F.Key.messages;
 using BlackFox.U2F.Server;
 using Moq;
 using NodaTime;
@@ -41,7 +42,7 @@ namespace BlackFox.U2F.Tests.Client
 
 		    var mockClock = new Mock<IClock>(MockBehavior.Strict);
 		    mockClock.Setup(x => x.Now).Returns(Instant.FromMillisecondsSinceUnixEpoch(0));
-            u2FClient = new U2FClientReferenceImpl(new BouncyCastleClientCrypto(), mockOriginVerifier.Object,
+            u2FClient = new U2FClientReferenceImpl(BouncyCastleClientCrypto.Instance, mockOriginVerifier.Object,
                 mockChannelIdProvider.Object, mockU2FServer.Object, mockU2FKey.Object, mockClock.Object);
 
 		    mockChannelIdProvider.Setup(x => x.GetJsonChannelId()).Returns(CHANNEL_ID_JSON);
@@ -51,11 +52,11 @@ namespace BlackFox.U2F.Tests.Client
 		public virtual void TestRegister()
 		{
 		    mockU2FServer.Setup(x => x.GetRegistrationRequest(ACCOUNT_NAME, APP_ID_ENROLL))
-		        .Returns(new RegistrationRequest(U2FConsts.U2Fv2, SERVER_CHALLENGE_ENROLL_BASE64, APP_ID_ENROLL, SESSION_ID));
+		        .Returns(new RegisterRequest(U2FConsts.U2Fv2, SERVER_CHALLENGE_ENROLL_BASE64, APP_ID_ENROLL, SESSION_ID));
 
 		    mockOriginVerifier.Setup(x => x.ValidateOrigin(APP_ID_ENROLL, ORIGIN));
-		    mockU2FKey.Setup(x => x.Register(new RegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256)))
-		        .Returns(new RegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL));
+		    mockU2FKey.Setup(x => x.Register(new KeyRegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256)))
+		        .Returns(new KeyRegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL));
             mockU2FServer.Setup(x => x.ProcessRegistrationResponse(new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID), 0L))
                 .Returns(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0));
 			u2FClient.Register(ORIGIN, ACCOUNT_NAME);
@@ -68,8 +69,8 @@ namespace BlackFox.U2F.Tests.Client
 		    mockU2FServer.Setup(x => x.GetSignRequests(ACCOUNT_NAME, ORIGIN))
 		        .Returns(new[] { signRequest });
 		    mockOriginVerifier.Setup(x => x.ValidateOrigin(APP_ID_SIGN, ORIGIN));
-            mockU2FKey.Setup(x => x.Authenticate(new AuthenticateRequest(U2FVersion.V2, BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE)))
-                .Returns(new AuthenticateResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE));
+            mockU2FKey.Setup(x => x.Authenticate(new KeySignRequest(U2FVersion.V2, BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE)))
+                .Returns(new KeySignResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE));
             mockU2FServer.Setup(x => x.ProcessSignResponse(new SignResponse
                 (BROWSER_DATA_SIGN_BASE64, SIGN_RESPONSE_DATA_BASE64, SERVER_CHALLENGE_SIGN_BASE64
                 , SESSION_ID, APP_ID_SIGN))).Returns(new SecurityKeyData

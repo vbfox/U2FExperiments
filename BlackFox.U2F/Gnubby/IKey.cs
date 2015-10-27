@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using BlackFox.U2F.Key.messages;
+using BlackFox.U2F.Gnubby.Messages;
 using JetBrains.Annotations;
 
 namespace BlackFox.U2F.Gnubby
@@ -9,11 +9,11 @@ namespace BlackFox.U2F.Gnubby
     public interface IKey : IDisposable
     {
         [NotNull, ItemNotNull]
-        Task<KeyResponse<RegisterResponse>> RegisterAsync([NotNull] RegisterRequest request,
+        Task<KeyResponse<KeyRegisterResponse>> RegisterAsync([NotNull] KeyRegisterRequest request,
             CancellationToken cancellationToken = default(CancellationToken), bool invididualAttestation = false);
 
         [NotNull, ItemNotNull]
-        Task<KeyResponse<AuthenticateResponse>> AuthenticateAsync([NotNull] AuthenticateRequest request,
+        Task<KeyResponse<KeySignResponse>> SignAsync([NotNull] KeySignRequest request,
             CancellationToken cancellationToken = default(CancellationToken), bool noWink = false);
 
         [NotNull, ItemNotNull]

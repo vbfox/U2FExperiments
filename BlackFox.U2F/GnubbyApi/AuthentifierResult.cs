@@ -1,23 +1,23 @@
 ﻿using BlackFox.U2F.Gnubby;
-using BlackFox.U2F.Key.messages;
+using BlackFox.U2F.Gnubby.Messages;
 
 namespace BlackFox.U2F.GnubbyApi
 {
-    internal struct AuthentifierResult
+    public struct AuthentifierResult
     {
         public bool IsSuccess => Status == KeyResponseStatus.Success;
         public KeyResponseStatus Status { get; }
-        public RegisterRequest Request { get; }
-        public RegisterResponse Response { get; }
+        public KeyRegisterRequest Request { get; }
+        public KeyRegisterResponse Response { get; }
 
-        private AuthentifierResult(KeyResponseStatus status, RegisterRequest request, RegisterResponse response)
+        private AuthentifierResult(KeyResponseStatus status, KeyRegisterRequest request, KeyRegisterResponse response)
         {
             Status = status;
             Request = request;
             Response = response;
         }
 
-        public static AuthentifierResult Success(RegisterRequest request, RegisterResponse response)
+        public static AuthentifierResult Success(KeyRegisterRequest request, KeyRegisterResponse response)
         {
             return new AuthentifierResult(KeyResponseStatus.Success, request, response);
         }

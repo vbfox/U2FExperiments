@@ -1,7 +1,7 @@
 using System.Text;
 using BlackFox.Binary;
 using BlackFox.U2F.Gnubby;
-using BlackFox.U2F.Key.messages;
+using BlackFox.U2F.Gnubby.Messages;
 
 namespace BlackFox.U2F.Codec
 {
@@ -14,25 +14,25 @@ namespace BlackFox.U2F.Codec
         const byte AuthenticateCommand = 0x02;
         const byte VersionCommand = 0x03;
 
-        public static ApduRequest EncodeRegisterRequest(KeyRequest<RegisterRequest> request)
+        public static ApduRequest EncodeRegisterRequest(KeyRequest<KeyRegisterRequest> request)
         {
-            var requestBytes = RawMessageCodec.EncodeRegisterRequest(request.Request);
+            var requestBytes = RawMessageCodec.EncodeKeyRegisterRequest(request.Request);
             return new ApduRequest(RegisterCommand, (byte)request.Flags, 0x00, requestBytes.Segment());
         }
 
-        public static KeyResponse<RegisterResponse> DecodeRegisterReponse(ApduResponse apdu)
+        public static KeyResponse<KeyRegisterResponse> DecodeRegisterReponse(ApduResponse apdu)
         {
             var status = ParseKeyResponseStatus(apdu.Status);
             var response = status == KeyResponseStatus.Success
-                ? RawMessageCodec.DecodeRegisterResponse(apdu.ResponseData)
+                ? RawMessageCodec.DecodeKeyRegisterResponse(apdu.ResponseData)
                 : null;
 
-            return new KeyResponse<RegisterResponse>(apdu, response, status);
+            return new KeyResponse<KeyRegisterResponse>(apdu, response, status);
         }
 
-        public static ApduRequest EncodeAuthenticateRequest(KeyRequest<AuthenticateRequest> request)
+        public static ApduRequest EncodeAuthenticateRequest(KeyRequest<KeySignRequest> request)
         {
-            var requestBytes = RawMessageCodec.EncodeAuthenticateRequest(request.Request);
+            var requestBytes = RawMessageCodec.EncodeKeySignRequest(request.Request);
             return new ApduRequest(AuthenticateCommand, (byte)request.Flags, 0x00, requestBytes.Segment());
         }
 
@@ -75,14 +75,14 @@ namespace BlackFox.U2F.Codec
             }
         }
 
-        public static KeyResponse<AuthenticateResponse> DecodeAuthenticateReponse(ApduResponse apdu)
+        public static KeyResponse<KeySignResponse> DecodeAuthenticateReponse(ApduResponse apdu)
         {
             var status = ParseKeyResponseStatus(apdu.Status);
             var response = status == KeyResponseStatus.Success
-                ? RawMessageCodec.DecodeAuthenticateResponse(apdu.ResponseData)
+                ? RawMessageCodec.DecodeKeySignResponse(apdu.ResponseData)
                 : null;
 
-            return new KeyResponse<AuthenticateResponse>(apdu, response, status);
+            return new KeyResponse<KeySignResponse>(apdu, response, status);
         }
     }
 }

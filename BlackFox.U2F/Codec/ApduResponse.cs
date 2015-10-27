@@ -1,4 +1,5 @@
 using System;
+using BlackFox.Binary;
 
 namespace BlackFox.U2F.Codec
 {
@@ -15,6 +16,11 @@ namespace BlackFox.U2F.Codec
         {
             Status = status;
             ResponseData = responseData;
+        }
+
+        public static ApduResponse Empty(ApduResponseStatus status)
+        {
+            return new ApduResponse(status, EmptyArraySegment<byte>.Value);
         }
     }
 }

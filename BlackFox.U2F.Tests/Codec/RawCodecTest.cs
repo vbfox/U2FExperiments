@@ -6,10 +6,11 @@
 
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Key;
-using BlackFox.U2F.Key.messages;
 using NUnit.Framework;
 using static BlackFox.U2F.Tests.TestVectors;
 using BlackFox.Binary;
+using BlackFox.U2F.Gnubby.Messages;
+using BlackFox.U2F.Gnubby.Simulated;
 
 namespace BlackFox.U2F.Tests.Codec
 {
@@ -19,10 +20,10 @@ namespace BlackFox.U2F.Tests.Codec
 		[Test]
 		public virtual void TestEncodeRegisterRequest()
 		{
-			RegisterRequest registerRequest = new RegisterRequest
+			KeyRegisterRequest keyRegisterRequest = new KeyRegisterRequest
 				(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256);
-			byte[] encodedBytes = RawMessageCodec.EncodeRegisterRequest(
-				registerRequest);
+			byte[] encodedBytes = RawMessageCodec.EncodeKeyRegisterRequest(
+				keyRegisterRequest);
             
 			CollectionAssert.AreEqual(REGISTRATION_REQUEST_DATA, encodedBytes);
 		}
@@ -31,20 +32,20 @@ namespace BlackFox.U2F.Tests.Codec
 		[Test]
 		public virtual void TestDecodeRegisterRequest()
 		{
-			RegisterRequest registerRequest = RawMessageCodec
-				.DecodeRegisterRequest(REGISTRATION_REQUEST_DATA);
-			Assert.AreEqual(new RegisterRequest(APP_ID_ENROLL_SHA256
-				, BROWSER_DATA_ENROLL_SHA256), registerRequest);
+			KeyRegisterRequest keyRegisterRequest = RawMessageCodec
+				.DecodeKeyRegisterRequest(REGISTRATION_REQUEST_DATA);
+			Assert.AreEqual(new KeyRegisterRequest(APP_ID_ENROLL_SHA256
+				, BROWSER_DATA_ENROLL_SHA256), keyRegisterRequest);
 		}
 
 		/// <exception cref="System.Exception"/>
 		[Test]
 		public virtual void TestEncodeRegisterResponse()
 		{
-			RegisterResponse registerResponse = new RegisterResponse
+			KeyRegisterResponse keyRegisterResponse = new KeyRegisterResponse
 				(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL);
-			byte[] encodedBytes = RawMessageCodec.EncodeRegisterResponse
-				(registerResponse);
+			byte[] encodedBytes = RawMessageCodec.EncodeKeyRegisterResponse
+				(keyRegisterResponse);
 			CollectionAssert.AreEqual(REGISTRATION_RESPONSE_DATA, encodedBytes
 				);
 		}
@@ -53,7 +54,7 @@ namespace BlackFox.U2F.Tests.Codec
 		[Test]
 		public virtual void TestEncodeRegisterSignedBytes()
 		{
-			byte[] encodedBytes = RawMessageCodec.EncodeRegistrationSignedBytes
+			byte[] encodedBytes = RawMessageCodec.EncodeKeyRegisterSignedBytes
 				(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX
 				);
 			CollectionAssert.AreEqual(EXPECTED_REGISTER_SIGNED_BYTES, encodedBytes
@@ -64,10 +65,10 @@ namespace BlackFox.U2F.Tests.Codec
 		[Test]
 		public virtual void TestDecodeRegisterResponse()
 		{
-			RegisterResponse registerResponse = RawMessageCodec
-				.DecodeRegisterResponse(REGISTRATION_RESPONSE_DATA.Segment());
-			Assert.AreEqual(new RegisterResponse(
-				USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL), registerResponse
+			KeyRegisterResponse keyRegisterResponse = RawMessageCodec
+				.DecodeKeyRegisterResponse(REGISTRATION_RESPONSE_DATA.Segment());
+			Assert.AreEqual(new KeyRegisterResponse(
+				USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL), keyRegisterResponse
 				);
 		}
 
@@ -75,10 +76,10 @@ namespace BlackFox.U2F.Tests.Codec
 		[Test]
 		public virtual void TestEncodeAuthenticateRequest()
 		{
-			AuthenticateRequest authenticateRequest = new AuthenticateRequest
+			KeySignRequest keySignRequest = new KeySignRequest
 				(U2FVersion.V2, BROWSER_DATA_SIGN_SHA256
 				, APP_ID_SIGN_SHA256, KEY_HANDLE);
-			byte[] encodedBytes = RawMessageCodec.EncodeAuthenticateRequest(authenticateRequest);
+			byte[] encodedBytes = RawMessageCodec.EncodeKeySignRequest(keySignRequest);
 			CollectionAssert.AreEqual(SIGN_REQUEST_DATA, encodedBytes);
 		}
 
@@ -86,19 +87,19 @@ namespace BlackFox.U2F.Tests.Codec
 		[Test]
 		public virtual void TestDecodeAuthenticateRequest()
 		{
-			AuthenticateRequest authenticateRequest = RawMessageCodec
-				.DecodeAuthenticateRequest(SIGN_REQUEST_DATA);
-			Assert.AreEqual(new AuthenticateRequest
+			KeySignRequest keySignRequest = RawMessageCodec
+				.DecodeKeySignRequest(SIGN_REQUEST_DATA);
+			Assert.AreEqual(new KeySignRequest
 				(U2FVersion.V2, BROWSER_DATA_SIGN_SHA256
-				, APP_ID_SIGN_SHA256, KEY_HANDLE), authenticateRequest);
+				, APP_ID_SIGN_SHA256, KEY_HANDLE), keySignRequest);
 		}
 
 		/// <exception cref="System.Exception"/>
 		[Test]
 		public virtual void TestEncodeAuthenticateResponse()
 		{
-			var authenticateResponse = new AuthenticateResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE);
-			byte[] encodedBytes = RawMessageCodec.EncodeAuthenticateResponse
+			var authenticateResponse = new KeySignResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE);
+			byte[] encodedBytes = RawMessageCodec.EncodeKeySignResponse
 				(authenticateResponse);
 			CollectionAssert.AreEqual(SIGN_RESPONSE_DATA, encodedBytes);
 		}
@@ -108,16 +109,16 @@ namespace BlackFox.U2F.Tests.Codec
 		public virtual void TestDecodeAuthenticateResponse()
 		{
             
-			AuthenticateResponse authenticateResponse = RawMessageCodec
-				.DecodeAuthenticateResponse(SIGN_RESPONSE_DATA.Segment());
-			Assert.AreEqual(new AuthenticateResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE), authenticateResponse);
+			KeySignResponse keySignResponse = RawMessageCodec
+				.DecodeKeySignResponse(SIGN_RESPONSE_DATA.Segment());
+			Assert.AreEqual(new KeySignResponse(UserPresenceVerifierConstants.UserPresentFlag, COUNTER_VALUE, SIGNATURE_AUTHENTICATE), keySignResponse);
 		}
 
 		/// <exception cref="System.Exception"/>
 		[Test]
 		public virtual void TestEncodeAuthenticateSignedBytes()
 		{
-			byte[] encodedBytes = RawMessageCodec.EncodeAuthenticateSignedBytes
+			byte[] encodedBytes = RawMessageCodec.EncodeKeySignSignedBytes
 				(APP_ID_SIGN_SHA256, UserPresenceVerifierConstants.UserPresentFlag, 
 				COUNTER_VALUE, BROWSER_DATA_SIGN_SHA256);
 			CollectionAssert.AreEqual(EXPECTED_AUTHENTICATE_SIGNED_BYTES, encodedBytes

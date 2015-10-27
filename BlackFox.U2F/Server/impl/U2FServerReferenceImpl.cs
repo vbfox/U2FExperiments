@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using BlackFox.Binary;
 using BlackFox.U2F.Codec;
+using BlackFox.U2F.Gnubby.Simulated;
 using BlackFox.U2F.Key;
 using BlackFox.U2F.Server.data;
 using BlackFox.U2F.Server.messages;
@@ -50,7 +51,7 @@ namespace BlackFox.U2F.Server.impl
             allowedOrigins = CanonicalizeOrigins(origins);
         }
 
-        public RegistrationRequest GetRegistrationRequest(string accountName, string appId)
+        public RegisterRequest GetRegistrationRequest(string accountName, string appId)
         {
             log.Info(">> getRegistrationRequest " + accountName);
 
@@ -64,7 +65,7 @@ namespace BlackFox.U2F.Server.impl
             log.Info("  challenge: " + challenge.ToHexString());
             log.Info("<< getRegistrationRequest " + accountName);
 
-            return new RegistrationRequest(U2FConsts.U2Fv2, challengeBase64, appId, sessionId);
+            return new RegisterRequest(U2FConsts.U2Fv2, challengeBase64, appId, sessionId);
         }
 
         /// <exception cref="U2FException" />
@@ -93,7 +94,7 @@ namespace BlackFox.U2F.Server.impl
             log.Info("  browserData: " + browserData);
             log.Info("  rawRegistrationData: " + rawRegistrationData.ToHexString());
 
-            var registerResponse = RawMessageCodec.DecodeRegisterResponse(rawRegistrationData.Segment());
+            var registerResponse = RawMessageCodec.DecodeKeyRegisterResponse(rawRegistrationData.Segment());
             var userPublicKey = registerResponse.UserPublicKey;
             var keyHandle = registerResponse.KeyHandle;
             var attestationCertificate = registerResponse.AttestationCertificate;
@@ -118,7 +119,7 @@ namespace BlackFox.U2F.Server.impl
 
             var appIdSha256 = cryto.ComputeSha256(Encoding.UTF8.GetBytes(appId));
             var browserDataSha256 = cryto.ComputeSha256(Encoding.UTF8.GetBytes(browserData));
-            var signedBytes = RawMessageCodec.EncodeRegistrationSignedBytes(appIdSha256, browserDataSha256, keyHandle,
+            var signedBytes = RawMessageCodec.EncodeKeyRegisterSignedBytes(appIdSha256, browserDataSha256, keyHandle,
                 userPublicKey);
             var trustedCertificates = dataStore.GetTrustedCertificates();
             if (!trustedCertificates.Contains(attestationCertificate))
@@ -203,7 +204,7 @@ namespace BlackFox.U2F.Server.impl
             log.Info("  rawSignData: " + rawSignData.ToHexString());
 
             VerifyBrowserData(browserData, "navigator.id.getAssertion", sessionData);
-            var authenticateResponse = RawMessageCodec.DecodeAuthenticateResponse(rawSignData.Segment());
+            var authenticateResponse = RawMessageCodec.DecodeKeySignResponse(rawSignData.Segment());
             var userPresence = authenticateResponse.UserPresence;
             var counter = authenticateResponse.Counter;
             var signature = authenticateResponse.Signature;
@@ -224,7 +225,7 @@ namespace BlackFox.U2F.Server.impl
 
             var appIdSha256 = cryto.ComputeSha256(Encoding.UTF8.GetBytes(appId));
             var browserDataSha256 = cryto.ComputeSha256(Encoding.UTF8.GetBytes(browserData));
-            var signedBytes = RawMessageCodec.EncodeAuthenticateSignedBytes(appIdSha256, userPresence, counter,
+            var signedBytes = RawMessageCodec.EncodeKeySignSignedBytes(appIdSha256, userPresence, counter,
                 browserDataSha256);
             log.Info("Verifying signature of bytes " + signedBytes.ToHexString());
             if (!cryto.VerifySignature(cryto.DecodePublicKey(securityKeyData.PublicKey), signedBytes, signature))

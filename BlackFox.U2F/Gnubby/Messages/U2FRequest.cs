@@ -1,4 +1,4 @@
-namespace BlackFox.U2F.Key.messages
+namespace BlackFox.U2F.Gnubby.Messages
 {
 	public interface IU2FRequest
 	{

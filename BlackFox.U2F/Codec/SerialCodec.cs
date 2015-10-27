@@ -1,7 +1,7 @@
 using System;
 using System.IO;
 using BlackFox.Binary;
-using BlackFox.U2F.Key.messages;
+using BlackFox.U2F.Gnubby.Messages;
 
 namespace BlackFox.U2F.Codec
 {
@@ -15,33 +15,33 @@ namespace BlackFox.U2F.Codec
 
         /// <exception cref="System.IO.IOException"/>
         /// <exception cref="U2FException"/>
-        public static void SendRegisterRequest(Stream outputStream, RegisterRequest registerRequest)
+        public static void SendRegisterRequest(Stream outputStream, KeyRegisterRequest keyRegisterRequest)
         {
             SendRequest(outputStream, CommandRegister, RawMessageCodec.
-                EncodeRegisterRequest(registerRequest));
+                EncodeKeyRegisterRequest(keyRegisterRequest));
         }
 
         /// <exception cref="System.IO.IOException"/>
         /// <exception cref="U2FException"/>
-        public static void SendRegisterResponse(Stream outputStream, RegisterResponse registerResponse)
+        public static void SendRegisterResponse(Stream outputStream, KeyRegisterResponse keyRegisterResponse)
         {
-            SendResponse(outputStream, RawMessageCodec.EncodeRegisterResponse(registerResponse));
+            SendResponse(outputStream, RawMessageCodec.EncodeKeyRegisterResponse(keyRegisterResponse));
         }
 
         /// <exception cref="System.IO.IOException"/>
         /// <exception cref="U2FException"/>
-        public static void SendAuthenticateRequest(Stream outputStream, AuthenticateRequest authenticateRequest)
+        public static void SendAuthenticateRequest(Stream outputStream, KeySignRequest keySignRequest)
         {
             SendRequest(outputStream, CommandAuthenticate,
-                RawMessageCodec.EncodeAuthenticateRequest(authenticateRequest));
+                RawMessageCodec.EncodeKeySignRequest(keySignRequest));
         }
 
         /// <exception cref="System.IO.IOException"/>
         /// <exception cref="U2FException"/>
-        public static void SendAuthenticateResponse(Stream outputStream, AuthenticateResponse
-            authenticateResponse)
+        public static void SendAuthenticateResponse(Stream outputStream, KeySignResponse
+            keySignResponse)
         {
-            SendResponse(outputStream, RawMessageCodec.EncodeAuthenticateResponse(authenticateResponse));
+            SendResponse(outputStream, RawMessageCodec.EncodeKeySignResponse(keySignResponse));
         }
 
         /// <exception cref="U2FException"/>
@@ -92,13 +92,13 @@ namespace BlackFox.U2F.Codec
                 {
                     case CommandRegister:
                     {
-                        return RawMessageCodec.DecodeRegisterRequest(ParseMessage(dataInputStream
+                        return RawMessageCodec.DecodeKeyRegisterRequest(ParseMessage(dataInputStream
                             ));
                     }
 
                     case CommandAuthenticate:
                     {
-                        return RawMessageCodec.DecodeAuthenticateRequest(ParseMessage
+                        return RawMessageCodec.DecodeKeySignRequest(ParseMessage
                             (dataInputStream));
                     }
 
@@ -112,21 +112,21 @@ namespace BlackFox.U2F.Codec
 
         /// <exception cref="U2FException"/>
         /// <exception cref="System.IO.IOException"/>
-        public static RegisterResponse ParseRegisterResponse(Stream inputStream)
+        public static KeyRegisterResponse ParseRegisterResponse(Stream inputStream)
         {
             using (var dataInputStream = new EndianReader(inputStream, Endianness.BigEndian))
             {
-                return RawMessageCodec.DecodeRegisterResponse(ParseMessage(dataInputStream).Segment());
+                return RawMessageCodec.DecodeKeyRegisterResponse(ParseMessage(dataInputStream).Segment());
             }
         }
 
         /// <exception cref="U2FException"/>
         /// <exception cref="System.IO.IOException"/>
-        public static AuthenticateResponse ParseAuthenticateResponse(Stream inputStream)
+        public static KeySignResponse ParseAuthenticateResponse(Stream inputStream)
         {
             using (var dataInputStream = new EndianReader(inputStream, Endianness.BigEndian))
             {
-                return RawMessageCodec.DecodeAuthenticateResponse(ParseMessage(dataInputStream).Segment());
+                return RawMessageCodec.DecodeKeySignResponse(ParseMessage(dataInputStream).Segment());
             }
         }
 

@@ -1,6 +1,6 @@
 using JetBrains.Annotations;
 
-namespace BlackFox.U2F.Key
+namespace BlackFox.U2F.Gnubby.Simulated
 {
 	public interface IKeyHandleGenerator
 	{

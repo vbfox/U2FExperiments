@@ -52,5 +52,19 @@ namespace BlackFox.U2F.Codec
             var statusWord = (ushort)(data.Array[lastByte-1] << 8 | data.Array[lastByte]);
             return new ApduResponse((ApduResponseStatus)statusWord, data.Segment(0, data.Count - 2));
         }
+
+        public static ArraySegment<byte> EncodeResponse(ApduResponse response)
+        {
+            var buffer = new byte[response.ResponseData.Count + 2];
+
+            using (var stream = new EndianWriter(new MemoryStream(buffer), Endianness.BigEndian))
+            {
+                stream.Write(response.ResponseData.Array, response.ResponseData.Offset, response.ResponseData.Count);
+                var status = (short)response.Status;
+                stream.Write(status);
+            }
+
+            return buffer.Segment();
+        }
     }
 }

@@ -4,9 +4,11 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
+using BlackFox.U2F.Gnubby;
+using BlackFox.U2F.Gnubby.Messages;
+using BlackFox.U2F.Gnubby.Simulated;
 using BlackFox.U2F.Key;
 using BlackFox.U2F.Key.impl;
-using BlackFox.U2F.Key.messages;
 using Moq;
 using NUnit.Framework;
 using Org.BouncyCastle.Security;
@@ -35,7 +37,7 @@ namespace BlackFox.U2F.Tests.Key
 
             u2FKey = new U2FKeyReferenceImpl(VENDOR_CERTIFICATE, VENDOR_CERTIFICATE_PRIVATE_KEY,
                 mockKeyPairGenerator.Object, mockKeyHandleGenerator.Object, mockDataStore.Object,
-                mockUserPresenceVerifier.Object, new BouncyCastleCrypto());
+                mockUserPresenceVerifier.Object, new BouncyCastleKeyCrypto());
 
             mockUserPresenceVerifier.Setup(x => x.VerifyUserPresence())
                 .Returns(UserPresenceVerifierConstants.UserPresentFlag);
@@ -53,7 +55,7 @@ namespace BlackFox.U2F.Tests.Key
         [Test]
         public virtual void TestRegister()
         {
-            var registerRequest = new RegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256);
+            var registerRequest = new KeyRegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256);
             var registerResponse = u2FKey.Register(registerRequest);
 
             mockDataStore.Verify(x => x.StoreKeyPair(KEY_HANDLE, USER_KEY_PAIR_ENROLL));
@@ -71,7 +73,7 @@ namespace BlackFox.U2F.Tests.Key
         [Test]
         public virtual void TestAuthenticate()
         {
-            var authenticateRequest = new AuthenticateRequest(U2FVersion.V2,
+            var authenticateRequest = new KeySignRequest(U2FVersion.V2,
                 BROWSER_DATA_SIGN_SHA256, APP_ID_SIGN_SHA256, KEY_HANDLE);
             var authenticateResponse = u2FKey.Authenticate(authenticateRequest);
 

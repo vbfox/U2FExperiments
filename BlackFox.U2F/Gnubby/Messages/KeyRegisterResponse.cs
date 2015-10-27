@@ -1,11 +1,11 @@
 using System.Linq;
 using Org.BouncyCastle.X509;
 
-namespace BlackFox.U2F.Key.messages
+namespace BlackFox.U2F.Gnubby.Messages
 {
-    public class RegisterResponse : IU2FResponse
+    public class KeyRegisterResponse : IU2FResponse
     {
-        public RegisterResponse(byte[] userPublicKey, byte[] keyHandle, X509Certificate attestationCertificate,
+        public KeyRegisterResponse(byte[] userPublicKey, byte[] keyHandle, X509Certificate attestationCertificate,
             byte[] signature)
         {
             UserPublicKey = userPublicKey;
@@ -36,7 +36,7 @@ namespace BlackFox.U2F.Key.messages
         /// <summary>This is a ECDSA signature (on P-256)</summary>
         public byte[] Signature { get; }
 
-        protected bool Equals(RegisterResponse other)
+        protected bool Equals(KeyRegisterResponse other)
         {
             return UserPublicKey.SequenceEqual(other.UserPublicKey) && KeyHandle.SequenceEqual(other.KeyHandle) &&
                    Equals(AttestationCertificate, other.AttestationCertificate) &&
@@ -57,7 +57,7 @@ namespace BlackFox.U2F.Key.messages
             {
                 return false;
             }
-            return Equals((RegisterResponse) obj);
+            return Equals((KeyRegisterResponse) obj);
         }
 
         public override int GetHashCode()

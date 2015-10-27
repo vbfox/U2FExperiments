@@ -5,8 +5,8 @@ using System.Threading.Tasks;
 using BlackFox.U2F;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Gnubby;
+using BlackFox.U2F.Gnubby.Messages;
 using BlackFox.U2F.Key;
-using BlackFox.U2F.Key.messages;
 using BlackFox.U2FHid;
 using JetBrains.Annotations;
 using IU2FKey = BlackFox.U2F.Key.IU2FKey;
@@ -27,11 +27,11 @@ namespace U2FExperiments
             this.key = key;
         }
 
-        public RegisterResponse Register(RegisterRequest registerRequest)
+        public KeyRegisterResponse Register(KeyRegisterRequest keyRegisterRequest)
         {
             while (true)
             {
-                var result = key.RegisterAsync(registerRequest).Result;
+                var result = key.RegisterAsync(keyRegisterRequest).Result;
 
                 switch (result.Status)
                 {
@@ -50,11 +50,11 @@ namespace U2FExperiments
             }
         }
 
-        public AuthenticateResponse Authenticate(AuthenticateRequest authenticateRequest)
+        public KeySignResponse Authenticate(KeySignRequest keySignRequest)
         {
             while (true)
             {
-                var result = key.AuthenticateAsync(authenticateRequest).Result;
+                var result = key.SignAsync(keySignRequest).Result;
 
                 switch (result.Status)
                 {

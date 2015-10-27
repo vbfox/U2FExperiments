@@ -7,7 +7,7 @@ namespace BlackFox.U2F.Server
 	{
 		// registration //
 		/// <exception cref="U2FException"/>
-		RegistrationRequest GetRegistrationRequest(string 
+		RegisterRequest GetRegistrationRequest(string 
 			accountName, string appId);
 
 		/// <exception cref="U2FException"/>

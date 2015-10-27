@@ -1,4 +1,4 @@
-using BlackFox.U2F.Key.messages;
+using BlackFox.U2F.Gnubby.Messages;
 using JetBrains.Annotations;
 
 namespace BlackFox.U2F.Key
@@ -6,9 +6,9 @@ namespace BlackFox.U2F.Key
 	public interface IU2FKey
 	{
 		[NotNull]
-		RegisterResponse Register([NotNull] RegisterRequest registerRequest);
+		KeyRegisterResponse Register([NotNull] KeyRegisterRequest keyRegisterRequest);
 
         [NotNull]
-        AuthenticateResponse Authenticate([NotNull] AuthenticateRequest authenticateRequest);
+        KeySignResponse Authenticate([NotNull] KeySignRequest keySignRequest);
 	}
 }

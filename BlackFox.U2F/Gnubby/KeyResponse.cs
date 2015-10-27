@@ -30,5 +30,10 @@ namespace BlackFox.U2F.Gnubby
 
             return new KeyResponse<TFailed>(Raw, null, Status);
         }
+
+        public static KeyResponse<TData> Empty(ApduResponseStatus apduStatus, KeyResponseStatus status)
+        {
+            return new KeyResponse<TData>(ApduResponse.Empty(apduStatus), null, status);
+        }
     }
 }

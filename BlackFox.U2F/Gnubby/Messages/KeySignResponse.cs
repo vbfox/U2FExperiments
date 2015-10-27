@@ -1,13 +1,13 @@
 using System.Linq;
 
-namespace BlackFox.U2F.Key.messages
+namespace BlackFox.U2F.Gnubby.Messages
 {
     /// <summary>
-    /// Response sent by the key when an <see cref="AuthenticateRequest"/> is accepted and a signature is generated.
+    /// Response sent by the key when an <see cref="KeySignRequest"/> is accepted and a signature is generated.
     /// </summary>
-    public class AuthenticateResponse : IU2FResponse
+    public class KeySignResponse : IU2FResponse
     {
-        public AuthenticateResponse(byte userPresence, int counter, byte[] signature)
+        public KeySignResponse(byte userPresence, int counter, byte[] signature)
         {
             UserPresence = userPresence;
             Counter = counter;
@@ -35,7 +35,7 @@ namespace BlackFox.U2F.Key.messages
 
         
 
-        protected bool Equals(AuthenticateResponse other)
+        protected bool Equals(KeySignResponse other)
         {
             return UserPresence == other.UserPresence && Counter == other.Counter &&
                    Signature.SequenceEqual(other.Signature);
@@ -55,7 +55,7 @@ namespace BlackFox.U2F.Key.messages
             {
                 return false;
             }
-            return Equals((AuthenticateResponse) obj);
+            return Equals((KeySignResponse) obj);
         }
 
         public override int GetHashCode()

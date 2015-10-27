@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using BlackFox.U2F.Gnubby.Simulated;
 using BlackFox.U2F.Key;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Parameters;

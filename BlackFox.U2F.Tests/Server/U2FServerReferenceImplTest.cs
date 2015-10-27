@@ -65,7 +65,7 @@ namespace BlackFox.U2F.Tests.Server
 
             var registrationRequest = u2FServer.GetRegistrationRequest(ACCOUNT_NAME, APP_ID_ENROLL);
 
-            var expected = new RegistrationRequest("U2F_V2", SERVER_CHALLENGE_ENROLL_BASE64, APP_ID_ENROLL, SESSION_ID);
+            var expected = new RegisterRequest("U2F_V2", SERVER_CHALLENGE_ENROLL_BASE64, APP_ID_ENROLL, SESSION_ID);
             Check.That(registrationRequest).IsEqualTo(expected);
         }
 

@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.U2F.Gnubby;
-using BlackFox.U2F.Key.messages;
+using BlackFox.U2F.Gnubby.Messages;
 using Common.Logging;
 using JetBrains.Annotations;
 
 namespace BlackFox.U2F.GnubbyApi
 {
-    class Authentifier
+    class RegisterOperation
     {
         static readonly TimeSpan timeBetweenRegisterCalls = TimeSpan.FromMilliseconds(200);
         static readonly TimeSpan timeBetweenOpenCalls = TimeSpan.FromMilliseconds(200);
@@ -18,12 +18,12 @@ namespace BlackFox.U2F.GnubbyApi
 
         }
 
-        static readonly ILog log = LogManager.GetLogger(typeof(Authentifier));
+        static readonly ILog log = LogManager.GetLogger(typeof(RegisterOperation));
 
         readonly IKeyId keyId;
-        readonly ICollection<RegisterRequest> requests;
+        readonly ICollection<KeyRegisterRequest> requests;
 
-        public Authentifier([NotNull] IKeyId keyId, [NotNull] ICollection<RegisterRequest> requests)
+        public RegisterOperation([NotNull] IKeyId keyId, [NotNull] ICollection<KeyRegisterRequest> requests)
         {
             if (keyId == null)
             {
@@ -77,7 +77,7 @@ namespace BlackFox.U2F.GnubbyApi
             return null;
         }
 
-        async Task<AuthentifierResult?> TryOneRequest(IKey key, RegisterRequest request,
+        async Task<AuthentifierResult?> TryOneRequest(IKey key, KeyRegisterRequest request,
             CancellationToken cancellationToken)
         {
             try

@@ -1,6 +1,6 @@
 namespace BlackFox.U2F.Client
 {
-	public interface IU2FClient
+	public interface IOldU2FClient
 	{
 		/// <exception cref="U2FException"/>
 		void Register(string origin, string accountName);

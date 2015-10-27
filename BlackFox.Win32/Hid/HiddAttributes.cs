@@ -8,13 +8,24 @@ namespace BlackFox.Win32.Hid
     [StructLayout(LayoutKind.Sequential)]
     public struct HiddAttributes
     {
-        /* size in bytes */
+        /// <summary>
+        /// Specifies the size, in bytes, of a HIDD_ATTRIBUTES structure.
+        /// </summary>
         public int Size;
-        /* vendor id */
+        
+        /// <summary>
+        /// Specifies a HID device's vendor ID.
+        /// </summary>
         public ushort VendorId;
-        /* product id */
+        
+        /// <summary>
+        /// Specifies a HID device's product ID.
+        /// </summary>
         public ushort ProductId;
-        /* hid vesion number */
+        
+        /// <summary>
+        /// Specifies the manufacturer's revision number for a HIDClass device.
+        /// </summary>
         public ushort VersionNumber;
 
         public static HiddAttributes Create()

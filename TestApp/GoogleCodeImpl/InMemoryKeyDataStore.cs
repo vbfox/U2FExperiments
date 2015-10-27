@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using BlackFox.U2F.Gnubby.Simulated;
 using BlackFox.U2F.Key;
 
 namespace U2FExperiments

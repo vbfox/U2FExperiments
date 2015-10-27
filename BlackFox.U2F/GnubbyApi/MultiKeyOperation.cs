@@ -41,7 +41,7 @@ namespace BlackFox.U2F.GnubbyApi
 
         [NotNull]
         [ItemCanBeNull]
-        public async Task<T> SignAsync(CancellationToken cancellationToken)
+        public async Task<T> RunOperationAsync(CancellationToken cancellationToken)
         {
             signersInProgress.Clear();
             var childsCancellation = new CancellationTokenSource();

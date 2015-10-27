@@ -4,12 +4,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.U2F.Gnubby;
-using BlackFox.U2F.Key.messages;
+using BlackFox.U2F.Gnubby.Messages;
 using Common.Logging;
 
 namespace BlackFox.U2F.GnubbyApi
 {
-    class Signer
+    class SignOperation
     {
         static readonly TimeSpan timeBetweenSignCalls = TimeSpan.FromMilliseconds(200);
         static readonly TimeSpan timeBetweenOpenCalls = TimeSpan.FromMilliseconds(200);
@@ -18,16 +18,14 @@ namespace BlackFox.U2F.GnubbyApi
         {
              
         }
-        static readonly ILog log = LogManager.GetLogger(typeof(Signer));
+        static readonly ILog log = LogManager.GetLogger(typeof(SignOperation));
 
-        readonly bool forEnroll;
         readonly IKeyId keyId;
-        readonly ICollection<AuthenticateRequest> requests;
+        readonly ICollection<KeySignRequest> requests;
         private readonly List<byte[]> blacklistedKeyHandles = new List<byte[]>();
 
-        public Signer(bool forEnroll, IKeyId keyId, ICollection<AuthenticateRequest> requests)
+        public SignOperation(IKeyId keyId, ICollection<KeySignRequest> requests)
         {
-            this.forEnroll = forEnroll;
             this.keyId = keyId;
             this.requests = requests;
         }
@@ -37,7 +35,7 @@ namespace BlackFox.U2F.GnubbyApi
             using (var key = await OpenKeyAsync(cancellationToken))
             {
                 var firstPass = true;
-                while (!forEnroll)
+                while (true)
                 {
                     var signOnceResult = await TrySigningOnceAsync(key, firstPass, cancellationToken);
 
@@ -52,8 +50,6 @@ namespace BlackFox.U2F.GnubbyApi
                     }
                     firstPass = false;
                 }
-
-                return SignerResult.Failure(KeyResponseStatus.Failure);
             }
         }
 
@@ -82,12 +78,12 @@ namespace BlackFox.U2F.GnubbyApi
             return null;
         }
 
-        async Task<SignerResult?> TrySignOneRequest(IKey key, bool isFirstPass, AuthenticateRequest request,
+        async Task<SignerResult?> TrySignOneRequest(IKey key, bool isFirstPass, KeySignRequest request,
             CancellationToken cancellationToken)
         {
             try
             {
-                var result = await key.AuthenticateAsync(request, cancellationToken, isFirstPass || forEnroll);
+                var result = await key.SignAsync(request, cancellationToken, isFirstPass);
 
                 log.Info(result.Status.ToString());
                 switch (result.Status)
@@ -99,13 +95,6 @@ namespace BlackFox.U2F.GnubbyApi
 
                     case KeyResponseStatus.Success:
                         return SignerResult.Success(request, result.Data);
-
-                    case KeyResponseStatus.TestOfuserPresenceRequired:
-                        if (forEnroll)
-                        {
-                            return SignerResult.Failure(result.Status);
-                        }
-                        break;
                 }
             }
             catch (KeyGoneException)
@@ -148,7 +137,7 @@ namespace BlackFox.U2F.GnubbyApi
             return key;
         }
 
-        private bool IsBlacklisted(AuthenticateRequest request)
+        private bool IsBlacklisted(KeySignRequest request)
         {
             return blacklistedKeyHandles.Any(h => h.SequenceEqual(request.KeyHandle));
         }
