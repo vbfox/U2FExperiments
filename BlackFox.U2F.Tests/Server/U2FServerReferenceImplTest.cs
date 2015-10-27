@@ -77,7 +77,7 @@ namespace BlackFox.U2F.Tests.Server
             var u2FServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto,
                 TRUSTED_DOMAINS);
 
-            var registrationResponse = new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64,
+            var registrationResponse = new RegisterResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64,
                 SESSION_ID);
             u2FServer.ProcessRegistrationResponse(registrationResponse, 0L);
 
@@ -96,7 +96,7 @@ namespace BlackFox.U2F.Tests.Server
             var u2FServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto,
                 TRUSTED_DOMAINS);
 
-            var registrationResponse = new RegistrationResponse(REGISTRATION_RESPONSE_DATA_ONE_TRANSPORT_BASE64,
+            var registrationResponse = new RegisterResponse(REGISTRATION_RESPONSE_DATA_ONE_TRANSPORT_BASE64,
                 BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
             u2FServer.ProcessRegistrationResponse(registrationResponse, 0L);
 
@@ -118,7 +118,7 @@ namespace BlackFox.U2F.Tests.Server
             var u2FServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto,
                 TRUSTED_DOMAINS);
 
-            var registrationResponse = new RegistrationResponse(REGISTRATION_RESPONSE_DATA_MULTIPLE_TRANSPORTS_BASE64,
+            var registrationResponse = new RegisterResponse(REGISTRATION_RESPONSE_DATA_MULTIPLE_TRANSPORTS_BASE64,
                 BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
             u2FServer.ProcessRegistrationResponse(registrationResponse, 0L);
 
@@ -142,7 +142,7 @@ namespace BlackFox.U2F.Tests.Server
             var u2FServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto,
                 TRUSTED_DOMAINS);
 
-            var registrationResponse = new RegistrationResponse(REGISTRATION_RESPONSE_DATA_MALFORMED_TRANSPORTS_BASE64,
+            var registrationResponse = new RegisterResponse(REGISTRATION_RESPONSE_DATA_MALFORMED_TRANSPORTS_BASE64,
                 BROWSER_DATA_ENROLL_BASE64, SESSION_ID);
             u2FServer.ProcessRegistrationResponse(registrationResponse, 0L);
 
@@ -164,7 +164,7 @@ namespace BlackFox.U2F.Tests.Server
             mockDataStore.Setup(x => x.GetTrustedCertificates()).Returns(trustedCertificates);
             var u2FServer = new U2FServerReferenceImpl(mockChallengeGenerator.Object, mockDataStore.Object, crypto,
                 TRUSTED_DOMAINS);
-            var registrationResponse = new RegistrationResponse(REGISTRATION_DATA_2_BASE64, BROWSER_DATA_2_BASE64,
+            var registrationResponse = new RegisterResponse(REGISTRATION_DATA_2_BASE64, BROWSER_DATA_2_BASE64,
                 SESSION_ID);
             u2FServer.ProcessRegistrationResponse(registrationResponse, 0L);
             var expectedKeyData = new SecurityKeyData(0L, null, KEY_HANDLE_2, USER_PUBLIC_KEY_2, TRUSTED_CERTIFICATE_2,

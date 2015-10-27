@@ -46,7 +46,7 @@ namespace BlackFox.U2F.Client.impl
             var rawRegisterResponseBase64 = WebSafeBase64Converter.ToBase64String(rawRegisterResponse);
             var clientDataBase64 = WebSafeBase64Converter.ToBase64String(Encoding.UTF8.GetBytes(clientData));
             server.ProcessRegistrationResponse(
-                new RegistrationResponse(rawRegisterResponseBase64, clientDataBase64, registrationRequest.SessionId),
+                new RegisterResponse(rawRegisterResponseBase64, clientDataBase64, registrationRequest.SessionId),
                 clock.Now.ToUnixTimeMilliseconds());
         }
 

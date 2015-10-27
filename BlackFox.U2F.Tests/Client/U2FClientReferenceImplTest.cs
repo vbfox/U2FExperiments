@@ -57,7 +57,7 @@ namespace BlackFox.U2F.Tests.Client
 		    mockOriginVerifier.Setup(x => x.ValidateOrigin(APP_ID_ENROLL, ORIGIN));
 		    mockU2FKey.Setup(x => x.Register(new KeyRegisterRequest(APP_ID_ENROLL_SHA256, BROWSER_DATA_ENROLL_SHA256)))
 		        .Returns(new KeyRegisterResponse(USER_PUBLIC_KEY_ENROLL_HEX, KEY_HANDLE, VENDOR_CERTIFICATE, SIGNATURE_ENROLL));
-            mockU2FServer.Setup(x => x.ProcessRegistrationResponse(new RegistrationResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID), 0L))
+            mockU2FServer.Setup(x => x.ProcessRegistrationResponse(new RegisterResponse(REGISTRATION_DATA_BASE64, BROWSER_DATA_ENROLL_BASE64, SESSION_ID), 0L))
                 .Returns(new SecurityKeyData(0L, KEY_HANDLE, USER_PUBLIC_KEY_ENROLL_HEX, VENDOR_CERTIFICATE, 0));
 			u2FClient.Register(ORIGIN, ACCOUNT_NAME);
 		}
@@ -78,5 +78,5 @@ namespace BlackFox.U2F.Tests.Client
 
 			u2FClient.Authenticate(ORIGIN, ACCOUNT_NAME);
 		}
-    }
+	}
 }

@@ -38,7 +38,7 @@ namespace BlackFox.U2F.GnubbyApi
             this.requests = requests;
         }
 
-        public async Task<AuthentifierResult> AuthenticateAsync(CancellationToken cancellationToken)
+        public async Task<RegisterOperationResult> AuthenticateAsync(CancellationToken cancellationToken)
         {
             using (var key = await OpenKeyAsync(cancellationToken))
             {
@@ -56,7 +56,7 @@ namespace BlackFox.U2F.GnubbyApi
             }
         }
 
-        async Task<AuthentifierResult?> TryRegisteringOnceAsync(IKey key, CancellationToken cancellationToken)
+        async Task<RegisterOperationResult?> TryRegisteringOnceAsync(IKey key, CancellationToken cancellationToken)
         {
             int challengesTried = 0;
             foreach (var request in requests)
@@ -71,13 +71,13 @@ namespace BlackFox.U2F.GnubbyApi
             }
             if (challengesTried == 0)
             {
-                return AuthentifierResult.Failure(KeyResponseStatus.Failure);
+                return RegisterOperationResult.Failure(KeyResponseStatus.Failure);
             }
 
             return null;
         }
 
-        async Task<AuthentifierResult?> TryOneRequest(IKey key, KeyRegisterRequest request,
+        async Task<RegisterOperationResult?> TryOneRequest(IKey key, KeyRegisterRequest request,
             CancellationToken cancellationToken)
         {
             try
@@ -88,7 +88,7 @@ namespace BlackFox.U2F.GnubbyApi
                 switch (result.Status)
                 {
                     case KeyResponseStatus.Success:
-                        return AuthentifierResult.Success(request, result.Data);
+                        return RegisterOperationResult.Success(request, result.Data);
                 }
             }
             catch (KeyGoneException)

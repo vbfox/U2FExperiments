@@ -56,12 +56,12 @@
     <Compile Include="Codec\SerialCodec.cs" />
     <Compile Include="Codec\VersionCodec.cs" />
     <Compile Include="GnubbyApi\RegisterOperation.cs" />
-    <Compile Include="GnubbyApi\AuthentifierResult.cs" />
+    <Compile Include="GnubbyApi\RegisterOperationResult.cs" />
     <Compile Include="GnubbyApi\ISender.cs" />
     <Compile Include="GnubbyApi\MultiKeyOperation.cs" />
     <Compile Include="GnubbyApi\U2FClient.cs" />
     <Compile Include="GnubbyApi\SignOperation.cs" />
-    <Compile Include="GnubbyApi\SignerResult.cs" />
+    <Compile Include="GnubbyApi\SignOperationResult.cs" />
     <Compile Include="Gnubby\IKey.cs" />
     <Compile Include="Gnubby\IKeyFactory.cs" />
     <Compile Include="Gnubby\IKeyId.cs" />
@@ -100,7 +100,7 @@
     <Compile Include="Server\impl\InMemoryServerDataStore.cs" />
     <Compile Include="Server\impl\U2FServerReferenceImpl.cs" />
     <Compile Include="Server\messages\RegisterRequest.cs" />
-    <Compile Include="Server\messages\RegistrationResponse.cs" />
+    <Compile Include="Server\messages\RegisterResponse.cs" />
     <Compile Include="Server\messages\SignRequest.cs" />
     <Compile Include="Server\messages\SignResponse.cs" />
     <Compile Include="Server\ISessionIdGenerator.cs" />

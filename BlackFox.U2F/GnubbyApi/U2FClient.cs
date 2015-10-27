@@ -19,11 +19,11 @@ namespace BlackFox.U2F.GnubbyApi
     public interface IKeyOperations
     {
         [NotNull, ItemNotNull]
-        Task<SignerResult> SignAsync([NotNull] ICollection<KeySignRequest> requests,
+        Task<SignOperationResult> SignAsync([NotNull] ICollection<KeySignRequest> requests,
             CancellationToken cancellationToken = default(CancellationToken), bool invididualAttestation = false);
 
         [NotNull, ItemNotNull]
-        Task<AuthentifierResult> RegisterAsync(ICollection<KeyRegisterRequest> registerRequests, ICollection<KeySignRequest> signRequests,
+        Task<RegisterOperationResult> RegisterAsync(ICollection<KeyRegisterRequest> registerRequests, ICollection<KeySignRequest> signRequests,
             CancellationToken cancellationToken = new CancellationToken());
     }
 
@@ -44,10 +44,10 @@ namespace BlackFox.U2F.GnubbyApi
             this.keyFactory = keyFactory;
         }
 
-        public Task<SignerResult> SignAsync(ICollection<KeySignRequest> requests, CancellationToken cancellationToken = new CancellationToken(),
+        public Task<SignOperationResult> SignAsync(ICollection<KeySignRequest> requests, CancellationToken cancellationToken = new CancellationToken(),
             bool invididualAttestation = false)
         {
-            var signer = new MultiKeyOperation<SignerResult>(
+            var signer = new MultiKeyOperation<SignOperationResult>(
                 keyFactory,
                 (keyId, ct) => new SignOperation(keyId, requests).SignAsync(ct),
                 r => r.IsSuccess
@@ -55,10 +55,10 @@ namespace BlackFox.U2F.GnubbyApi
             return signer.RunOperationAsync(cancellationToken);
         }
 
-        public Task<AuthentifierResult> RegisterAsync(ICollection<KeyRegisterRequest> registerRequests, ICollection<KeySignRequest> signRequests,
+        public Task<RegisterOperationResult> RegisterAsync(ICollection<KeyRegisterRequest> registerRequests, ICollection<KeySignRequest> signRequests,
             CancellationToken cancellationToken = new CancellationToken())
         {
-            var signer = new MultiKeyOperation<AuthentifierResult>(
+            var signer = new MultiKeyOperation<RegisterOperationResult>(
                 keyFactory,
                 (keyId, ct) => new RegisterOperation(keyId, registerRequests).AuthenticateAsync(ct),
                 r => r.IsSuccess
@@ -74,7 +74,7 @@ namespace BlackFox.U2F.GnubbyApi
             CancellationToken cancellationToken = default(CancellationToken));
 
         [NotNull, ItemCanBeNull]
-        Task<RegistrationResponse> Register([NotNull] ICollection<RegisterRequest> registrationRequests,
+        Task<RegisterResponse> Register([NotNull] ICollection<RegisterRequest> registrationRequests,
             [NotNull] ICollection<SignRequest> signRequests, CancellationToken cancellationToken = default(CancellationToken));
     }
 
@@ -233,7 +233,7 @@ namespace BlackFox.U2F.GnubbyApi
             return new RegisterInfo(registerRequest, clientDataB64, new KeyRegisterRequest(appIdSha256, clientDataSha256));
         }
 
-        public async Task<RegistrationResponse> Register(ICollection<RegisterRequest> registrationRequests,
+        public async Task<RegisterResponse> Register(ICollection<RegisterRequest> registrationRequests,
             ICollection<SignRequest> signRequests, CancellationToken cancellationToken = default(CancellationToken))
         {
             var appIds = registrationRequests
@@ -243,9 +243,12 @@ namespace BlackFox.U2F.GnubbyApi
                 .ToList();
             await CheckOriginAndAppIdsAsync(appIds, cancellationToken);
 
+            var signInfos = signRequests.Select(GenerateSignInfo).ToDictionary(s => s.KeySignRequest);
+            var keySignRequests = signInfos.Keys.ToList();
+
             var registerInfos = registrationRequests.Select(GenerateRegisterInfo).ToDictionary(s => s.KeyRegisterRequest);
-            var keyRequests = registerInfos.Keys.ToList();
-            var result = await keyOperations.RegisterAsync(keyRequests, new List<KeySignRequest>(),
+            var keyRegisterRequests = registerInfos.Keys.ToList();
+            var result = await keyOperations.RegisterAsync(keyRegisterRequests, keySignRequests,
                 cancellationToken);
             if (!result.IsSuccess)
             {
@@ -254,7 +257,7 @@ namespace BlackFox.U2F.GnubbyApi
 
             var registerInfo = registerInfos[result.Request];
 
-            return new RegistrationResponse(
+            return new RegisterResponse(
                 WebSafeBase64Converter.ToBase64String(RawMessageCodec.EncodeKeyRegisterResponse(result.Response)),
                 WebSafeBase64Converter.ToBase64String(registerInfo.ClientDataBase64),
                 registerInfo.RegisterRequest.SessionId);

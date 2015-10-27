@@ -30,7 +30,7 @@ namespace BlackFox.U2F.GnubbyApi
             this.requests = requests;
         }
 
-        public async Task<SignerResult> SignAsync(CancellationToken cancellationToken)
+        public async Task<SignOperationResult> SignAsync(CancellationToken cancellationToken)
         {
             using (var key = await OpenKeyAsync(cancellationToken))
             {
@@ -53,7 +53,7 @@ namespace BlackFox.U2F.GnubbyApi
             }
         }
 
-        async Task<SignerResult?> TrySigningOnceAsync(IKey key, bool isFirstPass, CancellationToken cancellationToken)
+        async Task<SignOperationResult?> TrySigningOnceAsync(IKey key, bool isFirstPass, CancellationToken cancellationToken)
         {
             int challengesTried = 0;
             foreach (var request in requests)
@@ -72,13 +72,13 @@ namespace BlackFox.U2F.GnubbyApi
             }
             if (challengesTried == 0)
             {
-                return SignerResult.Failure(KeyResponseStatus.Failure);
+                return SignOperationResult.Failure(KeyResponseStatus.Failure);
             }
 
             return null;
         }
 
-        async Task<SignerResult?> TrySignOneRequest(IKey key, bool isFirstPass, KeySignRequest request,
+        async Task<SignOperationResult?> TrySignOneRequest(IKey key, bool isFirstPass, KeySignRequest request,
             CancellationToken cancellationToken)
         {
             try
@@ -94,7 +94,7 @@ namespace BlackFox.U2F.GnubbyApi
                         break;
 
                     case KeyResponseStatus.Success:
-                        return SignerResult.Success(request, result.Data);
+                        return SignOperationResult.Success(request, result.Data);
                 }
             }
             catch (KeyGoneException)

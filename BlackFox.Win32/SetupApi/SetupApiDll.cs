@@ -12,7 +12,7 @@ namespace BlackFox.Win32.SetupApi
         /* function returns a handle to a device information set that contains
          * requested device information elements for a local computer */
         public static SafeDeviceInfoListHandle GetClassDevs(Guid? gClass,
-            [MarshalAs(UnmanagedType.LPStr)] string strEnumerator,
+            string strEnumerator,
             IntPtr hParent, GetClassDevsFlags nFlags)
         {
             using (var guidPtr = new PinnedStruct<Guid>(gClass))

@@ -11,7 +11,7 @@ namespace BlackFox.Win32.SetupApi
     {
         [DllImport("setupapi.dll", SetLastError = true)]
         public static extern SafeDeviceInfoListHandle SetupDiGetClassDevs(IntPtr gClass,
-            [MarshalAs(UnmanagedType.LPStr)] string strEnumerator,
+            string strEnumerator,
             IntPtr hParent,
             GetClassDevsFlags nFlags);
 

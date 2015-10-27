@@ -69,7 +69,7 @@ namespace BlackFox.U2F.Server.impl
         }
 
         /// <exception cref="U2FException" />
-        public SecurityKeyData ProcessRegistrationResponse(RegistrationResponse registrationResponse,
+        public SecurityKeyData ProcessRegistrationResponse(RegisterResponse registrationResponse,
             long currentTimeInMillis)
         {
             log.Info(">> processRegistrationResponse");

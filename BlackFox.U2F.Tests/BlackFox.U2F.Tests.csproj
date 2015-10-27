@@ -43,6 +43,8 @@
     <Compile Include="Client\U2FClientReferenceImplTest.cs" />
     <Compile Include="Codec\RawCodecTest.cs" />
     <Compile Include="Codec\SerialCodecTest.cs" />
+    <Compile Include="GnubbyApi\MultiKeyOperationTests.cs" />
+    <Compile Include="GnubbyApi\U2FClientTests.cs" />
     <Compile Include="Key\U2FKeyReferenceImplTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Server\U2FServerReferenceImplTest.cs" />

@@ -11,8 +11,8 @@ namespace BlackFox.U2F.Server
 			accountName, string appId);
 
 		/// <exception cref="U2FException"/>
-		SecurityKeyData ProcessRegistrationResponse(RegistrationResponse
-			 registrationResponse, long currentTimeInMillis);
+		SecurityKeyData ProcessRegistrationResponse(RegisterResponse
+			 registerResponse, long currentTimeInMillis);
 
 		// authentication //
 		/// <exception cref="U2FException"/>

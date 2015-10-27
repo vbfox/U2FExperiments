@@ -3,28 +3,28 @@ using BlackFox.U2F.Gnubby.Messages;
 
 namespace BlackFox.U2F.GnubbyApi
 {
-    public struct SignerResult
+    public struct SignOperationResult
     {
         public bool IsSuccess => Status == KeyResponseStatus.Success;
         public KeyResponseStatus Status { get; }
         public KeySignRequest Request { get; }
         public KeySignResponse Response { get; }
 
-        private SignerResult(KeyResponseStatus status, KeySignRequest request, KeySignResponse response)
+        private SignOperationResult(KeyResponseStatus status, KeySignRequest request, KeySignResponse response)
         {
             Status = status;
             Request = request;
             Response = response;
         }
 
-        public static SignerResult Success(KeySignRequest request, KeySignResponse response)
+        public static SignOperationResult Success(KeySignRequest request, KeySignResponse response)
         {
-            return new SignerResult(KeyResponseStatus.Success, request, response);
+            return new SignOperationResult(KeyResponseStatus.Success, request, response);
         }
 
-        public static SignerResult Failure(KeyResponseStatus status)
+        public static SignOperationResult Failure(KeyResponseStatus status)
         {
-            return  new SignerResult(status, null, null);
+            return  new SignOperationResult(status, null, null);
         }
     }
 }
