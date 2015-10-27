@@ -172,7 +172,7 @@ namespace BlackFox.U2F.Tests
             ECKeyPair(USER_PUBLIC_KEY_SIGN, USER_PRIVATE_KEY_SIGN);
 
 		public static readonly byte[] SIGN_REQUEST_DATA = TestUtils.ParseHex
-			("03ccd6ee2e47baef244d49a222db496bad0ef5b6f93aa7cc4d30c4821b3b9dbc" + "574b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992"
+			("ccd6ee2e47baef244d49a222db496bad0ef5b6f93aa7cc4d30c4821b3b9dbc" + "574b0be934baebb5d12d26011b69227fa5e86df94e7d94aa2949a89f2d493992"
 			 + "ca402a552dfdb7477ed65fd84133f86196010b2215b57da75d315b7b9e8fe2e3" + "925a6019551bab61d16591659cbaf00b4950f7abfe6660e2e006f76868b772d7"
 			 + "0c25");
 
