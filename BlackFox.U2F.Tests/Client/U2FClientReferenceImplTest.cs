@@ -4,7 +4,6 @@
 // license that can be found in the LICENSE file or at
 // https://developers.google.com/open-source/licenses/bsd
 
-using System.Threading;
 using BlackFox.U2F.Client;
 using BlackFox.U2F.Client.impl;
 using BlackFox.U2F.Gnubby.Messages;
@@ -20,7 +19,7 @@ using static BlackFox.U2F.Tests.TestVectors;
 
 namespace BlackFox.U2F.Tests.Client
 {
-	public class U2FClientReferenceImplTest
+    public class U2FClientReferenceImplTest
 	{
         Mock<IU2FKey> mockU2FKey;
 

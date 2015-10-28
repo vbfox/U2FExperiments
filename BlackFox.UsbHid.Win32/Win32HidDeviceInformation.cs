@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using BlackFox.Win32.Hid;
+using static PInvoke.Hid;
 
 namespace BlackFox.UsbHid.Win32
 {

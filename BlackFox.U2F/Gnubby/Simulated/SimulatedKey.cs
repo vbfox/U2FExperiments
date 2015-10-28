@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using BlackFox.Binary;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Gnubby.Messages;
-using BlackFox.U2F.Key;
 using BlackFox.U2F.Key.impl;
 using Common.Logging;
 using JetBrains.Annotations;

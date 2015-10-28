@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using BlackFox.U2F.Gnubby.Simulated;
-using BlackFox.U2F.Key;
 using Newtonsoft.Json.Linq;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Tests
 {
-	public static class TestVectors
+    public static class TestVectors
 	{
 		public const int COUNTER_VALUE = 1;
 

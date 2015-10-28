@@ -1,9 +1,9 @@
 using System;
 using System.ComponentModel;
 using System.Diagnostics;
-using BlackFox.Win32.Hid;
 using JetBrains.Annotations;
-using Microsoft.Win32.SafeHandles;
+using static PInvoke.Hid;
+using static PInvoke.Kernel32;
 
 namespace BlackFox.UsbHid.Win32
 {
@@ -11,7 +11,7 @@ namespace BlackFox.UsbHid.Win32
     internal class Win32HidDeviceInformationLazy : Win32HidDeviceInformation
     {
         public override string Path { get;  }
-        private readonly SafeFileHandle handle;
+        private readonly SafeObjectHandle handle;
         public override HidpCaps Capabilities => capabilities.Value;
         public override ushort ProductId => attributes.Value.ProductId;
         public override ushort VendorId => attributes.Value.VendorId;
@@ -26,19 +26,31 @@ namespace BlackFox.UsbHid.Win32
         private readonly Lazy<string> serialNumber;
         private readonly Lazy<string> product;
 
-        internal Win32HidDeviceInformationLazy(string path, [NotNull] SafeFileHandle handle)
+        internal Win32HidDeviceInformationLazy(string path, [NotNull] SafeObjectHandle handle)
         {
             if (handle == null) throw new ArgumentNullException(nameof(handle));
             if (handle.IsInvalid) throw new ArgumentException("Handle is invalid", nameof(handle));
 
             Path = path;
             this.handle = handle;
-            
-            manufacturer = ExceptionWrappedLazy(() => HidDll.GetManufacturerString(handle));
-            product = ExceptionWrappedLazy(() => HidDll.GetProductString(handle));
-            serialNumber = ExceptionWrappedLazy(() => HidDll.GetSerialNumberString(handle));
-            attributes = ExceptionWrappedLazy(() => HidDll.GetAttributes(handle));
+
+            manufacturer = GetValueOrNullLazy(HidD_GetManufacturerString);
+            product = GetValueOrNullLazy(HidD_GetProductString);
+            serialNumber = GetValueOrNullLazy(HidD_GetSerialNumberString);
+            attributes = ExceptionWrappedLazy(() => HidD_GetAttributes(handle));
             capabilities = ExceptionWrappedLazy(GetCapabilities);
+        }
+
+        private delegate bool TryGetValue(SafeObjectHandle handle, out string value);
+
+        private Lazy<string> GetValueOrNullLazy(TryGetValue tryGet)
+        {
+            return ExceptionWrappedLazy(
+                () =>
+                {
+                    string value;
+                    return tryGet(handle, out value) ? value : null;
+                });
         }
 
         private static Lazy<T> ExceptionWrappedLazy<T>(Func<T> valueFactory)
@@ -49,7 +61,7 @@ namespace BlackFox.UsbHid.Win32
                 {
                     return valueFactory();
                 }
-                catch (Win32Exception exception)
+                catch (Exception exception)
                 {
                     throw ExceptionConversion.ConvertException(exception);
                 }
@@ -58,9 +70,9 @@ namespace BlackFox.UsbHid.Win32
 
         private HidpCaps GetCapabilities()
         {
-            using (var preparsedData = HidDll.GetPreparsedData(handle))
+            using (var preparsedData = HidD_GetPreparsedData(handle))
             {
-                return HidDll.GetCaps(preparsedData);
+                return HidP_GetCaps(preparsedData);
             }
         }
 

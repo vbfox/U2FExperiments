@@ -7,7 +7,6 @@ using System.Text;
 using BlackFox.Binary;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Gnubby.Simulated;
-using BlackFox.U2F.Key;
 using BlackFox.U2F.Server.data;
 using BlackFox.U2F.Server.messages;
 using Common.Logging;

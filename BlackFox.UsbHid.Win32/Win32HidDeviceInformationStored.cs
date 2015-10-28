@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics;
-using BlackFox.Win32.Hid;
 using JetBrains.Annotations;
+using static PInvoke.Hid;
 
 namespace BlackFox.UsbHid.Win32
 {

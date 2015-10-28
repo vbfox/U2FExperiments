@@ -5,12 +5,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Win32.SafeHandles;
 using static BlackFox.Win32.Kernel32.Kernell32DllNativeMethods;
+using static PInvoke.Kernel32;
 
 namespace BlackFox.Win32.Kernel32
 {
     public static class Kernel32Dll
     {
-        public static IntPtr InvalidHandleValue = new IntPtr(-1);
+        public static IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
 
         /// <summary>
         /// <para>Creates or opens a file or I/O device.</para>
@@ -19,7 +20,7 @@ namespace BlackFox.Win32.Kernel32
         /// handle that can be used to access the file or device for various types of I/O depending on the file or
         /// device and the flags and attributes specified.</para>
         /// </summary>
-        public static SafeFileHandle CreateFile(
+        public static SafeObjectHandle CreateFile(
             string lpFileName,
             Kernel32FileAccess dwDesiredAccess,
             FileShareMode dwShareMode,
@@ -41,7 +42,7 @@ namespace BlackFox.Win32.Kernel32
         }
 
         static unsafe bool DeviceIoControlCore(
-            SafeFileHandle hDevice,
+            SafeObjectHandle hDevice,
             uint dwIoControlCode,
             IntPtr inBuffer,
             int nInBufferSize,
@@ -58,7 +59,7 @@ namespace BlackFox.Win32.Kernel32
         }
 
         public static bool DeviceIoControl(
-            SafeFileHandle hDevice,
+            SafeObjectHandle hDevice,
             uint dwIoControlCode,
             IntPtr inBuffer,
             int nInBufferSize,
@@ -72,7 +73,7 @@ namespace BlackFox.Win32.Kernel32
         }
 
         public static bool DeviceIoControl(
-            SafeFileHandle hDevice,
+            SafeObjectHandle hDevice,
             uint dwIoControlCode,
             IntPtr inBuffer,
             int nInBufferSize,
@@ -105,7 +106,7 @@ namespace BlackFox.Win32.Kernel32
 
         unsafe delegate bool OverlappedMethod(NativeOverlapped* overlapped);
 
-        static unsafe Task<int> OverlappedAsync(SafeFileHandle handle, OverlappedMethod nativeMethod,
+        static unsafe Task<int> OverlappedAsync(SafeObjectHandle handle, OverlappedMethod nativeMethod,
             CancellationToken cancellationToken)
         {
             var finishedEvent = new ManualResetEvent(false);
@@ -151,7 +152,7 @@ namespace BlackFox.Win32.Kernel32
             }
         }
 
-        static unsafe void FinishOverlappedAsynchronously(SafeFileHandle handle, PinnedStruct<NativeOverlapped> overlapped,
+        static unsafe void FinishOverlappedAsynchronously(SafeObjectHandle handle, PinnedStruct<NativeOverlapped> overlapped,
             ManualResetEvent finishedEvent, TaskCompletionSource<int> completionSource, CancellationToken cancellationToken)
         {
             var alreadyFinished = false;
@@ -212,7 +213,7 @@ namespace BlackFox.Win32.Kernel32
             }
         }
 
-        static unsafe bool FinishOverlappedSynchronously(SafeFileHandle handle, CancellationToken cancellationToken,
+        static unsafe bool FinishOverlappedSynchronously(SafeObjectHandle handle, CancellationToken cancellationToken,
             PinnedStruct<NativeOverlapped> overlapped, TaskCompletionSource<int> completionSource, bool nativeMethodResult)
         {
             if (!nativeMethodResult)
@@ -252,7 +253,7 @@ namespace BlackFox.Win32.Kernel32
         }
 
         public unsafe static Task<int> DeviceIoControlAsync(
-            SafeFileHandle hDevice,
+            SafeObjectHandle hDevice,
             uint dwIoControlCode,
             IntPtr inBuffer,
             int nInBufferSize,
@@ -269,7 +270,7 @@ namespace BlackFox.Win32.Kernel32
         }
 
         public unsafe static Task<int> WriteFileAsync(
-            SafeFileHandle handle,
+            SafeObjectHandle handle,
             IntPtr buffer,
             int numberOfBytesToWrite,
             CancellationToken cancellationToken = default(CancellationToken))
@@ -282,7 +283,7 @@ namespace BlackFox.Win32.Kernel32
             }, cancellationToken);
         }
 
-        public static async Task<int> WriteFileAsync<T>(SafeFileHandle handle, ArraySegment<T> arraySegment,
+        public static async Task<int> WriteFileAsync<T>(SafeObjectHandle handle, ArraySegment<T> arraySegment,
             CancellationToken cancellationToken = default(CancellationToken))
             where T : struct
         {
@@ -292,7 +293,7 @@ namespace BlackFox.Win32.Kernel32
             }
         }
 
-        public unsafe static Task<int> ReadFileAsync(SafeFileHandle handle, IntPtr buffer, int numberOfBytesToRead,
+        public unsafe static Task<int> ReadFileAsync(SafeObjectHandle handle, IntPtr buffer, int numberOfBytesToRead,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             return OverlappedAsync(handle, lpOverlapped =>
@@ -303,7 +304,7 @@ namespace BlackFox.Win32.Kernel32
             }, cancellationToken);
         }
 
-        public static async Task<ArraySegment<T>> ReadFileAsync<T>(SafeFileHandle handle, int numberOfElementsToRead,
+        public static async Task<ArraySegment<T>> ReadFileAsync<T>(SafeObjectHandle handle, int numberOfElementsToRead,
             CancellationToken cancellationToken = default(CancellationToken))
             where T : struct
         {

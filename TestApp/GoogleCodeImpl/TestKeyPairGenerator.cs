@@ -1,5 +1,4 @@
 ﻿using BlackFox.U2F.Gnubby.Simulated;
-using BlackFox.U2F.Key;
 using Org.BouncyCastle.Asn1.Sec;
 using Org.BouncyCastle.Crypto.Generators;
 using Org.BouncyCastle.Crypto.Parameters;

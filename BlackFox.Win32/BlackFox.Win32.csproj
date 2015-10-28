@@ -46,11 +46,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FixedArraySegment.cs" />
-    <Compile Include="Hid\HiddAttributes.cs" />
-    <Compile Include="Hid\HidDll.cs" />
-    <Compile Include="Hid\HidDllNativeMethods.cs" />
-    <Compile Include="Hid\HidpCaps.cs" />
-    <Compile Include="Hid\SafePreparsedDataHandle.cs" />
+    <Compile Include="Hid\Hid+HiddAttributes.cs" />
+    <Compile Include="Hid\Hid+HidpCaps.cs" />
+    <Compile Include="Hid\Hid+SafePreparsedDataHandle.cs" />
+    <Compile Include="Hid\Hid.cs" />
+    <Compile Include="Hid\Hid.Helpers.cs" />
+    <Compile Include="Kernel32\Kernel32+FileAttribute.cs" />
+    <Compile Include="Kernel32\Kernel32+SafeFindFilesHandle.cs" />
+    <Compile Include="Kernel32\Kernel32+SafeObjectHandle.cs" />
+    <Compile Include="Kernel32\Kernel32.cs" />
+    <Compile Include="Kernel32\Kernel32.Helpers.cs" />
     <Compile Include="Kernel32\Kernel32FileAccess.cs" />
     <Compile Include="Kernel32\FileAttributes.cs" />
     <Compile Include="Kernel32\FileCreationDisposition.cs" />
@@ -59,14 +64,23 @@
     <Compile Include="Kernel32\Kernel32Dll.cs" />
     <Compile Include="Kernel32\Kernell32DllNativeMethods.cs" />
     <Compile Include="Kernel32\Kernell32Extensions.cs" />
+    <Compile Include="NTStatus.cs" />
+    <Compile Include="NTStatusFacilities.cs" />
+    <Compile Include="NTStatusSeverity.cs" />
+    <Compile Include="NullableGuid.cs" />
+    <Compile Include="NullableUInt32.cs" />
     <Compile Include="PinnedStruct.cs" />
+    <Compile Include="PInvokeExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResharperAnnotations.cs" />
-    <Compile Include="SetupApi\DeviceInterfaceData.cs" />
-    <Compile Include="SetupApi\GetClassDevsFlags.cs" />
-    <Compile Include="SetupApi\SafeDeviceInfoListHandle.cs" />
-    <Compile Include="SetupApi\SetupApiDll.cs" />
-    <Compile Include="SetupApi\SetupApiDllNativeMethods.cs" />
+    <Compile Include="SetupApi\SetupApi+DeviceInfoData.cs" />
+    <Compile Include="SetupApi\SetupApi+DeviceInterfaceData.cs" />
+    <Compile Include="SetupApi\SetupApi+DeviceInterfaceDataFlags.cs" />
+    <Compile Include="SetupApi\SetupApi+GetClassDevsFlags.cs" />
+    <Compile Include="SetupApi\SetupApi+SafeDeviceInfoSetHandle.cs" />
+    <Compile Include="SetupApi\SetupApi.cs" />
+    <Compile Include="SetupApi\SetupApi.Helpers.cs" />
+    <Compile Include="Win32ErrorCode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.references" />

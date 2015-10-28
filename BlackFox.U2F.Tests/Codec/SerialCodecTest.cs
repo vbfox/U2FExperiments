@@ -8,7 +8,6 @@ using BlackFox.Binary;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Gnubby.Messages;
 using BlackFox.U2F.Gnubby.Simulated;
-using BlackFox.U2F.Key;
 using NUnit.Framework;
 using static BlackFox.U2F.Tests.TestVectors;
 

@@ -5,7 +5,6 @@
 // https://developers.google.com/open-source/licenses/bsd
 
 using BlackFox.U2F.Codec;
-using BlackFox.U2F.Key;
 using NUnit.Framework;
 using static BlackFox.U2F.Tests.TestVectors;
 using BlackFox.Binary;
@@ -14,7 +13,7 @@ using BlackFox.U2F.Gnubby.Simulated;
 
 namespace BlackFox.U2F.Tests.Codec
 {
-	public class RawCodecTest
+    public class RawCodecTest
 	{
 		/// <exception cref="System.Exception"/>
 		[Test]

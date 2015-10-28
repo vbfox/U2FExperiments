@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using BlackFox.Win32.Hid;
 using BlackFox.Win32.Kernel32;
-using BlackFox.Win32.SetupApi;
 using Common.Logging;
 using JetBrains.Annotations;
+using PInvoke;
+using static PInvoke.SetupApi;
 
 namespace BlackFox.UsbHid.Win32
 {
@@ -16,6 +16,7 @@ namespace BlackFox.UsbHid.Win32
         static readonly ILog log = LogManager.GetLogger(typeof(Win32HidDevice));
 
         private static readonly Lazy<Win32HidDeviceFactory> instance = new Lazy<Win32HidDeviceFactory>(() => new Win32HidDeviceFactory());
+        private static readonly Guid hidGuid = Hid.HidD_GetHidGuid();
         public static Win32HidDeviceFactory Instance => instance.Value;
 
         private static Win32HidDevice FromId([NotNull] string deviceId, HidDeviceAccessMode accessMode,
@@ -73,19 +74,19 @@ namespace BlackFox.UsbHid.Win32
 
         private static ICollection<IHidDeviceInformation> FindAll()
         {
-            using (var infoList = SetupApiDll.GetClassDevs(HidDll.HidGuid, null, IntPtr.Zero,
-                GetClassDevsFlags.DeviceInterface | GetClassDevsFlags.Present))
+            using (var infoList = SetupDiGetClassDevs(hidGuid, null, IntPtr.Zero,
+                GetClassDevsFlags.DIGCF_DEVICEINTERFACE | GetClassDevsFlags.DIGCF_PRESENT))
             {
-                return SetupApiDll.EnumDeviceInterfaces(infoList, 0, HidDll.HidGuid)
+                return SetupDiEnumDeviceInterfaces(infoList, null, hidGuid)
                     .Select(interfaceData => InfoFromData(infoList, interfaceData))
                     .Where(i => i != null)
                     .ToList();
             }
         }
 
-        private static IHidDeviceInformation InfoFromData(SafeDeviceInfoListHandle infoList, DeviceInterfaceData interfaceData)
+        private static IHidDeviceInformation InfoFromData(SafeDeviceInfoSetHandle infoList, DeviceInterfaceData interfaceData)
         {
-            var path = SetupApiDll.GetDeviceInterfaceDetail(infoList, interfaceData, IntPtr.Zero);
+            var path = SetupDiGetDeviceInterfaceDetail(infoList, interfaceData, IntPtr.Zero);
 
             using (var device = Win32HidDevice.TryFromPath(path, Kernel32FileAccess.None))
             {

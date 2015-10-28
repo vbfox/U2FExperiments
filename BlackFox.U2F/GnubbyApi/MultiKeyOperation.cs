@@ -108,7 +108,7 @@ namespace BlackFox.U2F.GnubbyApi
                     case TaskStatus.RanToCompletion:
                         if (resultValidator(t.Result))
                         {
-                            bool setResultSucceeded = tcs.TrySetResult(t.Result);
+                            var setResultSucceeded = tcs.TrySetResult(t.Result);
                             Debug.Assert(setResultSucceeded);
                         }
                         // If the result is null it mean that there is no way that it can sign any of the requests,

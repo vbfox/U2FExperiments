@@ -3,15 +3,13 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Text;
 using Org.BouncyCastle.Asn1.Sec;
-using Org.BouncyCastle.Asn1.X9;
 using Org.BouncyCastle.Crypto.Parameters;
-using Org.BouncyCastle.Crypto.Tls;
 using Org.BouncyCastle.Math;
 using Org.BouncyCastle.X509;
 
 namespace BlackFox.U2F.Tests
 {
-	public class TestUtils
+    public class TestUtils
 	{
 	    public static byte[] ParseHex(string hexEncoded)
 	    {

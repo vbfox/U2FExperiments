@@ -1,4 +1,3 @@
-using System;
 using System.IO;
 using BlackFox.Binary;
 using BlackFox.U2F.Gnubby.Messages;

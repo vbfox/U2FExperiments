@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading;
-using System.Threading.Tasks;
 using BlackFox.U2F;
-using BlackFox.U2F.Codec;
 using BlackFox.U2F.Gnubby;
 using BlackFox.U2F.Gnubby.Messages;
-using BlackFox.U2F.Key;
 using BlackFox.U2FHid;
 using JetBrains.Annotations;
 using IU2FKey = BlackFox.U2F.Key.IU2FKey;

@@ -1,10 +1,9 @@
-using System;
 using System.Text;
 using Org.BouncyCastle.Security;
 
 namespace BlackFox.U2F.Client.impl
 {
-	public class BouncyCastleClientCrypto : IClientCrypto
+    public class BouncyCastleClientCrypto : IClientCrypto
 	{
 	    public static BouncyCastleClientCrypto Instance { get; } = new BouncyCastleClientCrypto();
 

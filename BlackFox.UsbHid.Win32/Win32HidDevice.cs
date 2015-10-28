@@ -4,11 +4,12 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using BlackFox.Binary;
-using BlackFox.Win32.Hid;
 using BlackFox.Win32.Kernel32;
 using Common.Logging;
 using JetBrains.Annotations;
 using Microsoft.Win32.SafeHandles;
+using PInvoke;
+using static PInvoke.Kernel32;
 
 namespace BlackFox.UsbHid.Win32
 {
@@ -18,19 +19,19 @@ namespace BlackFox.UsbHid.Win32
         static readonly ILog log = LogManager.GetLogger(typeof(Win32HidDevice));
 
         readonly bool ownHandle;
-        public SafeFileHandle Handle { get; }
+        public SafeObjectHandle Handle { get; }
 
         [NotNull]
         public Win32HidDeviceInformation Information { get; }
 
         IHidDeviceInformation IHidDevice.Information => Information;
 
-        public Win32HidDevice([NotNull] string path, [NotNull] SafeFileHandle handle, bool ownHandle)
+        public Win32HidDevice([NotNull] string path, [NotNull] SafeObjectHandle handle, bool ownHandle)
             :this(path, handle, ownHandle, null)
         {
         }
 
-        internal Win32HidDevice([NotNull] string path, [NotNull] SafeFileHandle handle, bool ownHandle,
+        internal Win32HidDevice([NotNull] string path, [NotNull] SafeObjectHandle handle, bool ownHandle,
             [CanBeNull] Win32HidDeviceInformation knownInformation)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -38,6 +39,7 @@ namespace BlackFox.UsbHid.Win32
 
             this.ownHandle = ownHandle;
             Handle = handle;
+            
             Information = knownInformation ?? new Win32HidDeviceInformationLazy(path, handle);
         }
 
@@ -114,10 +116,10 @@ namespace BlackFox.UsbHid.Win32
 
         public void SetNumInputBuffers(uint numberBuffers)
         {
-            HidDll.SetNumInputBuffers(Handle, numberBuffers);
+            Hid.HidD_SetNumInputBuffers(Handle, numberBuffers);
         }
 
-        private static SafeFileHandle OpenHandle(string path, Kernel32FileAccess access, bool throwOnError)
+        private static SafeObjectHandle OpenHandle(string path, Kernel32FileAccess access, bool throwOnError)
         {
             return Kernel32Dll.CreateFile(
                 path,
