@@ -10,6 +10,7 @@ using JetBrains.Annotations;
 using Microsoft.Win32.SafeHandles;
 using PInvoke;
 using static PInvoke.Kernel32;
+using Win32Exception = PInvoke.Win32Exception;
 
 namespace BlackFox.UsbHid.Win32
 {
@@ -119,17 +120,23 @@ namespace BlackFox.UsbHid.Win32
             Hid.HidD_SetNumInputBuffers(Handle, numberBuffers);
         }
 
-        private static SafeObjectHandle OpenHandle(string path, Kernel32FileAccess access, bool throwOnError)
+        private static SafeObjectHandle OpenHandle(string path, FileAccess access, bool throwOnError)
         {
-            return Kernel32Dll.CreateFile(
+            var handle = CreateFile(
                 path,
                 access,
-                FileShareMode.Read | FileShareMode.Write,
+                FileShare.Read | FileShare.Write,
                 IntPtr.Zero,
-                FileCreationDisposition.OpenExisiting,
-                FileFlags.Overlapped,
-                IntPtr.Zero,
-                throwOnError);
+                CreationDisposition.OpenExisting,
+                CreateFileFlags.OverlappedFlag,
+                new SafeObjectHandle(INVALID_HANDLE_VALUE, true));
+
+            if (handle.IsInvalid && throwOnError)
+            {
+                throw new Win32Exception();
+            }
+
+            return handle;
         }
 
         public void Close()
@@ -145,7 +152,7 @@ namespace BlackFox.UsbHid.Win32
             }
         }
 
-        internal static Win32HidDevice FromPath([NotNull] string path, Kernel32FileAccess accessMode,
+        internal static Win32HidDevice FromPath([NotNull] string path, FileAccess accessMode,
             [CanBeNull] Win32HidDeviceInformation knownInformation)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -154,12 +161,12 @@ namespace BlackFox.UsbHid.Win32
             return new Win32HidDevice(path, handle, true, knownInformation);
         }
 
-        public static Win32HidDevice FromPath(string path, Kernel32FileAccess accessMode)
+        public static Win32HidDevice FromPath(string path, FileAccess accessMode)
         {
             return FromPath(path, accessMode, null);
         }
 
-        public static Win32HidDevice TryFromPath(string path, Kernel32FileAccess accessMode)
+        public static Win32HidDevice TryFromPath(string path, FileAccess accessMode)
         {
             var handle = OpenHandle(path, accessMode, false);
             return handle.IsInvalid ? null : new Win32HidDevice(path, handle, true);

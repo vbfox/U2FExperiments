@@ -22,15 +22,15 @@ namespace BlackFox.Win32.Kernel32
         /// </summary>
         public static SafeObjectHandle CreateFile(
             string lpFileName,
-            Kernel32FileAccess dwDesiredAccess,
-            FileShareMode dwShareMode,
+            FileAccess dwDesiredAccess,
+            FileShare dwShareMode,
             IntPtr lpSecurityAttributes,
-            FileCreationDisposition dwCreationDisposition,
-            FileFlags dwFlagsAndAttributes,
-            IntPtr hTemplateFile,
+            CreationDisposition dwCreationDisposition,
+            CreateFileFlags dwFlagsAndAttributes,
+            SafeObjectHandle hTemplateFile,
             bool throwOnInvalid = true)
         {
-            var result = Kernell32DllNativeMethods.CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
+            var result = CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
                 dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
 
             if (result.IsInvalid && throwOnInvalid)

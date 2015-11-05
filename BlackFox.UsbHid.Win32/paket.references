@@ -1,2 +1,5 @@
 ﻿Common.Logging.Portable
 Microsoft.Bcl.Async
+PInvoke.Hid
+PInvoke.Kernel32
+PInvoke.SetupApi

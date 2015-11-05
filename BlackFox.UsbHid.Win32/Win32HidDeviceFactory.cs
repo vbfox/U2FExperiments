@@ -7,6 +7,7 @@ using BlackFox.Win32.Kernel32;
 using Common.Logging;
 using JetBrains.Annotations;
 using PInvoke;
+using static PInvoke.Kernel32;
 using static PInvoke.SetupApi;
 
 namespace BlackFox.UsbHid.Win32
@@ -26,12 +27,12 @@ namespace BlackFox.UsbHid.Win32
             switch (accessMode)
             {
                 case HidDeviceAccessMode.Read:
-                    return Win32HidDevice.FromPath(deviceId, Kernel32FileAccess.GenericRead, knownInformation);
+                    return Win32HidDevice.FromPath(deviceId, FileAccess.GenericRead, knownInformation);
                 case HidDeviceAccessMode.Write:
-                    return Win32HidDevice.FromPath(deviceId, Kernel32FileAccess.GenericWrite, knownInformation);
+                    return Win32HidDevice.FromPath(deviceId, FileAccess.GenericWrite, knownInformation);
                 case HidDeviceAccessMode.ReadWrite:
                     return Win32HidDevice.FromPath(deviceId,
-                        Kernel32FileAccess.GenericRead | Kernel32FileAccess.GenericWrite, knownInformation);
+                        FileAccess.GenericRead | FileAccess.GenericWrite, knownInformation);
                 default:
                     throw new ArgumentException("Access mode not supported: " + accessMode, nameof(accessMode));
             }
@@ -88,7 +89,7 @@ namespace BlackFox.UsbHid.Win32
         {
             var path = SetupDiGetDeviceInterfaceDetail(infoList, interfaceData, IntPtr.Zero);
 
-            using (var device = Win32HidDevice.TryFromPath(path, Kernel32FileAccess.None))
+            using (var device = Win32HidDevice.TryFromPath(path, 0))
             {
                 if (device == null)
                 {

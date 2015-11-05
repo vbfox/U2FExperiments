@@ -10,6 +10,9 @@ group Main
     nuget Newtonsoft.Json
     nuget Portable.BouncyCastle
 	nuget NodaTime
+	nuget PInvoke.Hid
+	nuget PInvoke.Kernel32
+	nuget PInvoke.SetupApi
 
 group Tests
     source https://nuget.org/api/v2

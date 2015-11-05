@@ -11,16 +11,6 @@ namespace BlackFox.Win32.Kernel32
     [SuppressMessage("ReSharper", "MemberHidesStaticFromOuterClass")]
     public static class Kernell32DllNativeMethods
     {
-        [DllImport("kernel32.dll", SetLastError = true, EntryPoint = "CreateFile")]
-        public static extern SafeObjectHandle CreateFile(
-            [MarshalAs(UnmanagedType.LPStr)] string lpFileName,
-            Kernel32FileAccess dwDesiredAccess,
-            FileShareMode dwShareMode,
-            IntPtr lpSecurityAttributes,
-            FileCreationDisposition dwCreationDisposition,
-            FileFlags dwFlagsAndAttributes,
-            IntPtr hTemplateFile);
-
         [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         public static extern unsafe bool DeviceIoControl(
             SafeObjectHandle hDevice,

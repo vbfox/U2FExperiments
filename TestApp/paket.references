@@ -4,3 +4,6 @@ Common.Logging.NLog40 framework: net45
 Portable.BouncyCastle
 NodaTime
 Newtonsoft.Json
+PInvoke.Hid
+PInvoke.Kernel32
+PInvoke.SetupApi
