@@ -1,5 +1,4 @@
 ﻿using System;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,7 +6,6 @@ using BlackFox.Binary;
 using BlackFox.Win32.Kernel32;
 using Common.Logging;
 using JetBrains.Annotations;
-using Microsoft.Win32.SafeHandles;
 using PInvoke;
 using static PInvoke.Kernel32;
 using Win32Exception = PInvoke.Win32Exception;
@@ -117,7 +115,7 @@ namespace BlackFox.UsbHid.Win32
 
         public void SetNumInputBuffers(uint numberBuffers)
         {
-            Hid.HidD_SetNumInputBuffers(Handle, numberBuffers);
+            Hid.HidD_SetNumInputBuffers(Handle, (int)numberBuffers);
         }
 
         private static SafeObjectHandle OpenHandle(string path, FileAccess access, bool throwOnError)
@@ -125,10 +123,10 @@ namespace BlackFox.UsbHid.Win32
             var handle = CreateFile(
                 path,
                 access,
-                FileShare.Read | FileShare.Write,
-                IntPtr.Zero,
-                CreationDisposition.OpenExisting,
-                CreateFileFlags.OverlappedFlag,
+                FileShare.FILE_SHARE_READ | FileShare.FILE_SHARE_WRITE,
+                null,
+                CreationDisposition.OPEN_EXISTING,
+                CreateFileFlags.FILE_FLAG_OVERLAPPED,
                 new SafeObjectHandle(INVALID_HANDLE_VALUE, true));
 
             if (handle.IsInvalid && throwOnError)

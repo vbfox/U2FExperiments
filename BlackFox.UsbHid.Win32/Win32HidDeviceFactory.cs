@@ -27,12 +27,12 @@ namespace BlackFox.UsbHid.Win32
             switch (accessMode)
             {
                 case HidDeviceAccessMode.Read:
-                    return Win32HidDevice.FromPath(deviceId, FileAccess.GenericRead, knownInformation);
+                    return Win32HidDevice.FromPath(deviceId, FileAccess.GENERIC_READ, knownInformation);
                 case HidDeviceAccessMode.Write:
-                    return Win32HidDevice.FromPath(deviceId, FileAccess.GenericWrite, knownInformation);
+                    return Win32HidDevice.FromPath(deviceId, FileAccess.GENERIC_WRITE, knownInformation);
                 case HidDeviceAccessMode.ReadWrite:
                     return Win32HidDevice.FromPath(deviceId,
-                        FileAccess.GenericRead | FileAccess.GenericWrite, knownInformation);
+                        FileAccess.GENERIC_READ | FileAccess.GENERIC_WRITE, knownInformation);
                 default:
                     throw new ArgumentException("Access mode not supported: " + accessMode, nameof(accessMode));
             }
