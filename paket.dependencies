@@ -18,7 +18,7 @@ group Tests
     source https://nuget.org/api/v2
 
     nuget Moq
-    nuget NUnit
+    nuget NUnit ~> 2
     nuget NFluent
 
 group Fake
