@@ -20,38 +20,6 @@ namespace BlackFox.Win32.Kernel32
             IntPtr outBuffer,
             int nOutBufferSize,
             out int pBytesReturned,
-            NativeOverlapped* lpOverlapped);
-
-        [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern unsafe bool GetOverlappedResult(
-            SafeObjectHandle hDevice,
-            NativeOverlapped* lpOverlapped,
-            out int lpNumberOfBytesTransferred,
-            bool wait);
-
-        [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern unsafe bool WriteFile(
-            SafeObjectHandle hFile,
-            IntPtr lpBuffer,
-            int nNumberOfBytesToWrite,
-            out int lpNumberOfBytesWritten,
-            NativeOverlapped* lpOverlapped);
-
-        [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern unsafe bool ReadFile(
-            SafeObjectHandle hFile,
-            IntPtr lpBuffer,
-            int nNumberOfBytesToRead,
-            out int lpNumberOfBytesRead,
-            NativeOverlapped* lpOverlapped);
-
-        [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern bool CancelIo(
-            SafeObjectHandle hFile);
-
-        [DllImport("Kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-        public static extern unsafe bool CancelIoEx(
-            SafeObjectHandle hFile,
-            NativeOverlapped* lpOverlapped);
+            OVERLAPPED* lpOverlapped);
     }
 }

@@ -1,46 +1,14 @@
 using System;
-using System.ComponentModel;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Win32.SafeHandles;
-using static BlackFox.Win32.Kernel32.Kernell32DllNativeMethods;
 using static PInvoke.Kernel32;
+using Win32Exception = System.ComponentModel.Win32Exception;
 
 namespace BlackFox.Win32.Kernel32
 {
     public static class Kernel32Dll
     {
-        public static IntPtr INVALID_HANDLE_VALUE = new IntPtr(-1);
-
-        /// <summary>
-        /// <para>Creates or opens a file or I/O device.</para>
-        /// <para>The most commonly used I/O devices are as follows: file, file stream, directory, physical disk,
-        /// volume, console buffer, tape drive, communications resource, mailslot, and pipe. The function returns a
-        /// handle that can be used to access the file or device for various types of I/O depending on the file or
-        /// device and the flags and attributes specified.</para>
-        /// </summary>
-        public static SafeObjectHandle CreateFile(
-            string lpFileName,
-            FileAccess dwDesiredAccess,
-            FileShare dwShareMode,
-            IntPtr lpSecurityAttributes,
-            CreationDisposition dwCreationDisposition,
-            CreateFileFlags dwFlagsAndAttributes,
-            SafeObjectHandle hTemplateFile,
-            bool throwOnInvalid = true)
-        {
-            var result = CreateFile(lpFileName, dwDesiredAccess, dwShareMode, lpSecurityAttributes,
-                dwCreationDisposition, dwFlagsAndAttributes, hTemplateFile);
-
-            if (result.IsInvalid && throwOnInvalid)
-            {
-                throw new Win32Exception();
-            }
-
-            return result;
-        }
-
         static unsafe bool DeviceIoControlCore(
             SafeObjectHandle hDevice,
             uint dwIoControlCode,
@@ -49,12 +17,12 @@ namespace BlackFox.Win32.Kernel32
             IntPtr outBuffer,
             int nOutBufferSize,
             out int pBytesReturned,
-            NativeOverlapped? lpOverlapped)
+            OVERLAPPED? lpOverlapped)
         {
             using (var overlapped = lpOverlapped.Pin())
             {
                 return Kernell32DllNativeMethods.DeviceIoControl(hDevice, dwIoControlCode, inBuffer, nInBufferSize,
-                    outBuffer, nOutBufferSize, out pBytesReturned, (NativeOverlapped*)overlapped.Pointer);
+                    outBuffer, nOutBufferSize, out pBytesReturned, (OVERLAPPED*)overlapped.Pointer);
             }
         }
 
@@ -65,7 +33,7 @@ namespace BlackFox.Win32.Kernel32
             int nInBufferSize,
             IntPtr outBuffer,
             int nOutBufferSize,
-            NativeOverlapped lpOverlapped)
+            OVERLAPPED lpOverlapped)
         {
             int pBytesReturned;
             return DeviceIoControlCore(hDevice, dwIoControlCode, inBuffer, nInBufferSize, outBuffer, nOutBufferSize,
@@ -104,19 +72,19 @@ namespace BlackFox.Win32.Kernel32
             }
         }
 
-        unsafe delegate bool OverlappedMethod(NativeOverlapped* overlapped);
+        unsafe delegate bool OverlappedMethod(OVERLAPPED* overlapped);
 
         static unsafe Task<int> OverlappedAsync(SafeObjectHandle handle, OverlappedMethod nativeMethod,
             CancellationToken cancellationToken)
         {
             var finishedEvent = new ManualResetEvent(false);
 
-            var overlapped = new NativeOverlapped
+            var overlapped = new OVERLAPPED
             {
-                EventHandle = finishedEvent.SafeWaitHandle.DangerousGetHandle()
+                hEvent = finishedEvent.SafeWaitHandle.DangerousGetHandle()
             }.Pin();
 
-            var result = nativeMethod((NativeOverlapped*)overlapped.Pointer);
+            var result = nativeMethod((OVERLAPPED*)overlapped.Pointer);
 
             var completionSource = new TaskCompletionSource<int>();
 
@@ -152,7 +120,7 @@ namespace BlackFox.Win32.Kernel32
             }
         }
 
-        static unsafe void FinishOverlappedAsynchronously(SafeObjectHandle handle, PinnedStruct<NativeOverlapped> overlapped,
+        static unsafe void FinishOverlappedAsynchronously(SafeObjectHandle handle, PinnedStruct<OVERLAPPED> overlapped,
             ManualResetEvent finishedEvent, TaskCompletionSource<int> completionSource, CancellationToken cancellationToken)
         {
             var alreadyFinished = false;
@@ -171,13 +139,13 @@ namespace BlackFox.Win32.Kernel32
 
                     if (overlappedState.IsCancellation || cancellationToken.IsCancellationRequested)
                     {
-                        CancelIoEx(handle, (NativeOverlapped*)overlapped.Pointer);
+                        CancelIoEx(handle, (OVERLAPPED*) overlapped.Pointer);
                         completionSource.SetCanceled();
                     }
                     else
                     {
                         int bytesReturned;
-                        var overlappedResult = GetOverlappedResult(handle, (NativeOverlapped*)overlapped.Pointer,
+                        var overlappedResult = GetOverlappedResult(handle, (OVERLAPPED*)overlapped.Pointer,
                             out bytesReturned, false);
 
                         overlapped.Dispose();
@@ -214,7 +182,7 @@ namespace BlackFox.Win32.Kernel32
         }
 
         static unsafe bool FinishOverlappedSynchronously(SafeObjectHandle handle, CancellationToken cancellationToken,
-            PinnedStruct<NativeOverlapped> overlapped, TaskCompletionSource<int> completionSource, bool nativeMethodResult)
+            PinnedStruct<OVERLAPPED> overlapped, TaskCompletionSource<int> completionSource, bool nativeMethodResult)
         {
             if (!nativeMethodResult)
             {
@@ -238,7 +206,7 @@ namespace BlackFox.Win32.Kernel32
             }
 
             int pBytesReturned;
-            GetOverlappedResult(handle, (NativeOverlapped*)overlapped.Pointer,
+            GetOverlappedResult(handle, (OVERLAPPED*)overlapped.Pointer,
                 out pBytesReturned, false);
             if (cancellationToken.IsCancellationRequested)
             {
@@ -252,7 +220,7 @@ namespace BlackFox.Win32.Kernel32
             return true;
         }
 
-        public unsafe static Task<int> DeviceIoControlAsync(
+        public static unsafe Task<int> DeviceIoControlAsync(
             SafeObjectHandle hDevice,
             uint dwIoControlCode,
             IntPtr inBuffer,
@@ -269,7 +237,7 @@ namespace BlackFox.Win32.Kernel32
             }, cancellationToken);
         }
 
-        public unsafe static Task<int> WriteFileAsync(
+        public static unsafe Task<int> WriteFileAsync(
             SafeObjectHandle handle,
             IntPtr buffer,
             int numberOfBytesToWrite,
@@ -277,9 +245,7 @@ namespace BlackFox.Win32.Kernel32
         {
             return OverlappedAsync(handle, lpOverlapped =>
             {
-                int numberOfBytesWritten;
-                return WriteFile(handle, buffer, numberOfBytesToWrite, out numberOfBytesWritten,
-                    lpOverlapped);
+                return WriteFile(handle, buffer.ToPointer(), numberOfBytesToWrite, null, lpOverlapped);
             }, cancellationToken);
         }
 
@@ -293,14 +259,12 @@ namespace BlackFox.Win32.Kernel32
             }
         }
 
-        public unsafe static Task<int> ReadFileAsync(SafeObjectHandle handle, IntPtr buffer, int numberOfBytesToRead,
+        public static unsafe Task<int> ReadFileAsync(SafeObjectHandle handle, IntPtr buffer, int numberOfBytesToRead,
             CancellationToken cancellationToken = default(CancellationToken))
         {
             return OverlappedAsync(handle, lpOverlapped =>
             {
-                int numberOfBytesRead;
-                return ReadFile(handle, buffer, numberOfBytesToRead, out numberOfBytesRead,
-                    lpOverlapped);
+                return ReadFile(handle, buffer.ToPointer(), numberOfBytesToRead, null, lpOverlapped);
             }, cancellationToken);
         }
 

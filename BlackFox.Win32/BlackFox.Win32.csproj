@@ -46,24 +46,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="FixedArraySegment.cs" />
-    <Compile Include="Kernel32\Kernel32FileAccess.cs" />
-    <Compile Include="Kernel32\FileAttributes.cs" />
-    <Compile Include="Kernel32\FileCreationDisposition.cs" />
-    <Compile Include="Kernel32\FileFlags.cs" />
-    <Compile Include="Kernel32\FileShareMode.cs" />
     <Compile Include="Kernel32\Kernel32Dll.cs" />
     <Compile Include="Kernel32\Kernell32DllNativeMethods.cs" />
-    <Compile Include="Kernel32\Kernell32Extensions.cs" />
-    <Compile Include="NTStatus.cs" />
-    <Compile Include="NTStatusFacilities.cs" />
-    <Compile Include="NTStatusSeverity.cs" />
-    <Compile Include="NullableGuid.cs" />
-    <Compile Include="NullableUInt32.cs" />
     <Compile Include="PinnedStruct.cs" />
     <Compile Include="PInvokeExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ResharperAnnotations.cs" />
-    <Compile Include="Win32ErrorCode.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="paket.references" />
