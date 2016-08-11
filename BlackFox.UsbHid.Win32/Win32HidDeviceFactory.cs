@@ -27,12 +27,12 @@ namespace BlackFox.UsbHid.Win32
             switch (accessMode)
             {
                 case HidDeviceAccessMode.Read:
-                    return Win32HidDevice.FromPath(deviceId, FileAccess.GENERIC_READ, knownInformation);
+                    return Win32HidDevice.FromPath(deviceId, ACCESS_MASK.GenericRight.GENERIC_READ, knownInformation);
                 case HidDeviceAccessMode.Write:
-                    return Win32HidDevice.FromPath(deviceId, FileAccess.GENERIC_WRITE, knownInformation);
+                    return Win32HidDevice.FromPath(deviceId, ACCESS_MASK.GenericRight.GENERIC_WRITE, knownInformation);
                 case HidDeviceAccessMode.ReadWrite:
                     return Win32HidDevice.FromPath(deviceId,
-                        FileAccess.GENERIC_READ | FileAccess.GENERIC_WRITE, knownInformation);
+                        ACCESS_MASK.GenericRight.GENERIC_READ | ACCESS_MASK.GenericRight.GENERIC_WRITE, knownInformation);
                 default:
                     throw new ArgumentException("Access mode not supported: " + accessMode, nameof(accessMode));
             }
@@ -78,14 +78,14 @@ namespace BlackFox.UsbHid.Win32
             using (var infoList = SetupDiGetClassDevs(hidGuid, null, IntPtr.Zero,
                 GetClassDevsFlags.DIGCF_DEVICEINTERFACE | GetClassDevsFlags.DIGCF_PRESENT))
             {
-                return SetupDiEnumDeviceInterfaces(infoList, null, hidGuid)
+                return SetupDiEnumDeviceInterfaces(infoList, IntPtr.Zero, hidGuid)
                     .Select(interfaceData => InfoFromData(infoList, interfaceData))
                     .Where(i => i != null)
                     .ToList();
             }
         }
 
-        private static IHidDeviceInformation InfoFromData(SafeDeviceInfoSetHandle infoList, DeviceInterfaceData interfaceData)
+        private static IHidDeviceInformation InfoFromData(SafeDeviceInfoSetHandle infoList, SP_DEVICE_INTERFACE_DATA interfaceData)
         {
             var path = SetupDiGetDeviceInterfaceDetail(infoList, interfaceData, IntPtr.Zero);
 

@@ -118,16 +118,16 @@ namespace BlackFox.UsbHid.Win32
             Hid.HidD_SetNumInputBuffers(Handle, (int)numberBuffers);
         }
 
-        private static SafeObjectHandle OpenHandle(string path, FileAccess access, bool throwOnError)
+        private static SafeObjectHandle OpenHandle(string path, uint access, bool throwOnError)
         {
             var handle = CreateFile(
                 path,
                 access,
                 FileShare.FILE_SHARE_READ | FileShare.FILE_SHARE_WRITE,
-                null,
+                (SECURITY_ATTRIBUTES?)null,
                 CreationDisposition.OPEN_EXISTING,
                 CreateFileFlags.FILE_FLAG_OVERLAPPED,
-                new SafeObjectHandle(INVALID_HANDLE_VALUE, true));
+                new SafeObjectHandle(INVALID_HANDLE_VALUE));
 
             if (handle.IsInvalid && throwOnError)
             {
@@ -150,7 +150,7 @@ namespace BlackFox.UsbHid.Win32
             }
         }
 
-        internal static Win32HidDevice FromPath([NotNull] string path, FileAccess accessMode,
+        internal static Win32HidDevice FromPath([NotNull] string path, ACCESS_MASK accessMode,
             [CanBeNull] Win32HidDeviceInformation knownInformation)
         {
             if (path == null) throw new ArgumentNullException(nameof(path));
@@ -159,12 +159,12 @@ namespace BlackFox.UsbHid.Win32
             return new Win32HidDevice(path, handle, true, knownInformation);
         }
 
-        public static Win32HidDevice FromPath(string path, FileAccess accessMode)
+        public static Win32HidDevice FromPath(string path, ACCESS_MASK accessMode)
         {
             return FromPath(path, accessMode, null);
         }
 
-        public static Win32HidDevice TryFromPath(string path, FileAccess accessMode)
+        public static Win32HidDevice TryFromPath(string path, ACCESS_MASK accessMode)
         {
             var handle = OpenHandle(path, accessMode, false);
             return handle.IsInvalid ? null : new Win32HidDevice(path, handle, true);

@@ -30,7 +30,7 @@ namespace UwpTestApp
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
 
-#if DEBUG
+#if DEBUG && FRAME_RATE_COUNTER
             if (System.Diagnostics.Debugger.IsAttached)
             {
                 this.DebugSettings.EnableFrameRateCounter = true;
