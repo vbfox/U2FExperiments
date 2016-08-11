@@ -150,6 +150,7 @@
           <HintPath>..\packages\Common.Logging.NLog40\lib\net40\Common.Logging.NLog40.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
+          <Aliases>LoggingNet4x</Aliases>
         </Reference>
       </ItemGroup>
     </When>
@@ -161,6 +162,7 @@
           <HintPath>..\packages\Common.Logging.Portable\lib\net40\Common.Logging.Portable.dll</HintPath>
           <Private>True</Private>
           <Paket>True</Paket>
+          <Aliases>LoggingPcl</Aliases>
         </Reference>
       </ItemGroup>
     </When>

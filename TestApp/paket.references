@@ -1,6 +1,8 @@
 ﻿NLog framework: net45
 Common.Logging.Portable framework: net45
+    alias Common.Logging.Portable.dll LoggingPcl
 Common.Logging.NLog40 framework: net45
+    alias Common.Logging.NLog40.dll LoggingNet4x
 Portable.BouncyCastle
 NodaTime
 Newtonsoft.Json

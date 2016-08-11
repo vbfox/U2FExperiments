@@ -23,7 +23,9 @@ using BlackFox.U2FHid.Core.RawPackets;
 using BlackFox.UsbHid;
 using BlackFox.UsbHid.Win32;
 using BlackFox.Win32.Kernel32;
-using Common.Logging.NLog;
+using Common.Logging.Configuration;
+using LoggingNet4x::Common.Logging.NLog;
+using LoggingNet4x::Common.Logging;
 using Newtonsoft.Json.Linq;
 using NLog;
 using NLog.Config;
@@ -59,9 +61,9 @@ namespace U2FExperiments
 
         static void ConfigureCommonLogging()
         {
-            var nameValueCollection = new LoggingNet4x::Common.Logging.Configuration.NameValueCollection();
+            var nameValueCollection = new NameValueCollection();
             var nlogAdapter = new NLogLoggerFactoryAdapter(nameValueCollection);
-            LoggingNet4x::Common.Logging.LogManager.Adapter = nlogAdapter;
+            Common.Logging.LogManager.Adapter = nlogAdapter;
             LoggingPcl::Common.Logging.LogManager.Adapter = nlogAdapter;
         }
 
