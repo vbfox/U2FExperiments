@@ -1,8 +1,8 @@
 @echo off
 
-.paket\paket.bootstrapper.exe -s
+%~dp0\.paket\paket.bootstrapper.exe -s --max-file-age=1440
 if errorlevel 1 (
   exit /b %errorlevel%
 )
 
-.paket\paket.exe %*
+%~dp0\.paket\paket.exe %*
