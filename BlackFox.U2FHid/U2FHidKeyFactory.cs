@@ -12,7 +12,7 @@ namespace BlackFox.U2FHid
 {
     public class U2FHidKeyFactory : IKeyFactory
     {
-        private readonly IHidDeviceFactory deviceFactory;
+        readonly IHidDeviceFactory deviceFactory;
 
         public U2FHidKeyFactory([NotNull] IHidDeviceFactory deviceFactory)
         {

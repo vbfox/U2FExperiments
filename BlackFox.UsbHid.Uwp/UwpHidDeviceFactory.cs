@@ -6,19 +6,11 @@ using System.Threading.Tasks;
 using Windows.Devices.Enumeration;
 using Windows.Devices.HumanInterfaceDevice;
 using Windows.Storage;
-using Windows.UI.Core;
 
 namespace BlackFox.UsbHid.Uwp
 {
     public class UwpHidDeviceFactory : IHidDeviceFactory
     {
-        readonly CoreDispatcher uiDispatcher;
-
-        public UwpHidDeviceFactory(CoreDispatcher uiDispatcher)
-        {
-            this.uiDispatcher = uiDispatcher;
-        }
-
         static FileAccessMode ConvertAccessMode(HidDeviceAccessMode mode)
         {
             switch (mode)
@@ -42,11 +34,7 @@ namespace BlackFox.UsbHid.Uwp
         {
             var uwpAccessMode = ConvertAccessMode(accessMode);
 
-            HidDevice device = null;
-            await uiDispatcher.RunAsync(CoreDispatcherPriority.Normal, () =>
-            {
-                device = HidDevice.FromIdAsync(deviceId, uwpAccessMode).AsTask(cancellationToken).Result;
-            });
+            var device = await HidDevice.FromIdAsync(deviceId, uwpAccessMode).AsTask(cancellationToken);
 
             if (device == null)
             {

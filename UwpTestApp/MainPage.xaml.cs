@@ -64,7 +64,7 @@ namespace UwpTestApp
         async void U2fClicked(object sender, RoutedEventArgs e)
         {
             textBox.Text = "";
-            var hidFactory = new UwpHidDeviceFactory(Dispatcher);
+            var hidFactory = new UwpHidDeviceFactory();
             var u2FFactory = new U2FHidKeyFactory(hidFactory);
             var u2FDevices = await u2FFactory.FindAllAsync();
             
@@ -72,6 +72,15 @@ namespace UwpTestApp
             foreach (var device in u2FDevices)
             {
                 sb.AppendLine($"{device.Product} (By {device.Manufacturer})");
+                sb.AppendLine($"\tId={device.HidDeviceInformation.Id}");
+                sb.AppendLine($"\tManufacturer={device.HidDeviceInformation.Manufacturer}");
+                sb.AppendLine($"\tProduct={device.HidDeviceInformation.Product}");
+                sb.AppendLine($"\tProductId={device.HidDeviceInformation.ProductId}");
+                sb.AppendLine($"\tSerialNumber={device.HidDeviceInformation.SerialNumber}");
+                sb.AppendLine($"\tUsageId={device.HidDeviceInformation.UsageId}");
+                sb.AppendLine($"\tUsagePage={device.HidDeviceInformation.UsagePage}");
+                sb.AppendLine($"\tVendorId={device.HidDeviceInformation.VendorId}");
+                sb.AppendLine($"\tVersion={device.HidDeviceInformation.Version}");
             }
             textBox.Text = sb.ToString();
         }
@@ -110,7 +119,7 @@ namespace UwpTestApp
         {
             var keyDict = new ConcurrentDictionary<IKeyId, bool>();
             textBox.Text = "";
-            var hidFactory = new UwpHidDeviceFactory(Dispatcher);
+            var hidFactory = new UwpHidDeviceFactory();
             var keyFactory = new U2FHidKeyFactory(hidFactory);
 
             var dataStore = new InMemoryServerDataStore(new GuidSessionIdGenerator());
