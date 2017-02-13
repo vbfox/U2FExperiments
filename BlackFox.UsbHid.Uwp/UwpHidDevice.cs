@@ -36,7 +36,7 @@ namespace BlackFox.UsbHid.Uwp
             {
                 if (inputReportSource != null)
                 {
-                    inputReportSource.SetResult(args.Report);
+                    inputReportSource.TrySetResult(args.Report);
                 }
                 else
                 {
