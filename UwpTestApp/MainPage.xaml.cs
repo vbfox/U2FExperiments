@@ -38,7 +38,7 @@ namespace UwpTestApp
 
         async void RunClicked(object sender, RoutedEventArgs e)
         {
-            textBox.Text = "";
+            HidtextBox.Text = "";
             var all = await DeviceInformation.FindAllAsync(usbHid,
                 new [] {
                     "System.Devices.Manufacturer",
@@ -58,12 +58,12 @@ namespace UwpTestApp
                     sb.AppendLine($"\t {p.Key} = {p.Value}");
                 }
             }
-            textBox.Text = sb.ToString();
+            HidtextBox.Text = sb.ToString();
         }
 
         async void U2fClicked(object sender, RoutedEventArgs e)
         {
-            textBox.Text = "";
+            U2FtextBox.Text = "";
             var hidFactory = new UwpHidDeviceFactory();
             var u2FFactory = new U2FHidKeyFactory(hidFactory);
             var u2FDevices = await u2FFactory.FindAllAsync();
@@ -82,7 +82,7 @@ namespace UwpTestApp
                 sb.AppendLine($"\tVendorId={device.HidDeviceInformation.VendorId}");
                 sb.AppendLine($"\tVersion={device.HidDeviceInformation.Version}");
             }
-            textBox.Text = sb.ToString();
+            U2FtextBox.Text = sb.ToString();
         }
 
         private class DummySender : ISender
@@ -118,7 +118,7 @@ namespace UwpTestApp
         async void EnrollClicked(object sender, RoutedEventArgs e)
         {
             var keyDict = new ConcurrentDictionary<IKeyId, bool>();
-            textBox.Text = "";
+            ActionstextBox.Text = "";
             var hidFactory = new UwpHidDeviceFactory();
             var keyFactory = new U2FHidKeyFactory(hidFactory);
 
@@ -137,13 +137,13 @@ namespace UwpTestApp
             var regRequest = server.GetRegistrationRequest("vbfox", "http://example.com");
             var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
 
-            textBox.Text += "Register...\r\n";
+            ActionstextBox.Text += "Register...\r\n";
             var x = await myClient.Register(new[] { regRequest }, signRequests, cts.Token);
-            textBox.Text += "Register done, sending to server\r\n";
+            ActionstextBox.Text += "Register done, sending to server\r\n";
 
             var serverResp = server.ProcessRegistrationResponse(x, ToUnixTimeMilliseconds(SystemClock.Instance.Now));
-            textBox.Text += "Server OK\r\n";
-            textBox.Text += $"{serverResp}\r\n";
+            ActionstextBox.Text += "Server OK\r\n";
+            ActionstextBox.Text += $"{serverResp}\r\n";
         }
 
         public static long ToUnixTimeMilliseconds(Instant instant)

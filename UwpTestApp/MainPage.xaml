@@ -6,25 +6,36 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
-
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="auto"/>
-            <ColumnDefinition Width="*"/>
-        </Grid.ColumnDefinitions>
-        <StackPanel Grid.Column="0">
-            <Button Click="RunClicked" Content="List HID Devices" Margin="4"></Button>
-            <Button Click="U2fClicked" Content="List U2F Devices" Margin="4"></Button>
-            <Button Click="EnrollClicked" Content="Enroll a device" Margin="4"></Button>
-        </StackPanel>
-
-        <StackPanel Grid.Column="1">
-            <TextBox Name="textBoxX"></TextBox>
-        </StackPanel>
-        <TextBox Grid.Column="2" Name="textBox" AcceptsReturn="True" TextWrapping="Wrap" Background="Aquamarine"></TextBox>
-        
-            
-        
-    </Grid>
+    <Pivot Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <PivotItem Header="U2F Devices">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0" Click="RunClicked" Content="List HID Devices" Margin="4"></Button>
+                <TextBox Grid.Row="1" Name="HidtextBox" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
+            </Grid>
+        </PivotItem>
+        <PivotItem Header="HID Devices">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0" Click="U2fClicked" Content="List U2F Devices" Margin="4"></Button>
+                <TextBox Grid.Row="1" Name="U2FtextBox" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
+            </Grid>
+        </PivotItem>
+        <PivotItem Header="Actions">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <Button Grid.Row="0" Click="EnrollClicked" Content="Enroll a device" Margin="4"></Button>
+                <TextBox Grid.Row="1" Name="ActionstextBox" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
+            </Grid>
+        </PivotItem>
+    </Pivot>
 </Page>
