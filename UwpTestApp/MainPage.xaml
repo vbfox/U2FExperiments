@@ -7,7 +7,23 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d">
     <Pivot Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <PivotItem Header="U2F Devices">
+        <PivotItem Header="Interactions">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="auto"/>
+                    <RowDefinition Height="*"/>
+                </Grid.RowDefinitions>
+                <StackPanel Grid.Row="0">
+                    <Button Click="ClearClicked" Content="Clear storage" Margin="4"></Button>
+                    <Button Click="EnrollClicked" Content="Enroll a device" Margin="4"></Button>
+                    <TextBox Name="EnrollUserName" Text="vbfox"></TextBox>
+                    <TextBox Name="EnrollAppId" Text="http://example.com"></TextBox>
+                </StackPanel>
+
+                <TextBox Grid.Row="1" Name="ActionstextBox" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
+            </Grid>
+        </PivotItem>
+        <PivotItem Header="HID Devices">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
@@ -17,7 +33,7 @@
                 <TextBox Grid.Row="1" Name="HidtextBox" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
             </Grid>
         </PivotItem>
-        <PivotItem Header="HID Devices">
+        <PivotItem Header="U2F Devices">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="auto"/>
@@ -25,16 +41,6 @@
                 </Grid.RowDefinitions>
                 <Button Grid.Row="0" Click="U2fClicked" Content="List U2F Devices" Margin="4"></Button>
                 <TextBox Grid.Row="1" Name="U2FtextBox" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
-            </Grid>
-        </PivotItem>
-        <PivotItem Header="Actions">
-            <Grid>
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="auto"/>
-                    <RowDefinition Height="*"/>
-                </Grid.RowDefinitions>
-                <Button Grid.Row="0" Click="EnrollClicked" Content="Enroll a device" Margin="4"></Button>
-                <TextBox Grid.Row="1" Name="ActionstextBox" AcceptsReturn="True" TextWrapping="Wrap"></TextBox>
             </Grid>
         </PivotItem>
     </Pivot>

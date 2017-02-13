@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
@@ -29,6 +30,10 @@ namespace UwpTestApp
         public MainPage()
         {
             this.InitializeComponent();
+
+            keyFactory = new U2FHidKeyFactory(hidFactory);
+            storePath = Path.Combine(Windows.Storage.ApplicationData.Current.LocalFolder.Path, "store.json");
+            dataStore = new JsonFileDataStore(new GuidSessionIdGenerator(), storePath);
         }
 
         static readonly Guid guidDevinterfaceHid = new Guid("4D1E55B2-F16F-11CF-88CB-001111000030");
@@ -64,9 +69,7 @@ namespace UwpTestApp
         async void U2fClicked(object sender, RoutedEventArgs e)
         {
             U2FtextBox.Text = "";
-            var hidFactory = new UwpHidDeviceFactory();
-            var u2FFactory = new U2FHidKeyFactory(hidFactory);
-            var u2FDevices = await u2FFactory.FindAllAsync();
+            var u2FDevices = await keyFactory.FindAllAsync();
             
             var sb = new StringBuilder();
             foreach (var device in u2FDevices)
@@ -115,40 +118,53 @@ namespace UwpTestApp
             }
         }
 
+        private readonly UwpHidDeviceFactory hidFactory = new UwpHidDeviceFactory();
+        private readonly U2FHidKeyFactory keyFactory;
+        private JsonFileDataStore dataStore;
+        private readonly string storePath;
+
         async void EnrollClicked(object sender, RoutedEventArgs e)
         {
-            var keyDict = new ConcurrentDictionary<IKeyId, bool>();
-            ActionstextBox.Text = "";
-            var hidFactory = new UwpHidDeviceFactory();
-            var keyFactory = new U2FHidKeyFactory(hidFactory);
+            try
+            {
+                ActionstextBox.Text = "";
+                var server = new U2FServerReferenceImpl(
+                    new ChallengeGenerator(),
+                    dataStore,
+                    new BouncyCastleServerCrypto(),
+                    new[] {"http://example.com", "https://example.com"});
 
-            var dataStore = new InMemoryServerDataStore(new GuidSessionIdGenerator());
-            var server = new U2FServerReferenceImpl(
-                new ChallengeGenerator(),
-                dataStore,
-                new BouncyCastleServerCrypto(),
-                new[] { "http://example.com", "https://example.com" });
+                var myClient = new U2FClient(
+                    new DummySender("http://example.com", new JObject()),
+                    keyFactory);
 
-            var myClient = new U2FClient(
-                new DummySender("http://example.com", new JObject()),
-                keyFactory);
+                var signRequests = server.GetSignRequests(EnrollUserName.Text, EnrollAppId.Text);
+                var regRequest = server.GetRegistrationRequest(EnrollUserName.Text, EnrollAppId.Text);
+                var cts = new CancellationTokenSource(TimeSpan.FromMinutes(1));
 
-            var signRequests = server.GetSignRequests("vbfox", "http://example.com");
-            var regRequest = server.GetRegistrationRequest("vbfox", "http://example.com");
-            var cts = new CancellationTokenSource(TimeSpan.FromMinutes(10));
+                ActionstextBox.Text += "Register...\r\n";
+                var x = await myClient.Register(new[] {regRequest}, signRequests, cts.Token);
+                ActionstextBox.Text += "Register done, sending to server\r\n";
 
-            ActionstextBox.Text += "Register...\r\n";
-            var x = await myClient.Register(new[] { regRequest }, signRequests, cts.Token);
-            ActionstextBox.Text += "Register done, sending to server\r\n";
-
-            var serverResp = server.ProcessRegistrationResponse(x, ToUnixTimeMilliseconds(SystemClock.Instance.Now));
-            ActionstextBox.Text += "Server OK\r\n";
-            ActionstextBox.Text += $"{serverResp}\r\n";
+                var serverResp = server.ProcessRegistrationResponse(x, ToUnixTimeMilliseconds(SystemClock.Instance.Now));
+                ActionstextBox.Text += "Server OK\r\n";
+                ActionstextBox.Text += $"{serverResp}\r\n";
+            }
+            catch (Exception exception)
+            {
+                ActionstextBox.Text += "\r\n\r\n" + exception.ToString();
+            }
         }
 
         public static long ToUnixTimeMilliseconds(Instant instant)
         {
             return instant.Ticks / NodaConstants.TicksPerMillisecond;
+        }
+
+        private void ClearClicked(object sender, RoutedEventArgs e)
+        {
+            File.Delete(storePath);
+            dataStore = new JsonFileDataStore(new GuidSessionIdGenerator(), storePath);
         }
     }
 }
