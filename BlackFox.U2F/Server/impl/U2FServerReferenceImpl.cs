@@ -245,7 +245,7 @@ namespace BlackFox.U2F.Server.impl
         /// <exception cref="U2FException" />
         public void RemoveSecurityKey(string accountName, byte[] publicKey)
         {
-            dataStore.RemoveSecuityKey(accountName, publicKey);
+            dataStore.RemoveSecurityKey(accountName, publicKey);
         }
 
         /// <summary>

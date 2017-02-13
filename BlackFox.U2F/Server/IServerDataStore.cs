@@ -24,7 +24,7 @@ namespace BlackFox.U2F.Server
 
 		IList<SecurityKeyData> GetSecurityKeyData(string accountName);
 
-		void RemoveSecuityKey(string accountName, byte[] publicKey);
+		void RemoveSecurityKey(string accountName, byte[] publicKey);
 
 		void UpdateSecurityKeyCounter(string accountName, byte[] publicKey, int newCounterValue);
 	}

@@ -18,8 +18,9 @@ namespace BlackFox.U2F.Server.impl
         private readonly Dictionary<string, EnrollSessionData> sessionDataBase =
             new Dictionary<string, EnrollSessionData>();
 
-        private readonly ISessionIdGenerator sessionIdGenerator;
         private readonly List<X509Certificate> trustedCertificateDataBase = new List<X509Certificate>();
+
+        private readonly ISessionIdGenerator sessionIdGenerator;
 
         public InMemoryServerDataStore(ISessionIdGenerator sessionIdGenerator)
         {
@@ -71,7 +72,7 @@ namespace BlackFox.U2F.Server.impl
             trustedCertificateDataBase.Add(certificate);
         }
 
-        public void RemoveSecuityKey(string accountName, byte[] publicKey)
+        public void RemoveSecurityKey(string accountName, byte[] publicKey)
         {
             var tokens = GetSecurityKeyData(accountName);
             var token = tokens.FirstOrDefault(t => t.PublicKey.SequenceEqual(publicKey));
