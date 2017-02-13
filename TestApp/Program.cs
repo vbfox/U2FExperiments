@@ -13,8 +13,9 @@ using System.Threading.Tasks;
 using BlackFox.Binary;
 using BlackFox.U2F.Client.impl;
 using BlackFox.U2F.Gnubby;
+using BlackFox.U2F.Gnubby.Simulated;
 using BlackFox.U2F.GnubbyApi;
-using BlackFox.U2F.Key.impl;
+using BlackFox.U2F.Key.Simulated;
 using BlackFox.U2F.Server.impl;
 using BlackFox.U2F.Tests;
 using BlackFox.U2FHid;
@@ -327,7 +328,7 @@ namespace U2FExperiments
 
         private static void TestSoftwareOnly()
         {
-            var key = new U2FKeyReferenceImpl(
+            var key = new SimulatedU2FKey(
                 TestVectors.VENDOR_CERTIFICATE,
                 TestVectors.VENDOR_CERTIFICATE_PRIVATE_KEY,
                 new TestKeyPairGenerator(),

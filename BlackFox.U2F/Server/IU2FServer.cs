@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using BlackFox.U2F.Server.data;
 using BlackFox.U2F.Server.messages;
 
@@ -7,25 +8,20 @@ namespace BlackFox.U2F.Server
 	{
 		// registration //
 		/// <exception cref="U2FException"/>
-		RegisterRequest GetRegistrationRequest(string 
-			accountName, string appId);
+		RegisterRequest GetRegistrationRequest(string accountName, string appId);
 
 		/// <exception cref="U2FException"/>
-		SecurityKeyData ProcessRegistrationResponse(RegisterResponse
-			 registerResponse, long currentTimeInMillis);
+		SecurityKeyData ProcessRegistrationResponse(RegisterResponse registerResponse, long currentTimeInMillis);
 
 		// authentication //
 		/// <exception cref="U2FException"/>
-		System.Collections.Generic.IList<SignRequest> GetSignRequests
-			(string accountName, string appId);
+		System.Collections.Generic.IList<SignRequest> GetSignRequests(string accountName, string appId);
 
 		/// <exception cref="U2FException"/>
-		SecurityKeyData ProcessSignResponse(SignResponse
-			 signResponse);
+		SecurityKeyData ProcessSignResponse(SignResponse signResponse);
 
 		// token management //
-		System.Collections.Generic.IList<SecurityKeyData> GetAllSecurityKeys
-			(string accountName);
+		IList<SecurityKeyData> GetAllSecurityKeys(string accountName);
 
 		/// <exception cref="U2FException"/>
 		void RemoveSecurityKey(string accountName, byte[] publicKey);

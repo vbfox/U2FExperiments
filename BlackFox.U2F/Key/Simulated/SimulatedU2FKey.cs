@@ -9,11 +9,11 @@ using JetBrains.Annotations;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.X509;
 
-namespace BlackFox.U2F.Key.impl
+namespace BlackFox.U2F.Key.Simulated
 {
-    public class U2FKeyReferenceImpl : IU2FKey
+    public class SimulatedU2FKey : IU2FKey
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof (U2FKeyReferenceImpl));
+        private static readonly ILog log = LogManager.GetLogger(typeof (SimulatedU2FKey));
 
         private readonly ECPrivateKeyParameters certificatePrivateKey;
         private readonly IKeyCrypto crypto;
@@ -23,7 +23,7 @@ namespace BlackFox.U2F.Key.impl
         private readonly IUserPresenceVerifier userPresenceVerifier;
         private readonly X509Certificate vendorCertificate;
 
-        public U2FKeyReferenceImpl([NotNull] X509Certificate vendorCertificate,
+        public SimulatedU2FKey([NotNull] X509Certificate vendorCertificate,
             [NotNull] ECPrivateKeyParameters certificatePrivateKey, [NotNull] IKeyPairGenerator keyPairGenerator,
             [NotNull] IKeyHandleGenerator keyHandleGenerator, [NotNull] IKeyDataStore dataStore,
             [NotNull] IUserPresenceVerifier userPresenceVerifier, [NotNull] IKeyCrypto crypto)

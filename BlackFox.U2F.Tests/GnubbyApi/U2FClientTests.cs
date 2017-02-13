@@ -45,7 +45,7 @@ namespace BlackFox.U2F.Tests.GnubbyApi
 
             keyOperations
                 .Setup(
-                    x => x.SignAsync(
+                    x => x.Sign(
                         It.Is<ICollection<KeySignRequest>>(reqs => reqs.SequenceEqual(keySignRequests)),
                         It.IsAny<CancellationToken>(),
                         false))
@@ -76,7 +76,7 @@ namespace BlackFox.U2F.Tests.GnubbyApi
 
             keyOperations
                 .Setup(
-                    x => x.RegisterAsync(
+                    x => x.Register(
                         It.Is<ICollection<KeyRegisterRequest>>(reqs => reqs.SequenceEqual(keyRegisterRequests)),
                         It.Is<ICollection<KeySignRequest>>(reqs => reqs.SequenceEqual(keySignRequests)),
                         It.IsAny<CancellationToken>()))

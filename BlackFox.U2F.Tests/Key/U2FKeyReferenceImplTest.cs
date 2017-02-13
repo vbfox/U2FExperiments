@@ -8,7 +8,7 @@ using BlackFox.U2F.Gnubby;
 using BlackFox.U2F.Gnubby.Messages;
 using BlackFox.U2F.Gnubby.Simulated;
 using BlackFox.U2F.Key;
-using BlackFox.U2F.Key.impl;
+using BlackFox.U2F.Key.Simulated;
 using Moq;
 using NUnit.Framework;
 using Org.BouncyCastle.Security;
@@ -35,7 +35,7 @@ namespace BlackFox.U2F.Tests.Key
             mockDataStore = new Mock<IKeyDataStore>();
             mockUserPresenceVerifier = new Mock<IUserPresenceVerifier>();
 
-            u2FKey = new U2FKeyReferenceImpl(VENDOR_CERTIFICATE, VENDOR_CERTIFICATE_PRIVATE_KEY,
+            u2FKey = new SimulatedU2FKey(VENDOR_CERTIFICATE, VENDOR_CERTIFICATE_PRIVATE_KEY,
                 mockKeyPairGenerator.Object, mockKeyHandleGenerator.Object, mockDataStore.Object,
                 mockUserPresenceVerifier.Object, new BouncyCastleKeyCrypto());
 

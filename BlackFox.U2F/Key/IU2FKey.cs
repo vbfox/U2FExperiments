@@ -3,6 +3,9 @@ using JetBrains.Annotations;
 
 namespace BlackFox.U2F.Key
 {
+    /// <summary>
+    /// A physical U2F Key device.
+    /// </summary>
 	public interface IU2FKey
 	{
 		[NotNull]

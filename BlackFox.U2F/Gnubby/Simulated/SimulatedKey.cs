@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using BlackFox.Binary;
 using BlackFox.U2F.Codec;
 using BlackFox.U2F.Gnubby.Messages;
-using BlackFox.U2F.Key.impl;
+using BlackFox.U2F.Key.Simulated;
 using Common.Logging;
 using JetBrains.Annotations;
 using Org.BouncyCastle.Crypto.Parameters;
@@ -14,7 +14,7 @@ namespace BlackFox.U2F.Gnubby.Simulated
 {
     public class SimulatedKey : IKey
     {
-        private static readonly ILog log = LogManager.GetLogger(typeof(U2FKeyReferenceImpl));
+        private static readonly ILog log = LogManager.GetLogger(typeof(SimulatedU2FKey));
 
         private readonly ECPrivateKeyParameters certificatePrivateKey;
         private readonly IKeyCrypto crypto;

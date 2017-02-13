@@ -55,6 +55,9 @@
     <Compile Include="Codec\RawMessageCodec.cs" />
     <Compile Include="Codec\SerialCodec.cs" />
     <Compile Include="Codec\VersionCodec.cs" />
+    <Compile Include="GnubbyApi\IKeyOperations.cs" />
+    <Compile Include="GnubbyApi\IU2FClient.cs" />
+    <Compile Include="GnubbyApi\KeyOperations.cs" />
     <Compile Include="GnubbyApi\RegisterOperation.cs" />
     <Compile Include="GnubbyApi\RegisterOperationResult.cs" />
     <Compile Include="GnubbyApi\ISender.cs" />
@@ -76,7 +79,7 @@
     <Compile Include="Gnubby\Simulated\IKeyCrypto.cs" />
     <Compile Include="Gnubby\Simulated\IKeyDataStore.cs" />
     <Compile Include="Gnubby\Simulated\BouncyCastleKeyCrypto.cs" />
-    <Compile Include="Key\impl\U2FKeyReferenceImpl.cs" />
+    <Compile Include="Key\Simulated\SimulatedU2FKey.cs" />
     <Compile Include="Gnubby\Simulated\IKeyHandleGenerator.cs" />
     <Compile Include="Gnubby\Simulated\IKeyPairGenerator.cs" />
     <Compile Include="Gnubby\Messages\KeySignRequest.cs" />

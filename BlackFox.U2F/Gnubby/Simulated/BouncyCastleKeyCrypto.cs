@@ -3,7 +3,7 @@ using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Parameters;
 using Org.BouncyCastle.Security;
 
-namespace BlackFox.U2F.Gnubby
+namespace BlackFox.U2F.Gnubby.Simulated
 {
 	public class BouncyCastleKeyCrypto : IKeyCrypto
 	{
